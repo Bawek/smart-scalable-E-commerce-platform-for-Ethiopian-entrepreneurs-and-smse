@@ -1,0 +1,11 @@
+{
+  "welcome": "Welcome",
+  "sign_in_with": "Sign in with",
+  "or_sign_in_with_credentials": "Or sign in with credentials",
+  "email": "Email",
+  "password": "Password",
+  "remember_me": "Remember me",
+  "sign_in": "Sign In",
+  "forgot_password": "Forgot password?",
+  "create_new_account": "Create new account"
+}
