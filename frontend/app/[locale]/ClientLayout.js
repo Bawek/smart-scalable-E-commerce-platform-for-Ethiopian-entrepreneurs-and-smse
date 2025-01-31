@@ -1,5 +1,5 @@
 "use client";
-// import "@fortawesome/fontawesome-free/css/all.min.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 // import "../styles/tailwind.css";
 
 // Router.events.on("routeChangeStart", (url) => {
