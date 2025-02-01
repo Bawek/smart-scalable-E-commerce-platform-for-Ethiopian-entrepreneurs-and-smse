@@ -21,6 +21,7 @@ export default function RootLayout({ children }) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
       <body className={inter.className}>
+        
         <AppProvider>
           <div className=" flex flex-col w-full min-h-screen">
             <div id="page-transition"></div>

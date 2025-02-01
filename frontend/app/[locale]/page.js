@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import initTranslations from "../i18n.js";
 import TranslationsProvider from "./components/Translation/TranslationsProvider.js";
 import Footer from "./components/Footers/Footer.js";
+import Navbar from "./components/Navbars/AuthNavbar.js";
 // import { useAuth } from "@clerk/nextjs";
 
 const i18nNamespaces = ["home"]; // Define your namespaces
@@ -70,11 +71,11 @@ export default function Index() {
       resources={translations.resources}
     >
       {/* ToDo*/}
-      {/* <Navbar
+      <Navbar
         transparent
         setNavbarOpen={setNavbarOpen}
         navbarOpen={navbarOpen}
-      /> */}
+      />
       <main onClick={() => setNavbarOpen(false)}>
         <div className="relative pt-16 pb-32 flex content-center items-center justify-center min-h-screen-75">
           <div

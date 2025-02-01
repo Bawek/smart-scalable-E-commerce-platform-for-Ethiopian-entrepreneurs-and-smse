@@ -6,7 +6,6 @@ export default function Loading() {
   return (
     <div className="loader-container">
       <Loader />
-      <div className="w-20 h-20 animate-spin border border-b-blue-500"></div>
     </div>
   );
 }

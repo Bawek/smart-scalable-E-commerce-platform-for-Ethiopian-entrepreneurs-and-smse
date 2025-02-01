@@ -1,17 +1,25 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import './Gtranslatestyles.css';
 import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 import { useGetMerchantQuery } from "@/lib/features/auth/authMerchant";
 import { useGetCustomerQuery } from "@/lib/features/auth/authCustomer";
-
 export default function Navbar({ setNavbarOpen, navbarOpen }) {
   // const [navbarOpen, setNavbarOpen] = useState(false);
   const [uniqueId, setUniqueId] = useState(null);
   const [role, setRole] = useState(null);
-
+  // language translation
+  useEffect(() => {
+    window.googleTranslateElementInit = () => {
+      new window.google.translate.TranslateElement(
+        { pageLanguage: 'en' }, // Set your website's default language
+        'google_translate_element'
+      );
+    };
+  }, []);
   useEffect(() => {
     if (typeof window !== "undefined") {
       setUniqueId(localStorage.getItem("unique_id"));
@@ -37,11 +45,14 @@ export default function Navbar({ setNavbarOpen, navbarOpen }) {
           <div className="w-full relative flex justify-between lg:w-auto lg:static lg:block lg:justify-start">
             <Link
               href="/"
-              className="text-white text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-nowrap uppercase"
+              className="text-blue-700 text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-nowrap uppercase"
             >
-              Suk-Bederete
+              E-commerce Platform
             </Link>
-            <div onClick={() => setNavbarOpen(false)} className=" w-full"></div>
+            <div
+              onClick={() => setNavbarOpen(false)}
+              className=" w-full"
+            ></div>
             <button
               className="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none"
               type="button"
@@ -49,7 +60,7 @@ export default function Navbar({ setNavbarOpen, navbarOpen }) {
                 setNavbarOpen(!navbarOpen);
               }}
             >
-              <i className="text-white fas fa-bars"></i>
+              <i className="text-blue-700 fas fa-bars"></i>
             </button>
           </div>
           <div
@@ -106,11 +117,13 @@ export default function Navbar({ setNavbarOpen, navbarOpen }) {
               <li className="flex items-center">
                 <button className="lg:text-white lg:hover:text-blueGray-200 text-blueGray-700 px-3 py-4 mx-3 lg:py-2 flex items-center text-xs uppercase font-bold">
                   <Link href="/auth/register" className={""}>
-                    Welcome to Suk-Bederete
+                    Welcome to E-commerce Platform
                   </Link>
                 </button>
               </li>
               <li className="flex items-center">
+                <div id="google_translate_element"></div>
+
                 <LanguageSwitcher />
               </li>
             </ul>
