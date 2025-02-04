@@ -20,11 +20,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
-import { Dialog, DialogContent, DialogTitle } from "@radix-ui/react-dialog";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden"; // Import VisuallyHidden
 
 export default function Navbar() {
-  const [uniqueId, setUniqueId] = useState(4444);
+  const [uniqueId, setUniqueId] = useState();
   const [role, setRole] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -42,12 +40,11 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    setUniqueId(22222);
+    setUniqueId(localStorage.getItem("uniqueId"));
     setRole(localStorage.getItem("role"));
   }, []);
 
   const navLinks = [
-    { name: "Home", href: "/" },
     ...(uniqueId
       ? [
           {
