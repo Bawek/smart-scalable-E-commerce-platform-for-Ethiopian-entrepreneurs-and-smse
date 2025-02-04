@@ -1,9 +1,12 @@
 import { SignIn } from '@clerk/nextjs'
+import Auth from '../../layouts/Auth'
 
 export default function Page() {
     return (
-        <div className='w-full h-screen flex justify-center items-center'>
-            <SignIn />
-        </div>
+        <Auth>
+            <div className='flex justify-center items-center'>
+                <SignIn />
+            </div>
+        </Auth>
     )
 }

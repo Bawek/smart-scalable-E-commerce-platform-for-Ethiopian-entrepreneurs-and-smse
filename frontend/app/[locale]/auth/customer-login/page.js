@@ -3,22 +3,50 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Auth from "../../layouts/Auth";
 import { useLoginMutation } from "@/lib/features/auth/authCustomer";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { setMerchant } from "@/lib/features/auth/merchantSlice";
 import { useDispatch } from "react-redux";
 import { useGetCustomizedTemplateQuery } from "@/lib/features/shop/shop";
 import { useGetshopMerchantQuery } from "@/lib/features/shop/publicShopSlice";
 import initTranslations from "@/app/i18n";
 import TranslationsProvider from "../../components/Translation/TranslationsProvider";
-import { Spinner } from "react-bootstrap"; // Assuming you have react-bootstrap installed
+import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Loader2, PlusCircle } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const i18nNamespaces = ["login"];
-
-export default function Login({ params: { locale } }) {
+// form validation
+const formSchema = z.object({
+  email: z.string().email({ message: "A valid email is required." }),
+  password: z.string().min(6, { message: "Password is required and should be at least 6 characters." }),
+});
+export default function Login() {
+const params = useParams()
+const locale = params.locale
   const [login, { isLoading }] = useLoginMutation();
+  const { toast } = useToast()
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      slug: "",
+      photoUrl: "",
+    },
+  });
+  const onSubmit = async (data) => {
+    console.log(data)
+  };
   console.log(locale);
   const [translations, setTranslations] = useState({
-    t: () => {}, // Placeholder function until translations are loaded
+    t: () => { }, // Placeholder function until translations are loaded
     resources: {},
   });
 
@@ -74,56 +102,6 @@ export default function Login({ params: { locale } }) {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    // Reset error states
-    setEmailError(false);
-    setPasswordError(false);
-
-    // Validate inputs
-    if (!email) {
-      setEmailError(true);
-    }
-    if (!password) {
-      setPasswordError(true);
-    }
-    if (!email || !password) {
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append("email", email);
-      formData.append("password", password);
-      formData.append("role", "client");
-
-      const response = await login(formData).unwrap();
-
-      console.log("Response:", response);
-
-      if (response?.tokens) {
-        if (response?.tokens) {
-          console.log("role", response?.data?.user?.role);
-          localStorage.setItem("unique_id", response?.data?.unique_id);
-          localStorage.setItem("role", response?.data?.user?.role);
-          document.cookie = `access_token=${response?.tokens?.access}; path=/`;
-          document.cookie = `refresh_token=${response?.tokens?.refresh}; path=/`;
-          // Store tokens in localStorage
-          localStorage.setItem("access_token", response.tokens?.access);
-          localStorage.setItem("refresh_token", response.tokens?.refresh);
-          dispatch(setMerchant(response?.data));
-          router.back();
-        } else {
-          throw new Error("Invalid response structure");
-        }
-      } else {
-        throw new Error("Invalid response structure");
-      }
-    } catch (error) {
-      console.error("Login failed:", error);
-      setResponseMessage(
-        error.data?.message || "Login failed. Please try again."
-      );
-    }
   };
 
   return (
@@ -135,139 +113,99 @@ export default function Login({ params: { locale } }) {
       <Auth>
         <div className="container mx-auto px-4 h-full">
           <div className="flex content-center items-center justify-center h-full">
-            <div className="w-full lg:w-4/12 px-4">
-              <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-blueGray-200 border-0">
-                <div className="rounded-t mb-0 px-6 py-6">
-                  <div className="text-center mb-3">
-                    <h6 className="text-blueGray-500 text-sm font-bold">
-                      {translations.t("sign_in_with")}
-                    </h6>
-                  </div>
-                  <div className="btn-wrapper text-center">
-                    <button
-                      className="bg-white active:bg-blueGray-50 text-blueGray-700 font-normal px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1 uppercase shadow hover:shadow-md inline-flex items-center font-bold text-xs ease-linear transition-all duration-150"
-                      type="button"
-                    >
-                      <img
-                        alt="..."
-                        className="w-5 mr-1"
-                        src="/img/google.svg"
-                      />
-                      Google
-                    </button>
-                  </div>
-                  <hr className="mt-6 border-b-1 border-blueGray-300" />
-                  {responseMessage && (
-                    <div className="text-center mt-4">
-                      <p className="text-red-500">{responseMessage}</p>
-                    </div>
-                  )}
-                </div>
-                <div className="flex-auto px-4 lg:px-10 py-10 pt-0">
-                  <div className="text-blueGray-400 text-center mb-3 font-bold">
-                    <small>
-                      {translations.t("or_sign_in_with_credentials")}
-                    </small>
-                  </div>
-                  <form onSubmit={handleLogin}>
-                    <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                        htmlFor="email"
-                      >
-                        {translations.t("email")}
-                      </label>
-                      <input
-                        type="email"
-                        className={`border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 ${
-                          emailError ? "border-red-500" : ""
-                        }`}
-                        placeholder={translations.t("email")}
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                      {emailError && (
-                        <p className="text-red-500 text-xs italic">
-                          {translations.t("email_required")}
-                        </p>
+            <Card className="max-w-md">
+              <CardHeader className="flex flex-col items-center justify-center">
+                <CardTitle>Sign Up</CardTitle>
+                <CardDescription>
+                  Create an account to start managing and sharing your blog posts.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
+                    {/* Email */}
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Email <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                             type="email"
+                              placeholder="Enter Email" 
+                              className="border border-gray-300"
+                              {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    </div>
-                    <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                        htmlFor="password"
-                      >
-                        {translations.t("password")}
-                      </label>
-                      <input
-                        type="password"
-                        className={`border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 ${
-                          passwordError ? "border-red-500" : ""
-                        }`}
-                        placeholder={translations.t("password")}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      {passwordError && (
-                        <p className="text-red-500 text-xs italic">
-                          {translations.t("password_required")}
-                        </p>
+                    />
+
+                    {/* Password */}
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Password <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                             type="password" 
+                             placeholder="Enter Password"
+                             className="border border-gray-300"
+                              {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    </div>
-                    <div>
-                      <label className="inline-flex items-center cursor-pointer">
-                        <input
-                          id="customCheckLogin"
-                          type="checkbox"
-                          className="form-checkbox border-0 rounded text-blueGray-700 ml-1 w-5 h-5 ease-linear transition-all duration-150"
-                        />
-                        <span className="ml-2 text-sm font-semibold text-blueGray-600">
-                          {translations.t("remember_me")}
+                    />
+
+                    {/* Terms & Forgot Password */}
+                    <div className="flex items-center justify-between text-sm">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox required />
+                        <span className="text-gray-700 dark:text-gray-300">
+                          I agree to the{" "}
+                          <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
+                            Terms & Conditions
+                          </a>
                         </span>
                       </label>
+
+                      <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline underline-offset-4">
+                        Forgot password?
+                      </a>
                     </div>
-                    <div className="text-center mt-6">
-                      <button
-                        className="bg-blueGray-800 text-white active:bg-blueGray-600 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full ease-linear transition-all duration-150"
-                        type="submit"
-                        disabled={isLoading}
-                      >
-                        {isLoading ? (
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                          />
-                        ) : (
-                          translations.t("sign_in")
-                        )}
-                      </button>
+
+                    {/* Submit Button */}
+                    <Button className="w-full" type="submit" disabled={isLoading}>
+                      {isLoading ? <Loader2 className="animate-spin" /> : <PlusCircle />}
+                      {isLoading ? "Submitting..." : "Submit"}
+                    </Button>
+
+                    {/* Sign Up Link */}
+                    <div className="text-center text-sm text-gray-700 dark:text-gray-300">
+                      Don't have an account?{" "}
+                      <Link href="/auth/customer-register" className="text-blue-600 dark:text-blue-400 font-medium hover:underline underline-offset-4">
+                        Sign up
+                      </Link>
+                    </div>
+
+                    {/* Copyright Notice */}
+                    <div className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4">
+                      © {new Date().getFullYear()} E-commerce platform. All rights reserved.
                     </div>
                   </form>
-                </div>
-              </div>
-              <div className="flex flex-wrap mt-6 relative">
-                <div className="w-1/2">
-                  <Link
-                    href="#pablo"
-                    onClick={(e) => e.preventDefault()}
-                    className="text-blueGray-200"
-                  >
-                    <small>{translations.t("forgot_password")}</small>
-                  </Link>
-                </div>
-                <div className="w-1/2 text-right">
-                  <Link
-                    href="/auth/customer-register"
-                    className="text-blueGray-200"
-                  >
-                    <small>{translations.t("create_new_account")}</small>
-                  </Link>
-                </div>
-              </div>
-            </div>
+                </Form>
+              </CardContent>
+            </Card>
+
           </div>
         </div>
       </Auth>

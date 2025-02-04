@@ -7,10 +7,27 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 import { useGetMerchantQuery } from "@/lib/features/auth/authMerchant";
 import { useGetCustomerQuery } from "@/lib/features/auth/authCustomer";
-export default function Navbar({ setNavbarOpen, navbarOpen }) {
-  // const [navbarOpen, setNavbarOpen] = useState(false);
+
+export default function Navbar() {
+  const [navbarOpen, setNavbarOpen] = useState(false)
   const [uniqueId, setUniqueId] = useState(null);
   const [role, setRole] = useState(null);
+  const [isSticky, setIsSticky] = useState(false);
+
+  // Handle sticky navbar on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        setIsSticky(true);
+      } else {
+        setIsSticky(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // language translation
   useEffect(() => {
     window.googleTranslateElementInit = () => {
@@ -20,6 +37,7 @@ export default function Navbar({ setNavbarOpen, navbarOpen }) {
       );
     };
   }, []);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setUniqueId(localStorage.getItem("unique_id"));
@@ -27,20 +45,14 @@ export default function Navbar({ setNavbarOpen, navbarOpen }) {
     }
   }, []);
 
-  const {
-    data: merchant,
-    error: merchantError,
-    isLoading: isLoadingMerchant,
-  } = useGetMerchantQuery(uniqueId);
-  const {
-    data: customer,
-    error: customerError,
-    isLoading: isLoadingCustomer,
-  } = useGetCustomerQuery(uniqueId);
+  const { data: merchant, error: merchantError, isLoading: isLoadingMerchant } = useGetMerchantQuery(uniqueId);
+  const { data: customer, error: customerError, isLoading: isLoadingCustomer } = useGetCustomerQuery(uniqueId);
 
   return (
     <>
-      <nav className="top-0 sticky z-50 w-full flex flex-wrap items-center justify-between px-2 py-3 navbar-expand-lg">
+      <nav
+        className={`top-0 z-50 w-full flex flex-wrap items-center justify-between px-2 py-3 navbar-expand-lg ${isSticky ? 'fixed top-0 bg-gray-900 shadow-lg' : 'absolute'}`}
+      >
         <div className="container px-4 mx-auto flex flex-wrap items-center justify-between">
           <div className="w-full relative flex justify-between lg:w-auto lg:static lg:block lg:justify-start">
             <Link
@@ -51,7 +63,7 @@ export default function Navbar({ setNavbarOpen, navbarOpen }) {
             </Link>
             <div
               onClick={() => setNavbarOpen(false)}
-              className=" w-full"
+              className="w-full"
             ></div>
             <button
               className="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none"
@@ -123,7 +135,6 @@ export default function Navbar({ setNavbarOpen, navbarOpen }) {
               </li>
               <li className="flex items-center">
                 <div id="google_translate_element"></div>
-
                 <LanguageSwitcher />
               </li>
             </ul>
