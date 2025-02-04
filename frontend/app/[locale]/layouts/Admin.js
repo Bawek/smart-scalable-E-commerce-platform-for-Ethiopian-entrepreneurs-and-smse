@@ -21,113 +21,113 @@ function Admin({ children, subtitle1, subtitle2, subtitle3, subtitle4 }) {
   const [sseConnection, setSseConnection] = useState(null);
   const storedmerchantId = localStorage.getItem("unique_id");
 
-  function showOrderNotification() {
-    toast.success("Out of Stock", {
-      description: "product is out of Stock.",
-      duration: 5000, // Duration of the notification in ms
-    });
-  }
+  // function showOrderNotification() {
+  //   toast.success("Out of Stock", {
+  //     description: "product is out of Stock.",
+  //     duration: 5000, // Duration of the notification in ms
+  //   });
+  // }
 
-  // Fetch initial data
-  useEffect(() => {
-    fetch(`http://localhost:8000/store/product/stock/${storedmerchantId}/`)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Initial stock:", data); // Debugging
-        setOutOfStock(data);
-      })
-      .catch((error) => console.error("Error fetching initial orders:", error));
-  }, []);
+  // // Fetch initial data
+  // useEffect(() => {
+  //   fetch(`http://localhost:8000/store/product/stock/${storedmerchantId}/`)
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       console.log("Initial stock:", data); // Debugging
+  //       setOutOfStock(data);
+  //     })
+  //     .catch((error) => console.error("Error fetching initial orders:", error));
+  // }, []);
 
-  useEffect(() => {
-    fetch(
-      `http://localhost:8000/store/product/${storedmerchantId}/total-categories/`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Initial stock:", data); // Debugging
-        setCatagories(data.total_categories);
-      })
-      .catch((error) => console.error("Error fetching initial orders:", error));
-  }, []);
+  // useEffect(() => {
+  //   fetch(
+  //     `http://localhost:8000/store/product/${storedmerchantId}/total-categories/`
+  //   )
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       console.log("Initial stock:", data); // Debugging
+  //       setCatagories(data.total_categories);
+  //     })
+  //     .catch((error) => console.error("Error fetching initial orders:", error));
+  // }, []);
 
-  useEffect(() => {
-    fetch(
-      `http://localhost:8000/store/product/${storedmerchantId}/total-stock/`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Initial store:", data); // Debugging
-        setStore(data.total_stock);
-      })
-      .catch((error) => console.error("Error fetching initial store:", error));
-  }, []);
+  // useEffect(() => {
+  //   fetch(
+  //     `http://localhost:8000/store/product/${storedmerchantId}/total-stock/`
+  //   )
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       console.log("Initial store:", data); // Debugging
+  //       setStore(data.total_stock);
+  //     })
+  //     .catch((error) => console.error("Error fetching initial store:", error));
+  // }, []);
 
   // Establish SSE connection
-  useEffect(() => {
-    console.log("New merchant Id:", storedmerchantId); // Debugging
+  // useEffect(() => {
+  //   console.log("New merchant Id:", storedmerchantId); // Debugging
 
-    const url = `http://localhost:8000/store/product/stock/stream/${storedmerchantId}/`;
-    const eventSource = new EventSource(url);
-    setSseConnection(eventSource);
+  //   const url = `http://localhost:8000/store/product/stock/stream/${storedmerchantId}/`;
+  //   const eventSource = new EventSource(url);
+  //   setSseConnection(eventSource);
 
-    eventSource.onmessage = (event) => {
-      const newData = JSON.parse(event.data);
-      console.log("New data:", newData); // Debugging
-      //     // Determine if the data is new or an update
+  //   eventSource.onmessage = (event) => {
+  //     const newData = JSON.parse(event.data);
+  //     console.log("New data:", newData); // Debugging
+  //     //     // Determine if the data is new or an update
 
-      if (newData) {
-        const existing = outOfStocks?.findIndex(
-          (outOfStock) => outOfStock.id === newData[0].id
-        );
-        console.log("existingIndex:", existing); // Debugging
+  //     if (newData) {
+  //       const existing = outOfStocks?.findIndex(
+  //         (outOfStock) => outOfStock.id === newData[0].id
+  //       );
+  //       console.log("existingIndex:", existing); // Debugging
 
-        if (existing !== -1) {
-          setNotification((prev) => [
-            ...prev,
-            { type: "Update", ...newData[0] },
-          ]);
-        } else {
-          setNotification((prev) => [...prev, { type: "New", ...newData[0] }]);
-        }
-      }
+  //       if (existing !== -1) {
+  //         setNotification((prev) => [
+  //           ...prev,
+  //           { type: "Update", ...newData[0] },
+  //         ]);
+  //       } else {
+  //         setNotification((prev) => [...prev, { type: "New", ...newData[0] }]);
+  //       }
+  //     }
 
-      console.log("New Notification:", notification); // Debugging
-      // showOrderNotification();
+  //     console.log("New Notification:", notification); // Debugging
+  //     // showOrderNotification();
 
-      setOutOfStock((prevOutStocks) => {
-        // Check if the order exists in the current state
-        const existingIndex = prevOutStocks.findIndex(
-          (OutStock) => OutStock?.id === newData[0]?.id
-        );
-        if (existingIndex !== -1) {
-          console.log("New data:", newData[0]); // Debugging
-          // Update the existing order
-          console.log("existingIndex:", existingIndex); // Debugging
+  //     setOutOfStock((prevOutStocks) => {
+  //       // Check if the order exists in the current state
+  //       const existingIndex = prevOutStocks.findIndex(
+  //         (OutStock) => OutStock?.id === newData[0]?.id
+  //       );
+  //       if (existingIndex !== -1) {
+  //         console.log("New data:", newData[0]); // Debugging
+  //         // Update the existing order
+  //         console.log("existingIndex:", existingIndex); // Debugging
 
-          const updatedOrders = [...prevOutStocks];
-          updatedOrders[existingIndex] = { ...newData[0] };
-          return updatedOrders;
-        } else {
-          // Add the new order
-          return [...prevOutStocks, { ...newData[0] }];
-        }
-      });
-    };
+  //         const updatedOrders = [...prevOutStocks];
+  //         updatedOrders[existingIndex] = { ...newData[0] };
+  //         return updatedOrders;
+  //       } else {
+  //         // Add the new order
+  //         return [...prevOutStocks, { ...newData[0] }];
+  //       }
+  //     });
+  //   };
 
-    eventSource.onerror = (error) => {
-      console.error("EventSource failed:", error);
-      eventSource.close();
-      // Attempt to reconnect or notify the user here
-    };
+  //   eventSource.onerror = (error) => {
+  //     console.error("EventSource failed:", error);
+  //     eventSource.close();
+  //     // Attempt to reconnect or notify the user here
+  //   };
 
-    return () => {
-      eventSource.close();
-    };
-  }, []);
-  useEffect(() => {
-    console.log("New Notification:", notification); // Debugging
-  }, [notification]);
+  //   return () => {
+  //     eventSource.close();
+  //   };
+  // }, []);
+  // useEffect(() => {
+  //   console.log("New Notification:", notification); // Debugging
+  // }, [notification]);
   return (
     <>
       <Sidebar />
