@@ -1,26 +1,39 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import './Gtranslatestyles.css';
-import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/router";
-import { useGetMerchantQuery } from "@/lib/features/auth/authMerchant";
-import { useGetCustomerQuery } from "@/lib/features/auth/authCustomer";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Menu, X } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
+import { Dialog, DialogContent, DialogTitle } from "@radix-ui/react-dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"; // Import VisuallyHidden
 
 export default function Navbar() {
-  const [navbarOpen, setNavbarOpen] = useState(false)
-  const [uniqueId, setUniqueId] = useState(null);
+  const [uniqueId, setUniqueId] = useState(4444);
   const [role, setRole] = useState(null);
-  const [isSticky, setIsSticky] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  // Handle sticky navbar on scroll
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 0) {
-        setIsSticky(true);
+        setIsScrolled(true); // Set to true when scrolled down
       } else {
-        setIsSticky(false);
+        setIsScrolled(false); // Reset to false when at the top of the page
       }
     };
 
@@ -28,119 +41,112 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // language translation
   useEffect(() => {
-    window.googleTranslateElementInit = () => {
-      new window.google.translate.TranslateElement(
-        { pageLanguage: 'en' }, // Set your website's default language
-        'google_translate_element'
-      );
-    };
+    setUniqueId(22222);
+    setRole(localStorage.getItem("role"));
   }, []);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setUniqueId(localStorage.getItem("unique_id"));
-      setRole(localStorage.getItem("role"));
-    }
-  }, []);
-
-  const { data: merchant, error: merchantError, isLoading: isLoadingMerchant } = useGetMerchantQuery(uniqueId);
-  const { data: customer, error: customerError, isLoading: isLoadingCustomer } = useGetCustomerQuery(uniqueId);
+  const navLinks = [
+    { name: "Home", href: "/" },
+    ...(uniqueId
+      ? [
+          {
+            name: "Profile",
+            href: role === "merchant" ? "/admin/settings" : "/profile",
+          },
+          ...(role === "merchant"
+            ? [{ name: "Dashboard", href: "/admin/dashboard" }]
+            : []),
+        ]
+      : [
+          { name: "Login", href: "/auth/customer-login" },
+          { name: "Register", href: "/auth/customer-register" },
+        ]),
+  ];
 
   return (
-    <>
-      <nav
-        className={`top-0 z-50 w-full flex flex-wrap items-center justify-between px-2 py-3 navbar-expand-lg ${isSticky ? 'fixed top-0 bg-gray-900 shadow-lg' : 'absolute'}`}
-      >
-        <div className="container px-4 mx-auto flex flex-wrap items-center justify-between">
-          <div className="w-full relative flex justify-between lg:w-auto lg:static lg:block lg:justify-start">
-            <Link
-              href="/"
-              className="text-blue-700 text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-nowrap uppercase"
-            >
-              E-commerce Platform
-            </Link>
-            <div
-              onClick={() => setNavbarOpen(false)}
-              className="w-full"
-            ></div>
-            <button
-              className="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none"
-              type="button"
-              onClick={(e) => {
-                setNavbarOpen(!navbarOpen);
-              }}
-            >
-              <i className="text-blue-700 fas fa-bars"></i>
-            </button>
-          </div>
-          <div
-            className={
-              "lg:flex flex-grow items-center bg-white lg:bg-opacity-0 lg:shadow-none" +
-              (navbarOpen ? " block rounded shadow-lg" : " hidden")
-            }
-            id="example-navbar-warning"
-          >
-            <ul className="flex flex-col lg:flex-row list-none lg:ml-auto sm:pl-10 pb-10">
-              {uniqueId && (
-                <>
-                  <li className="flex items-center">
-                    <button className="lg:text-white lg:hover:text-blueGray-200 text-blueGray-700 px-3 py-4 mx-3 lg:py-2 flex items-center text-xs uppercase font-bold">
-                      <Link
-                        href={
-                          role === "merchant" ? "/admin/settings" : "/profile"
-                        }
-                      >
-                        Profile
-                      </Link>
-                    </button>
-                  </li>
-                  {role === "merchant" && (
-                    <li className="flex items-center">
-                      <button className="lg:text-white lg:hover:text-blueGray-200 text-blueGray-700 px-3 py-4 mx-3 lg:py-2 flex items-center text-xs uppercase font-bold">
-                        <Link href="/admin/dashboard" className={""}>
-                          Dashboard
-                        </Link>
-                      </button>
-                    </li>
-                  )}
-                </>
-              )}
+    <header
+      className={cn(
+        "w-full backdrop-blur absolute top-0 z-50 transition-all",
+        isScrolled ? "bg-background/80 fixed top-0 " : ""
+      )}
+    >
+      <div className="container mx-auto px-5 flex h-16 items-center justify-between">
+        {/* Desktop Logo */}
+        <Link href="/" className="hidden md:flex items-center gap-2 font-bold">
+          <span className="text-white">E-Commerce</span>
+          <span className="text-white">Platform</span>
+        </Link>
 
-              {!uniqueId && (
-                <li className="flex items-center">
-                  <button className="lg:text-white lg:hover:text-blueGray-200 text-blueGray-700 px-3 py-4 mx-3 lg:py-2 flex items-center text-xs uppercase font-bold">
-                    <Link href="/auth/customer-login" className={""}>
-                      Login
-                    </Link>
-                  </button>
-                </li>
-              )}
-              {!uniqueId && (
-                <li className="flex items-center">
-                  <button className="lg:text-white lg:hover:text-blueGray-200 text-blueGray-700 px-3 py-4 mx-3 lg:py-2 flex items-center text-xs uppercase font-bold">
-                    <Link href="/auth/customer-register" className={""}>
-                      Register
-                    </Link>
-                  </button>
-                </li>
-              )}
-              <li className="flex items-center">
-                <button className="lg:text-white lg:hover:text-blueGray-200 text-blueGray-700 px-3 py-4 mx-3 lg:py-2 flex items-center text-xs uppercase font-bold">
-                  <Link href="/auth/register" className={""}>
-                    Welcome to E-commerce Platform
+        {/* Mobile Hamburger Menu */}
+        <Sheet>
+          <SheetTrigger className="md:hidden">
+            <Menu className="h-6 w-6" />
+          </SheetTrigger>
+          <SheetContent side="left">
+          <SheetTitle> Menus</SheetTitle>
+  
+            <div className="flex flex-col gap-4 pt-6">
+              <Link
+                href="/"
+                className="flex items-center gap-2 font-bold mb-6 text-white"
+              >
+                <span className="text-white">E-Commerce</span>
+                <span className="text-white">Platform</span>
+              </Link>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-sm font-medium transition-colors hover:text-primary"
+                >
+                  {link.name}
+                </Link>
+              ))}
+              <LanguageSwitcher />
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Desktop Navigation */}
+        <NavigationMenu className="hidden md:flex">
+          <NavigationMenuList>
+            {navLinks.map((link) => (
+              <NavigationMenuItem key={link.name}>
+                <Link href={link.href} legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    {link.name}
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+            ))}
+          </NavigationMenuList>
+        </NavigationMenu>
+
+        <div className="flex items-center">
+          {uniqueId && (
+            <DropdownMenu className="flex items-center">
+              <DropdownMenuTrigger>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/login-my-image.jpg" />
+                  <AvatarFallback>USR</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={role === "merchant" ? "/admin/settings" : "/profile"}>
+                    Profile
                   </Link>
-                </button>
-              </li>
-              <li className="flex items-center">
-                <div id="google_translate_element"></div>
-                <LanguageSwitcher />
-              </li>
-            </ul>
-          </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/logout">Logout</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          <LanguageSwitcher />
         </div>
-      </nav>
-    </>
+      </div>
+    </header>
   );
 }
