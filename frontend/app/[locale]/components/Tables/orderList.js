@@ -22,13 +22,8 @@ import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import TextField from "@mui/material/TextField"; // Import TextField
-import Button from "@mui/material/Button";
-import { PopoverDemo } from "@/util/alert";
 import { visuallyHidden } from "@mui/utils";
-import { AiOutlineEdit, AiFillDelete } from "react-icons/ai";
-import { LuView } from "react-icons/lu";
-
-import { AddProduct } from "../Prompt/AddProduct";
+import { Edit, Eye } from "lucide-react";
 import { OrderDialog } from "../Prompt/OrderDetial";
 import { DialogDemo } from "../WebBuilder/AddPage/AddItem";
 
@@ -357,12 +352,12 @@ export default function EnhancedTable({ rows, headCells, title }) {
                         onClick={(event) => event.stopPropagation()}
                       >
                         <OrderDialog
-                          action={<LuView />}
+                          action={<Eye />}
                           type="edit"
                           order={row}
                         />
                         <DialogDemo
-                          action={<AiOutlineEdit />}
+                          action={<Edit />}
                           type="edit"
                           product={row}
                         />

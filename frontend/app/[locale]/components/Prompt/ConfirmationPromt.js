@@ -1,14 +1,10 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { toast } from "@/components/ui/use-toast";
-import axios from "axios";
 
 export function ConfirmationModal({ isOpen, onClose, onConfirm }) {
   return (

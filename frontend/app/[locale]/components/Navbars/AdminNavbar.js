@@ -2,48 +2,50 @@
 
 import React from "react";
 import NotificationPop from "../Prompt/Notification";
-
 import UserDropdown from "@/app/[locale]/components/Dropdowns/UserDropdown.js";
+
 export default function Navbar({ notification, setNotification }) {
   return (
     <>
       {/* Navbar */}
-      <nav className="w-full sticky top-0 bg-gray-600 z-10 bg-transparent md:flex-row md:flex-nowrap md:justify-start flex items-center p-4">
-        <div className="w-full mx-autp items-center flex justify-between md:flex-nowrap flex-wrap md:px-10 px-4">
+      <nav className="w-full hidden md:flex sticky top-0 z-10 bg-gray-800/90 backdrop-blur-2xl shadow-md p-2">
+        <div className="w-full mx-auto flex items-center justify-between px-6">
           {/* Brand */}
           <a
-            className="text-white text-sm uppercase hidden lg:inline-block font-semibold"
+            className="text-white text-lg font-semibold tracking-wide"
             href="#pablo"
             onClick={(e) => e.preventDefault()}
           >
             Dashboard
           </a>
-          {/* Form */}
-          <form className="md:flex hidden flex-row flex-wrap items-center lg:ml-auto mr-3">
-            <div className="relative flex w-full flex-wrap items-stretch">
-              <span className="z-10 h-full leading-snug font-normal  text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 pl-3 py-3">
-                <i className="fas fa-search"></i>
-              </span>
+
+          {/* Search Form */}
+          <form className="hidden md:flex items-center space-x-2">
+            <div className="relative flex items-center">
+              <i className="fas fa-search absolute left-3 text-gray-400"></i>
               <input
                 type="text"
-                placeholder="Search here..."
-                className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm shadow outline-none focus:outline-none focus:ring w-full pl-10"
+                placeholder="Search..."
+                className="pl-10 pr-3 py-2 text-gray-800 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
               />
             </div>
           </form>
-          <div className="md:flex hidden">
-            <NotificationPop
-              notification={notification}
-              setNotification={setNotification}
-            />
-          </div>
-          {/* User */}
-          <ul className="flex-col md:flex-row list-none items-center hidden md:flex">
+
+          {/* Right Side */}
+          <div className="flex items-center space-x-4">
+            {/* Notifications */}
+            <div className="hidden md:block">
+              <NotificationPop
+                notification={notification}
+                setNotification={setNotification}
+              />
+            </div>
+
+            {/* User Dropdown */}
             <UserDropdown />
-          </ul>
+          </div>
         </div>
       </nav>
-      {/* End Navbar */}
     </>
   );
 }

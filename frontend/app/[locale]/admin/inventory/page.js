@@ -42,7 +42,7 @@ export default function InventoryPage() {
             } // Placeholder for button click handler
           />
         ) : (
-          <di className=" flex justify-center items-center">No Products</di>
+          <h1 className=" flex justify-center items-center">No Products</h1>
         )}
       </div>
     </Admin>

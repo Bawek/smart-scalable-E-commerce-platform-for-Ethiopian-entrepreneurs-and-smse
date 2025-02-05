@@ -20,7 +20,6 @@ function Admin({ children, subtitle1, subtitle2, subtitle3, subtitle4 }) {
 
   const [sseConnection, setSseConnection] = useState(null);
   const storedmerchantId = localStorage.getItem("unique_id");
-
   // function showOrderNotification() {
   //   toast.success("Out of Stock", {
   //     description: "product is out of Stock.",

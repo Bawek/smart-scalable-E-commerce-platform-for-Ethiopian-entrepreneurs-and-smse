@@ -1,4 +1,3 @@
-import { useState } from "react";
 import * as React from "react";
 import PropTypes from "prop-types";
 import { alpha } from "@mui/material/styles";
@@ -22,20 +21,14 @@ import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import { PopoverDemo } from "@/util/alert";
 import { visuallyHidden } from "@mui/utils";
-import { AiOutlineEdit, AiFillDelete } from "react-icons/ai";
-import { LuView } from "react-icons/lu";
 import { AddProduct } from "../Prompt/AddProduct";
-import { OrderDialog } from "../Prompt/OrderDetial";
 import {
   DialogDemo,
-  DialogDemo2,
-  DialogDemo3,
 } from "../WebBuilder/AddPage/AddItem";
 import Image from "next/image";
 import { ConfirmationModal } from "../Prompt/ConfirmationPromt";
+import { Edit, Eye, Trash } from "lucide-react";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -420,12 +413,12 @@ export default function EnhancedTable({ rows, headCells, title }) {
                         onClick={(event) => event.stopPropagation()}
                       >
                         <DialogDemo
-                          action={<LuView color="black" />}
+                          action={<Eye color="black" />}
                           type="edit"
                           product={row}
                         />
                         <DialogDemo
-                          action={<AiOutlineEdit color="blue" size={25} />}
+                          action={<Edit color="blue" size={25} />}
                           type="edit"
                           product={row}
                         />
@@ -438,7 +431,7 @@ export default function EnhancedTable({ rows, headCells, title }) {
                           {isLoading ? (
                             "Deleting..."
                           ) : (
-                            <AiFillDelete color="red" size={25} />
+                            <Trash color="red" size={25} />
                           )}
                         </button>
                         <ConfirmationModal
