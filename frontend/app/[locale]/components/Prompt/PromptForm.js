@@ -4,11 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useDispatch } from "react-redux";
-import { toast } from "@/components/ui/use-toast";
 import Image from "next/image";
 import Link from "next/link";
 import { setPromptFormData } from "@/lib/features/prompt";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const items = [
   {
@@ -39,6 +39,7 @@ const FormSchema = z.object({
 
 export function PromptForm({ link }) {
   const dispatch = useDispatch();
+  const {toast} = useToast()
   const form = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {

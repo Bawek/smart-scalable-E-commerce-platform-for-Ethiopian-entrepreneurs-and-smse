@@ -138,7 +138,6 @@ function Admin({ children, subtitle1, subtitle2, subtitle3, subtitle4 }) {
           <div className="px-4 md:px-10 mx-auto w-full">
             <div>
               {/* Card stats */}
-              {/* <h2 className=" text-white mb-7 font-bold text-xl">Inventory Stat</h2> */}
               <div className="flex flex-wrap">
                 <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
                   <CardStats

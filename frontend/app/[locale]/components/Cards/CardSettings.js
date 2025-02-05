@@ -47,7 +47,7 @@ export default function CardSettings() {
                   <input
                     type="text"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={merchant.user.email}
+                    value={merchant?.user.email}
                     readOnly
                   />
                 </div>
@@ -60,7 +60,7 @@ export default function CardSettings() {
                   <input
                     type="email"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={merchant.user.email}
+                    value={merchant?.user.email}
                     readOnly
                   />
                 </div>
@@ -73,7 +73,7 @@ export default function CardSettings() {
                   <input
                     type="text"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={merchant.bank_account_number || "N/A"}
+                    value={merchant?.bank_account_number || "N/A"}
                     readOnly
                   />
                 </div>
@@ -86,7 +86,7 @@ export default function CardSettings() {
                   <input
                     type="text"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={merchant.physical_shop_name || "N/A"}
+                    value={merchant?.physical_shop_name || "N/A"}
                     readOnly
                   />
                 </div>
@@ -99,7 +99,7 @@ export default function CardSettings() {
                   <input
                     type="text"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={merchant.physical_shop_address || "N/A"}
+                    value={merchant?.physical_shop_address || "N/A"}
                     readOnly
                   />
                 </div>
@@ -112,7 +112,7 @@ export default function CardSettings() {
                   <input
                     type="text"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={merchant.physical_shop_city || "N/A"}
+                    value={merchant?.physical_shop_city || "N/A"}
                     readOnly
                   />
                 </div>
@@ -125,7 +125,7 @@ export default function CardSettings() {
                   <input
                     type="text"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={merchant.physical_shop_phone_number || "N/A"}
+                    value={merchant?.physical_shop_phone_number || "N/A"}
                     readOnly
                   />
                 </div>
@@ -138,7 +138,7 @@ export default function CardSettings() {
                   <input
                     type="text"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={merchant.online_shop_type || "N/A"}
+                    value={merchant?.online_shop_type || "N/A"}
                     readOnly
                   />
                 </div>
@@ -151,13 +151,14 @@ export default function CardSettings() {
                   <textarea
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                     rows="4"
-                    value={merchant.about_me || "N/A"}
+                    value={merchant?.about_me || "N/A"}
                     readOnly
                   ></textarea>
                 </div>
               </div>
             </div>
-          ) : role === "customer" ? (
+            // customer
+          ) : role === "" ? (
             <div className="flex flex-wrap">
               <div className="w-full lg:w-6/12 px-4">
                 <div className="relative w-full mb-3">
@@ -167,7 +168,7 @@ export default function CardSettings() {
                   <input
                     type="text"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={customer.user.email}
+                    value={customer?.user.email}
                     readOnly
                   />
                 </div>
@@ -180,7 +181,7 @@ export default function CardSettings() {
                   <input
                     type="email"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={customer.user.email}
+                    value={customer?.user.email}
                     readOnly
                   />
                 </div>
@@ -193,7 +194,7 @@ export default function CardSettings() {
                   <input
                     type="text"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={customer.first_name || "N/A"}
+                    value={customer?.first_name || "N/A"}
                     readOnly
                   />
                 </div>
@@ -206,7 +207,7 @@ export default function CardSettings() {
                   <input
                     type="text"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={customer.last_name || "N/A"}
+                    value={customer?.last_name || "N/A"}
                     readOnly
                   />
                 </div>
@@ -219,7 +220,7 @@ export default function CardSettings() {
                   <input
                     type="text"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={customer.phone_number || "N/A"}
+                    value={customer?.phone_number || "N/A"}
                     readOnly
                   />
                 </div>
@@ -232,7 +233,7 @@ export default function CardSettings() {
                   <input
                     type="text"
                     className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                    value={customer.address || "N/A"}
+                    value={customer?.address || "N/A"}
                     readOnly
                   />
                 </div>

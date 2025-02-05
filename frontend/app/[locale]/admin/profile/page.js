@@ -5,10 +5,7 @@ import Link from "next/link";
 // components
 
 import Footer from "../../components/Footers/Footer";
-import AdminNavbar from "@/app/[locale]/components/Navbars/AdminNavbar";
 import Sidebar from "@/app/[locale]/components/Sidebar/Sidebar.js";
-import HeaderStats from "@/app/[locale]/components/Headers/HeaderStats.js";
-import FooterAdmin from "@/app/[locale]/components/Footers/FooterAdmin.js";
 
 export default function Admin({ children }) {
   return (

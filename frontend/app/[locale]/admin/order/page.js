@@ -6,14 +6,10 @@ import React, { useEffect, useState } from "react";
 
 import CardLineChart from "@/app/[locale]/components/Cards/CardLineChart.js";
 import CardBarChart from "@/app/[locale]/components/Cards/CardBarChart.js";
-import CardPageVisits from "@/app/[locale]/components/Cards/CardPageVisits.js";
-import CardSocialTraffic from "@/app/[locale]/components/Cards/CardSocialTraffic.js";
-
 // layout for page
 
 import { AdminWithOutNav } from "@/app/[locale]/layouts/Admin";
 import EnhancedTable from "@/app/[locale]/components/Tables/orderList";
-import Order from "@/app/[locale]/components/Tables/orderDetial";
 import { orderHeadCells } from "@/util/headCells";
 import Loader from "@/app/[locale]/components/Prompt/Loader";
 import { toast } from "react-hot-toast";

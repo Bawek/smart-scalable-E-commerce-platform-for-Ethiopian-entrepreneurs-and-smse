@@ -5,12 +5,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { NotebookIcon } from "lucide-react";
+import { Bell } from "lucide-react";
 import Link from "next/link";
 
 export default function NotificationPop({ notification, setNotification }) {
   const handleClick = () => {
-    // Set notifications to an empty array
     // After 4 seconds, reset notifications to an empty array again
     setTimeout(() => {
       setNotification([]);
@@ -26,7 +25,7 @@ export default function NotificationPop({ notification, setNotification }) {
         >
           {" "}
         {/* replace by notification */}
-          <NotebookIcon size={25} />
+          <Bell size={25} />
           {notification?.length > 0 && (
             <p className=" rounded-full bg-red-300 w-5 h-5 absolute top-0 right-1">
               {notification?.length}
