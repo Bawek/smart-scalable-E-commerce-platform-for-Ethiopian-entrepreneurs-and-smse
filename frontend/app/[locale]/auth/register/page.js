@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Auth from "../../layouts/Auth";
 import { setMerchant } from "@/lib/features/auth/merchantSlice";
-import Loader from "@/app/[locale]/components/Prompt/Loader";
 import { useRegisterMutation } from "@/lib/features/auth/authMerchant";
 import { useDispatch } from "react-redux";
 import initTranslations from "@/app/i18n";
