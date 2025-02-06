@@ -8,18 +8,14 @@ import {
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, X } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
+import { SignedIn, useAuth, UserButton, useUser } from "@clerk/clerk-react";
 
 export default function Navbar() {
+  const { isSignedIn, isLoaded, userId } = useAuth()
+  const { user } = useUser()
   const [uniqueId, setUniqueId] = useState();
   const [role, setRole] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -38,33 +34,40 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    setUniqueId(localStorage.getItem("uniqueId"));
-    setRole(localStorage.getItem("role"));
-  }, []);
+    // Check if user is loaded, signed in, and if userId exists
+    if (isLoaded && isSignedIn && userId) {
+      setUniqueId(userId); // Set unique ID if user is signed in
+      setRole(localStorage.getItem("role")); // Get the role from localStorage
+    } else {
+      // Clear the state if user is logged out
+      setUniqueId(null);
+      setRole(null);
+    }
+  }, [isLoaded, isSignedIn, userId]);
 
   const navLinks = [
     ...(uniqueId
       ? [
-          {
-            name: "Profile",
-            href: role === "merchant" ? "/admin/settings" : "/profile",
-          },
-          ...(role === "merchant"
-            ? [{ name: "Dashboard", href: "/admin/dashboard" }]
-            : []),
-        ]
+        {
+          name: "Profile",
+          href: role === "merchant" ? "/admin/settings" : "/profile",
+        },
+        ...(role === "merchant"
+          ? [{ name: "Dashboard", href: "/admin/dashboard" }]
+          : []),
+      ]
       : [
-          { name: "Login", href: "/auth/customer-login" },
-          { name: "Register", href: "/auth/customer-register" },
-          { name: "Welcome", href: "/auth/customer-register" },
-        ]),
+        { name: "Login", href: "/sign-in" },
+        { name: "Register", href: "/sign-up" },
+        { name: "Welcome", href: "/sign-up" },
+      ]),
   ];
 
   return (
     <header
       className={cn(
         "w-full backdrop-blur absolute top-0 z-50 transition-all",
-        isScrolled ? "bg-gray-400 shadow-md fixed top-0 " : ""
+        isScrolled ? "bg-gray-900 shadow-md fixed top-0 " : ""
       )}
     >
       <div className="container mx-auto px-5 flex h-16 items-center justify-between">
@@ -80,8 +83,8 @@ export default function Navbar() {
             <Menu className="h-6 w-6 text-white focus:outline-none" />
           </SheetTrigger>
           <SheetContent side="left">
-          <SheetTitle> Menus</SheetTitle>
-  
+            <SheetTitle> Menus</SheetTitle>
+
             <div className="flex flex-col gap-4 pt-6">
               <Link
                 href="/"
@@ -121,24 +124,9 @@ export default function Navbar() {
 
         <div className="flex items-center">
           {uniqueId && (
-            <DropdownMenu className="flex items-center">
-              <DropdownMenuTrigger>
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="/login-my-image.jpg" />
-                  <AvatarFallback>USR</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href={role === "merchant" ? "/admin/settings" : "/profile"}>
-                    Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/logout">Logout</Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           )}
           <LanguageSwitcher />
         </div>

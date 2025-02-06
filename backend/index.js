@@ -5,18 +5,27 @@ const { validate } = require('./middlewares/validateMiddleware')
 const validationSchema = require('./validations/validationSchema')
 const userRouter = require('./routes/user/webhook.route')
 const bodyParser = require('body-parser');
+const { clerkMiddleware, clerkClient } = require('@clerk/express')
 require('dotenv').config
 const { Webhook } = require('svix'); // Import Svix for webhook verification
-// require('dotenv').config()
+// require('dotenv').config() 
 // constants 
-const PORT = 8000
+const PORT = process.env.PORT || 8000
 
 //start the server
 const app = express()
-
 //default middleware
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static('public'))
+// usage of clark middleware
+app.use(clerkMiddleware())
+
+app.get('/',async(req,res)=>{
+    const users = await clerkClient.users.getUserList({
+        limit:10
+    })
+    res.status(200).json(users)
+})
 //app routes
 // Middleware to parse raw JSON body for webhook verification
 app.use('/api/users/webhooks', bodyParser.raw({ type: 'application/json' }));
@@ -75,13 +84,13 @@ app.use((err, req, res, next) => {
     if (err.isOperational) {
         err.statusCode = err.statusCode || 500
         err.status = err.status || 'error'
-        console.log(err,'http Error')
+        console.log(err, 'http Error')
         res.status(err.statusCode).json({
             status: err.status,
             message: err.message
         })
     } else {
-        console.log(err,'critical error')
+        console.log(err, 'critical error')
         res.status(500).json({
             status: 'error',
             message: err.message || 'Something went seriously wrong'

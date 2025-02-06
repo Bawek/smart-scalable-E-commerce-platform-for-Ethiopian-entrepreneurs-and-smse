@@ -8,6 +8,7 @@ import initTranslations from "../i18n.js";
 import TranslationsProvider from "./components/Translation/TranslationsProvider.js";
 import Footer from "./components/Footers/Footer.js";
 import Navbar from "./components/Navbars/AuthNavbar.js";
+import { useAuth, useUser } from "@clerk/nextjs";
 // import { useAuth } from "@clerk/nextjs";
 
 const i18nNamespaces = ["home"]; // Define your namespaces
@@ -15,12 +16,22 @@ export default function Index() {
   const params = useParams(); // Get params properly
   const [locale, setLocale] = useState(null);
   const router = useRouter();
+  const { isSignedIn, isLoaded, userId } = useAuth()
+  const { user } = useUser()
   const [merchantId, setMerchantId] = useState(null);
   const [navbarOpen, setNavbarOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false)
   useEffect(() => {
     setIsMounted(true)
   }, [])
+  useEffect(() => {
+    const checkUsers = () => {
+      setMerchantId(userId)
+    }
+    if (isSignedIn && userId && isLoaded) {
+      checkUsers
+    }
+  }, [userId, user])
   useEffect(() => {
     if (params?.locale) {
       setLocale(params.locale);
