@@ -17,7 +17,7 @@ const DroppableContainer = () => {
   }
 
   return (
-    <>
+    <section className="min-w-full">
       <NavBar onButtonClick={toggleView} />
       <div className="shadow-md flex justify-center mx-auto  w-full min-h-[91vh] relative bg-neutral-200 rounded-lg">
         <TemplateNavbar />
@@ -26,7 +26,7 @@ const DroppableContainer = () => {
           <div className=" flex break-words w-80 bg-gray-100 z-10 rounded-2xl text-center h-full absolute"></div>
         )}
       </div>
-    </>
+    </section>
   );
 };
 export default DroppableContainer;

@@ -1,21 +1,17 @@
 import React, { useEffect, useState, useRef } from "react";
 import Grapesjs from "grapesjs";
-import html2canvas from "html2canvas";
 
 // import 'grapesjs/dist/css/grapes.min.css';
 import dynamicConfig from "./WithGrapesjs";
 import "../../../../styles/app.css";
 import Drawer from "@mui/material/Drawer";
 import { TuneOutlined } from "@mui/icons-material";
-import { style } from "./components/common";
 import { KeyboardBackspaceOutlined } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { data } from "autoprefixer";
 import Link from "next/link";
 import { useGetshopCategoryQuery } from "@/lib/features/shop/publicShopSlice";
 import {
   useGetWebBuilderQuery,
-  useUpdatePageContentMutation,
   // useCustomisedTemplateMutation,
   // useGetCustomizedTemplateQuery,
   // useUpdatecustomizedTemplateMutation,
@@ -27,16 +23,14 @@ import {
 } from "@/lib/features/shop/shop";
 import {
   useCreateShopMutation,
-  useUpdateShopMutation,
 } from "@/lib/features/shop/shop";
 import { useGetshopMerchantQuery } from "@/lib/features/shop/publicShopSlice";
-import { toast } from "react-hot-toast";
 import CustomToaster from "@/app/[locale]/components/sitebuilder/Toaster/Toaster";
 import { AlertDialogDemo } from "./AlertDialoge";
 import { AddProduct } from "./ProductForm/FormDialogue";
-import { setStatus, setPageName } from "@/lib/features/uiBuilder/status";
 import { useDispatch, useSelector } from "react-redux";
 import useCheckUnauthorized from "@/lib/features/auth/unauthorise";
+import { useToast } from "@/hooks/use-toast";
 const filterAssets = (assets, group) => {
   const images = assets
     ? assets.map((items) => {
@@ -53,7 +47,9 @@ const filterAssets = (assets, group) => {
   return imageData;
 };
 
-const WithGrapesjs = ({ data, page, templateId }) => {
+const WithGrapesjs = ({ data, page, templateId }) => {  
+  // seting toasting
+  const {toast} = useToast() 
   console.log(page);
   const [pageContent, setpageContent] = useState({});
   const [

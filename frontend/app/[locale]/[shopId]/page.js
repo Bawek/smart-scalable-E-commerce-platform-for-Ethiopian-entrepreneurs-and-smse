@@ -1,11 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Loading from "../loading";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useGetshopQuery } from "@/lib/features/shop/publicShopSlice";
 import MenuBar from "../components/MenuBar/MenuBar";
 
-export default function Shop({ params }) {
+export default function Shop() {
+  const params = useParams()
   const shopId = params.shopId;
   const [homepage, setHomepage] = useState({});
   const { data, error, isLoading } = useGetshopQuery(shopId);

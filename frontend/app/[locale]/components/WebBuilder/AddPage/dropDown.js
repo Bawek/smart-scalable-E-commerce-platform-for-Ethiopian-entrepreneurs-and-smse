@@ -6,17 +6,9 @@ import {Button} from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuRadioGroup,
-	DropdownMenuRadioItem,
-	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {RxSection} from "react-icons/rx";
-import {RiPagesLine} from "react-icons/ri";
-import {LiaSitemapSolid} from "react-icons/lia";
-import {TbCategoryFilled} from "react-icons/tb";
 import { DialogDemo } from "./AddItem";
-import { ButtonWithIcon } from "./Button";
 import { CategoryDialog } from "./AddCategory";
 
 export function DropdownMenuRadioGroupDemo() {

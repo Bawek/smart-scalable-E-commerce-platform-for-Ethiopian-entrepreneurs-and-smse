@@ -26,6 +26,7 @@ const formSchema = z.object({
 });
 
 export default function Register() {
+  const router = useRouter();
   const params = useParams()
   const locale = params.locale
   const { toast } = useToast()
@@ -42,13 +43,7 @@ export default function Register() {
   };
   // const [register, { isLoading, isError, error }] = useRegisterMutation();
   const isLoading = false
-  const router = useRouter();
-  // const dispatch = useDispatch();
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-
-  };
   const [translations, setTranslations] = useState({
     t: () => { }, // Placeholder function until translations are loaded
     resources: {},
@@ -72,7 +67,6 @@ export default function Register() {
   if (!translations.t) {
     return null; // Or a loading indicator
   }
-
   return (
     <TranslationsProvider
       namespaces={i18nNamespaces}
@@ -108,7 +102,6 @@ export default function Register() {
                         </FormItem>
                       )}
                     />
-
                     {/* Last Name */}
                     <FormField
                       control={form.control}
@@ -125,7 +118,6 @@ export default function Register() {
                         </FormItem>
                       )}
                     />
-
                     {/* Email */}
                     <FormField
                       control={form.control}
@@ -142,7 +134,6 @@ export default function Register() {
                         </FormItem>
                       )}
                     />
-
                     {/* Password */}
                     <FormField
                       control={form.control}
@@ -159,7 +150,6 @@ export default function Register() {
                         </FormItem>
                       )}
                     />
-
                     {/* Terms & Forgot Password */}
                     <div className="flex items-center justify-between text-sm">
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -171,18 +161,15 @@ export default function Register() {
                           </a>
                         </span>
                       </label>
-
                       <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline underline-offset-4">
                         Forgot password?
                       </a>
                     </div>
-
                     {/* Submit Button */}
                     <Button className="w-full" type="submit" disabled={isLoading}>
                       {isLoading ? <Loader2 className="animate-spin" /> : <PlusCircle />}
                       {isLoading ? "Submitting..." : "Submit"}
                     </Button>
-
                     {/* Sign Up Link */}
                     <div className="text-center text-sm text-gray-700 dark:text-gray-300">
                       Don't have an account?{" "}
@@ -190,7 +177,6 @@ export default function Register() {
                         Sign up
                       </Link>
                     </div>
-
                     {/* Copyright Notice */}
                     <div className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4">
                       © {new Date().getFullYear()} E-commerce platform. All rights reserved.
@@ -199,10 +185,8 @@ export default function Register() {
                 </Form>
               </CardContent>
             </Card>
-
           </div>
         </div>
-
       </Auth>
     </TranslationsProvider>
   );

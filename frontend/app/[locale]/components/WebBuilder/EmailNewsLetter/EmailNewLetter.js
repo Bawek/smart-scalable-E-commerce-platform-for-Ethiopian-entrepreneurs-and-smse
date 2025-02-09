@@ -1,10 +1,4 @@
 import React from "react";
-import {
-	AiFillFacebook,
-	AiFillGithub,
-	AiFillInstagram,
-	AiFillTwitterCircle,
-} from "react-icons/ai";
 import DropdownNavbar from "./DropdownNavbar";
 import DropdownContent from "./DropdownContent";
 import Background from "./Background";

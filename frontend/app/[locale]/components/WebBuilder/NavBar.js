@@ -26,10 +26,12 @@ const NavBar = ({ onButtonClick }) => {
             alt="desktop"
             width={30}
             height={15}
-            className="   "
+            className=" "
           />
         </button>
-        <button className="mx-4">
+        <button
+          className="mx-4"
+        >
           <img
             src="undo.png"
             alt="undo"
@@ -44,7 +46,7 @@ const NavBar = ({ onButtonClick }) => {
             alt="redo"
             width={30}
             height={20}
-            className="   "
+            className=" "
           />
         </button>
         <div className="flex ml-auto space-x-4">
