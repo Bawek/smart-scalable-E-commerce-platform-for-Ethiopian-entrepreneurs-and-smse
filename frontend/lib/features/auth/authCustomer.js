@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const authSlice = createApi({
   reducerPath: "auth",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://127.0.0.1:8000/auth/",
+    baseUrl: "http://127.0.0.1:8000/api",
   }),
   tagTypes: ["Auth"],
   endpoints: (builder) => ({
@@ -30,7 +30,7 @@ export const authSlice = createApi({
     // Registration mutation
     register: builder.mutation({
       query: (formData) => ({
-        url: "customer/register/",
+        url: "/accounts/register",
         method: "POST",
         body: formData,
       }),

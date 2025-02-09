@@ -35,7 +35,7 @@ export default function SignUpPage() {
     return (
         <Auth>
             <div className='w-full min-h-screen flex justify-center items-center'>
-                <SignUp />
+                <SignUp afterSignUpUrl='/auth/after-signup' />
             </div>
         </Auth>
     )

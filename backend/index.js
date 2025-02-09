@@ -3,33 +3,64 @@ const httpError = require('./middlewares/httpError')
 const prisma = require('./config/db')
 const { validate } = require('./middlewares/validateMiddleware')
 const validationSchema = require('./validations/validationSchema')
-const userRouter = require('./routes/user/webhook.route')
+const merchantRouter = require('./routes/merchant/merchant.route')
 const bodyParser = require('body-parser');
 const { clerkMiddleware, clerkClient } = require('@clerk/express')
+const accountRouter = require('./routes/account.route')
+const cors = require('cors')
 require('dotenv').config
-const { Webhook } = require('svix'); // Import Svix for webhook verification
-// require('dotenv').config() 
-// constants 
+// constants  
 const PORT = process.env.PORT || 8000
 
 //start the server
 const app = express()
 //default middleware
+app.use(cors())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static('public'))
+app.use(express.json())
 // usage of clark middleware
 app.use(clerkMiddleware())
-
-app.get('/',async(req,res)=>{
+// app Router 
+app.use('/api/merchant', merchantRouter)
+// Accounts route
+app.use('/api/accounts', accountRouter)
+app.get('/', async (req, res) => {
     const users = await clerkClient.users.getUserList({
-        limit:10
+        limit: 10
     })
     res.status(200).json(users)
 })
 //app routes
+
+// handling errors
+app.use((err, req, res, next) => {
+    console.log(err.isOperational, 'isoperational')
+    if (err.isOperational) {
+        err.statusCode = err.statusCode || 500
+        err.status = err.status || 'error'
+        console.log(err, 'http Error')
+        res.status(err.statusCode).json({
+            status: err.status,
+            message: err.message
+        })
+    } else {
+        console.log(err, 'critical error')
+        res.status(500).json({
+            status: 'error',
+            message: err.message || 'Something went seriously wrong'
+        })
+    }
+})
+//start the server
+app.listen(PORT, () => {
+    console.log(`server is running on port ${PORT}`)
+})
+// const { Webhook } = require('svix'); // Import Svix for webhook verification
+
 // Middleware to parse raw JSON body for webhook verification
-app.use('/api/users/webhooks', bodyParser.raw({ type: 'application/json' }));
-app.use('/api/users', userRouter)
+// app.use('/api/users/webhooks', bodyParser.raw({ type: 'application/json' }));
+// app.use('/api/users', userRouter)
 // app.post('/api/webhooks', async (req, res) => {
 //     const SIGNING_SECRET = process.env.SIGNING_SECRET;
 
@@ -77,27 +108,3 @@ app.use('/api/users', userRouter)
 
 //     res.status(200).json({ success: true, message: 'Webhook received' });
 // });
-
-// handling errors
-app.use((err, req, res, next) => {
-    console.log(err.isOperational, 'isoperational')
-    if (err.isOperational) {
-        err.statusCode = err.statusCode || 500
-        err.status = err.status || 'error'
-        console.log(err, 'http Error')
-        res.status(err.statusCode).json({
-            status: err.status,
-            message: err.message
-        })
-    } else {
-        console.log(err, 'critical error')
-        res.status(500).json({
-            status: 'error',
-            message: err.message || 'Something went seriously wrong'
-        })
-    }
-})
-//start the server
-app.listen(PORT, () => {
-    console.log(`server is running on port ${PORT}`)
-})

@@ -47,9 +47,9 @@ export default function Index() {
   }, []);
   const handleClick = () => {
     if (merchantId) {
-      router.push("/admin/dashboard");
+      router.push("/auth/register");
     } else {
-      router.push(`/auth/login`);
+      router.push(`/auth/register`);
     }
   };
   const [translations, setTranslations] = useState({
