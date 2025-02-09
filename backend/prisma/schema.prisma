@@ -9,24 +9,24 @@ datasource db {
 
 // Account Model
 model Account {
-  uniqueId    Int      @id @default(autoincrement())
-  email       String   @unique
-  dateJoined  DateTime @default(now()) @map("date_joined")
-  lastLogin   DateTime @default(now()) @map("last_login")
-  isAdmin     Boolean  @default(false) @map("is_admin")
-  isStaff     Boolean  @default(true) @map("is_staff")
-  isSuperuser Boolean  @default(false) @map("is_superuser")
-  isActive    Boolean  @default(true) @map("is_active")
-  role        String   @default("client")
-  createdAt   DateTime @default(now())
-
-  ShopRating ShopRating[]
+  uniqueId    Int          @id @default(autoincrement())
+  email       String       @unique
+  dateJoined  DateTime     @default(now()) @map("date_joined")
+  lastLogin   DateTime     @default(now()) @map("last_login")
+  isAdmin     Boolean      @default(false) @map("is_admin")
+  isStaff     Boolean      @default(true) @map("is_staff")
+  isSuperuser Boolean      @default(false) @map("is_superuser")
+  isActive    Boolean      @default(true) @map("is_active")
+  role        UserRole     @default(CUSTOMER) // Default role is CUSTOMER
+  createdAt   DateTime     @default(now())
+  ShopRating  ShopRating[]
 
   merchantId       Int?      @map("merchant_id")
   customerId       Int?      @map("customer_id")
   Merchant         Merchant? @relation(fields: [merchantUniqueId], references: [uniqueId])
   merchantUniqueId String?
   Customer         Customer?
+  Admin            Admin?
 }
 
 // Merchant Model
@@ -45,6 +45,15 @@ model Merchant {
   Order              Order[]
   CustomizedTemplate CustomizedTemplate[]
   Account            Account[]
+}
+
+// Admin Model
+model Admin {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  createdAt DateTime @default(now())
+
+  user Account @relation(fields: [userId], references: [uniqueId])
 }
 
 // Customer Model
@@ -256,4 +265,10 @@ model Screenshot {
 model Picture {
   id    Int    @id @default(autoincrement())
   image String
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  MERCHANT
 }
