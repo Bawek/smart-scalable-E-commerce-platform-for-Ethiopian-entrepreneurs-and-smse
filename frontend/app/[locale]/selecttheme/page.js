@@ -5,16 +5,14 @@ import SelectedTheme from "../components/theme/SelectedTheme";
 import Footer from "../components/Footers/Footer";
 import { useGetWebBuildersQuery } from "@/lib/features/webBuilder/webBuilder";
 import useCheckUnauthorized from "@/lib/features/auth/unauthorise";
-import { useGetTemplatebyTypeQuery } from "@/lib/features/webBuilder/webBuilder";
-
-const  SelectTheme = ({ searchQuery, filters })=> {
+const SelectTheme = ({ searchQuery, filters }) => {
   const { data, error, isLoading } = useGetWebBuildersQuery();
   useCheckUnauthorized(error);
-
+console.log(error,data,'data one')
   const [filteredData, setFilteredData] = useState([]);
 
   const filterThemes = (data, searchQuery, filters) => {
-    return data.filter((theme) => {
+    return data.pages.filter((theme) => {
       const matchesSearchQuery = searchQuery
         ? theme.name.toLowerCase().includes(searchQuery.toLowerCase())
         : true;

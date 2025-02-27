@@ -20,12 +20,13 @@ const ShopItem = ({ shop, fullWidth }) => {
       className={`group transition-transform duration-500 rounded-lg hover:transform hover:scale-105 hover:rounded-xl hover:cursor-pointer hover:shadow-blue-200 transform ${
         fullWidth ? "w-full" : "md:w-[45%] xl:w-[30%]"
       } p-4 my-5 mx-5 overflow-hidden`}
-      onClick={() => router.push(`/${shop?.unique_id}`)}
+      onClick={() => router.push(`/${shop?.id}`)}
     >
       <div className="relative h-80 overflow-hidden">
         <img
           className="transition-all duration-1000 hover:scale-105 inset-0 h-full w-full object-cover"
-          src={`http://localhost:8000/${shop?.preview_image}`}
+          src="./electronics.jpg"
+          // src={`http://localhost:8000/${shop?.preview_image}`}
           alt=""
         />
       </div>
@@ -41,7 +42,7 @@ const ShopItem = ({ shop, fullWidth }) => {
           <button
             className="ml-auto text-white py-1 opacity-0 px-3 text-xl font-bold group-hover:opacity-100 bg-[#1E293B] rounded-lg transition-all"
             style={{ transitionDuration: "2s" }}
-            onClick={() => router.push(`/${shop?.unique_id}`)}
+            onClick={() => router.push(`/${shop?.id}`)}
           >
             Visit
           </button>
@@ -56,7 +57,7 @@ const ShopItem = ({ shop, fullWidth }) => {
       </div>
       <div className="transition-all duration-500 hover:border-stone-500 hover:bg-stone-200 p-4 border-t border-b text-xs bg-stone-300 text-[#1E293B] flex">
         <span className="hover:ml-2 flex items-center text-xl font-bold transition-all duration-500">
-          {shop?.category}
+          {shop?.category || 'Electronics'}
         </span>
 
         <span className="font-bold text-xl ml-auto">

@@ -146,7 +146,7 @@ export default grapesjs.plugins.add('plugin1', (editor, opts = {}) => {
   // loadteams(editor,options);
   // loadfaq(editor,options);
   loadtestimonials(editor,options);
-  // loadfooter(editor,options);
+  loadfooter(editor,options);
 
 
 });

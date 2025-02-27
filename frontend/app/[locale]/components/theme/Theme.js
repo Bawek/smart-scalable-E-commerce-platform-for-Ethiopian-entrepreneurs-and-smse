@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+
 import Link from "next/link";
 import React from "react";
 
@@ -8,8 +9,8 @@ function Theme({ theme }) {
     <div className=" w-80  text-black pb-6 bg-blueGray-200 border rounded-md">
       <div className=" w-[300px] h-[270px]">
         <Link href={`site-builder/${theme.id}`}>
-          <Image
-            src={`http://127.0.0.1:8000/${theme.preview_image}`}
+          <img
+            src='./computer.png'
             alt={theme.name}
             width={300}
             height={270}

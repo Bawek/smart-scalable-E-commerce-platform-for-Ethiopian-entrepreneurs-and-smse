@@ -3,14 +3,14 @@ import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 export const webBuilder = createApi({
 	reducerPath: "webBuilder",
 	baseQuery: fetchBaseQuery({
-	  baseUrl: "http://localhost:8000/",
-	  prepareHeaders: (headers, { getState }) => {
-		const token = localStorage.getItem('access_token'); // Adjust based on your token storage strategy
-		if (token) {
-		  headers.set('Authorization', `Bearer ${token}`);
-		}
-		return headers;
-	  },
+	  baseUrl: "http://localhost:8000/api/",
+	//   prepareHeaders: (headers, { getState }) => {
+	// 	const token = localStorage.getItem('access_token'); // Adjust based on your token storage strategy
+	// 	if (token) {
+	// 	  headers.set('Authorization', `Bearer ${token}`);
+	// 	}
+	// 	return headers;
+	//   },
 	}),
 	tagTypes: [
 	  "WebBuilders",
@@ -21,7 +21,7 @@ export const webBuilder = createApi({
 	],
 	endpoints: (builder) => ({
 	  getWebBuilders: builder.query({
-		query: () => `template/getTemplate/`,
+		query: () => `http://localhost:8000/api/pages/get-all`,
 		providesTags: ["WebBuilders"],
 	  }),
 	  getTemplatebyType: builder.query({
@@ -33,7 +33,7 @@ export const webBuilder = createApi({
 		providesTags: ["WebBuilders"],
 	  }),
 	  getPageContent: builder.query({
-		query: (templateId) => `template/getTemplatePages/${templateId}/`,
+		query: (templateId) => `http://localhost:8000/api/pages/get-all`,
 		providesTags: ["Template"],
 	  }),
 	  getPage: builder.query({

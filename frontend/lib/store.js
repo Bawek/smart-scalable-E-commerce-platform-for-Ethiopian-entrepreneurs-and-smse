@@ -9,7 +9,10 @@ import { shopSlice } from "./features/shop/shop";
 import editorReducer from "./features/editor";
 import shopNameSlice from "./features/shop/shopNameSlice";
 import { publicShopSlice } from "./features/shop/publicShopSlice";
+import currentPage from './features/admin-my/currentPageSlice'
+import currentIdPage from './features/admin-my/woking-page'
 import promptSlice from "./features/prompt";
+import AdminEditor from './features/admin-my/admin-editor'
 export const makeStore = () => {
 	return configureStore({
 		reducer: {
@@ -20,6 +23,9 @@ export const makeStore = () => {
 			[publicShopSlice.reducerPath]: publicShopSlice.reducer,
 			merchant: merchantSlice,
 			shopName: shopNameSlice,
+			currentPage: currentPage,
+			currentIdPage: currentIdPage,
+			AdminEditor: AdminEditor,
 			status: status,
 			editor: editorReducer,
 			prompt: promptSlice,
@@ -31,8 +37,8 @@ export const makeStore = () => {
 				.concat(authSlice.middleware)
 				.concat(shopSlice.middleware)
 				.concat(publicShopSlice.middleware),
-				
-				
+
+
 	});
 };
 setupListeners(makeStore().dispatch);

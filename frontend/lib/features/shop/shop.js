@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const shopSlice = createApi({
   reducerPath: "shop",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://127.0.0.1:8000/shop/",
+    baseUrl: "http://localhost:8000/api",
     prepareHeaders: (headers, { getState }) => {
       const token = localStorage.getItem("access_token"); // Adjust based on your token storage strategy
       if (token) {
@@ -58,13 +58,10 @@ export const shopSlice = createApi({
       invalidatesTags: ["customisedPage"],
     }),
     createShop: builder.mutation({
-      query: ({ name, templateId }) => ({
-        url: "publishshop/",
+      query: (formData) => ({
+        url: "/shops/register",
         method: "POST",
-        body: {
-          name,
-          customised_template: templateId,
-        },
+        body: formData
       }),
       invalidatesTags: ["Shop"],
     }),

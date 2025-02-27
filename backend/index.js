@@ -8,16 +8,24 @@ const bodyParser = require('body-parser');
 const { clerkMiddleware, clerkClient } = require('@clerk/express')
 const accountRouter = require('./routes/account.route')
 const cors = require('cors')
+const path = require('path')
+const shopRouter = require('./routes/shop.route')
+const imageRouter = require('./routes/image.route')
+const pagesRouter = require('./routes/pages.route')
+const templateRouter = require('./routes/template.route')
 require('dotenv').config
 // constants  
 const PORT = process.env.PORT || 8000
 
-//start the server
+//start the server 
 const app = express()
 //default middleware
-app.use(cors())
+app.use(cors({
+    origin:['http://localhost:3000'],
+    credentials:true
+}))
 app.use(express.urlencoded({ extended: true }))
-app.use(express.static('public'))
+app.use(express.static('uploads'))
 app.use(express.json())
 // usage of clark middleware
 app.use(clerkMiddleware())
@@ -25,6 +33,10 @@ app.use(clerkMiddleware())
 app.use('/api/merchant', merchantRouter)
 // Accounts route
 app.use('/api/accounts', accountRouter)
+app.use('/api/shops', shopRouter)
+app.use('/api/image', imageRouter)
+app.use('/api/pages', pagesRouter)
+app.use('/api/templates', templateRouter)
 app.get('/', async (req, res) => {
     const users = await clerkClient.users.getUserList({
         limit: 10

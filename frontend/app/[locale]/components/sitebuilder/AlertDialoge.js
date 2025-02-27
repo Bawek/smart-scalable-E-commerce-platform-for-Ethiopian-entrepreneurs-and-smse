@@ -48,7 +48,7 @@ export function AlertDialogDemo({
       const file = new File([blob], "screenshot.png", { type: "image/png" });
       const formData = new FormData();
       formData.append("image", file);
-      const response = await fetch("http://localhost:8000/shop/upload/", {
+      const response = await fetch("http://localhost:8000/api/image/register", {
         method: "POST",
         body: formData,
       });

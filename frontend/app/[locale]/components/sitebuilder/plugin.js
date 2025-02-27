@@ -13,6 +13,7 @@ export const plugin1 = (editor, opts = {}) => {
     block10: true,
     block11: true,
     block12: true,
+    block13: true,
   };
 
   const categories = {
@@ -23,6 +24,7 @@ export const plugin1 = (editor, opts = {}) => {
     category5: "Product Card",
     category6: "Gallery",
     category7: "Testimonials",
+    category8: "Blogs",
   };
 
   opts = { labels: labels, categories: categories };
@@ -770,4 +772,31 @@ const loadComponents = (editor, options) => {
 </div>`,
     });
   }
+  if (labels?.block13) {
+    editor.BlockManager.add("block13", {
+      label: "BlogCom",
+      category: categories?.category8,
+      attributes: { class: "block13-preview" },
+      content: `
+        <section class="py-16 bg-gray-100 text-center">
+          <h1 class="text-3xl font-bold mb-8">Latest Blog Posts</h1>
+          <div class="flex justify-center gap-8">
+            <article class="bg-white rounded-lg shadow-lg p-6 w-80">
+              <img class="rounded-md w-full h-48 object-cover mb-4" src="https://via.placeholder.com/300" alt="Blog Image"/>
+              <h2 class="text-xl font-semibold mb-2">Sample Blog Title</h2>
+              <p class="text-gray-700 mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent ut urna at justo aliquam ullamcorper.</p>
+              <a href="#" class="text-indigo-600 font-medium hover:underline">Read More</a>
+            </article>
+            <article class="bg-white rounded-lg shadow-lg p-6 w-80">
+              <img class="rounded-md w-full h-48 object-cover mb-4" src="https://via.placeholder.com/300" alt="Blog Image"/>
+              <h2 class="text-xl font-semibold mb-2">Another Blog Title</h2>
+              <p class="text-gray-700 mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent ut urna at justo aliquam ullamcorper.</p>
+              <a href="#" class="text-indigo-600 font-medium hover:underline">Read More</a>
+            </article>
+          </div>
+        </section>
+      `,
+    });
+  }
+
 };

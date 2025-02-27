@@ -4,10 +4,6 @@ import { plugin1 } from "./plugin";
 import block from "grapesjs-blocks-basic";
 import pluginForms from "grapesjs-plugin-forms";
 
-// import CodeEditor from '../dist/grapesjs-component-code-editor.min.js';
-// import exportCode from '../dist/grapesjs-export-plugin.min.js';
-
-//dynamic loading
 function loadDependency(plugin) {
   // plugin.forEach((value) => require(`../dist/${value.name}.min`));
 }
@@ -27,9 +23,8 @@ const WithGrapesjsConfig = (CustomtemplateId) => {
   // const pluginName = dynamicConfiguration.plugin.map((value) => value.name);
   // const pluginOpts = getOptions(dynamicConfiguration.plugin);
   // loadDependency(dynamicConfiguration.plugin);
-  console.log(CustomtemplateId);
   const projectID = 1;
-  const projectEndpoint = `http://localhost:8000/shop/updatecustomized_template/1/`;
+  const projectEndpoint = `http://localhost:8000/api/pages/update/2`;
   const config = {
     // Indicate where to init the editor. You can also pass an HTMLElement
     container: "#gjs",
@@ -53,11 +48,6 @@ const WithGrapesjsConfig = (CustomtemplateId) => {
       appendTo: "#blocks",
       open: false,
     },
-    // layer manager
-    // layerManager: {
-    //   appendTo: '.layers-container',
-    // },
-    // We define a default panel as a sidebar to contain layers
     panels: {
       defaults: [
         // ...
@@ -796,7 +786,10 @@ const WithGrapesjsConfig = (CustomtemplateId) => {
           // we have to properly update the body before the store and extract the
           // project data from the response result.
           onStore: (data) => ({ id: projectID, data }),
-          onLoad: (result) => result.data,
+          onLoad: (result) => {
+            console.log(result,'one loading one see')
+            return result.data
+          }
         },
       },
     },

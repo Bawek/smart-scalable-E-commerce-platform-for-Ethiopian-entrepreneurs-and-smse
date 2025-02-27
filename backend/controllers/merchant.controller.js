@@ -2,14 +2,65 @@ const prisma = require("../config/db")
 const httpError = require("../middlewares/httpError")
 
 const registerMerchant = async (req, res, next) => {
-    const { email, clerkId, merchantId } = req.body
+    const {
+        hasPhysicalStore,
+        userId,
+        bankAccountNumber,
+        physicalShopName,
+        physicalShopAddress,
+        physicalShopCity,
+        physicalShopPhoneNumber,
+    } = req.body
+    console.log('unitl here')
     try {
-        const userAcounts = await prisma.merchant.findFirst({
+        const merchant = await prisma.merchant.findFirst({
             where: {
-                clerkId: clerkId
+                userId: userId
             }
         })
-        res.send('yes merchant works')
+        if (merchant) {
+            // If an account exists with the email, return error
+            return next(new httpError('Someone has already registered with this Account. Please try again.', 409));
+        }
+        const isBankAccountExit = await prisma.merchant.findFirst({
+            where: {
+                bankAccountNumber: bankAccountNumber
+            }
+        })
+        // If BankAccount is provided, perform additional checks or logic here
+        if (isBankAccountExit) {
+            return next(new httpError('This BankNumber is already associated with another account.', 409));
+
+        }
+        // // If ShopName is provided, perform additional checks or logic here
+        // const isExistphysicalShopName = await prisma.merchant.findFirst({
+        //     where: {
+        //         physicalShopName: physicalShopName
+        //     }
+        // })
+        // if (isExistphysicalShopName) {
+        //     return next(new httpError('This physicalShopName is already associated with another account.', 409));
+
+        // }
+        // Register the new account (additional validation as necessary)
+        const newMerchant = await prisma.merchant.create({
+            data: {
+                hasPhysicalStore,
+                userId,
+                bankAccountNumber,
+                physicalShopName,
+                physicalShopAddress,
+                physicalShopCity,
+                physicalShopPhoneNumber
+            }
+        });
+
+        // Success: Return the newly created account
+        return res.status(201).json({
+            message: 'merchant registered successfully',
+            status: "success",
+            merchant: newMerchant
+        });
     } catch (error) {
         console.log('Register Merchant Error', error)
         next(new httpError(error.message, 500))

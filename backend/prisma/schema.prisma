@@ -34,13 +34,13 @@ model Account {
 model Merchant {
   uniqueId                String  @id @default(uuid()) @map("unique_id")
   userId                  String  @unique
-  bankAccountNumber       String  @map("bank_account_number") @db.VarChar(20)
+  bankAccountNumber       String  @unique @map("bank_account_number") @db.VarChar(20)
   hasPhysicalStore        Boolean @default(false) @map("has_physical_store")
-  physicalShopName        String? @map("physical_shop_name") @db.VarChar(200)
+  physicalShopName        String? @unique @map("physical_shop_name") @db.VarChar(200)
   physicalShopAddress     String? @map("physical_shop_address")
   physicalShopCity        String? @map("physical_shop_city") @db.VarChar(100)
   physicalShopPhoneNumber String? @map("physical_shop_phone_number") @db.VarChar(15)
-  onlineShopType          String? @map("online_shop_type") @db.VarChar(100)
+  // onlineShopType          String? @map("online_shop_type") @db.VarChar(100)
 
   shops              Shop[]               @relation("MerchantOwnedShop")
   Order              Order[]
@@ -104,8 +104,6 @@ model ShopCategory {
   slug          String  @unique @db.VarChar(50)
   description   String?
   categoryImage String? @map("category_image")
-
-  Shop Shop[]
 }
 
 // Cart Model
@@ -136,21 +134,24 @@ model Template {
   previewImage       String               @map("preview_image")
   category           String               @db.VarChar(20)
   templateType       String               @default("free") @map("template_type")
-  pages              Page[]
+  // pages              Page[]
   CustomizedTemplate CustomizedTemplate[]
 }
 
 // Page Model
 model Page {
-  id         Int    @id @default(autoincrement())
-  name       String @db.VarChar(200)
-  html       String
-  css        String
-  js         String
-  templateId Int
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(200)
+  html String
+  css  String
+  js   String
 
-  template Template @relation(fields: [templateId], references: [id])
+  // Template   Template? @relation(fields: [templateId], references: [id])
+  // templateId Int?
 }
+
+// templateId Int
+// template Template @relation(fields: [templateId], references: [id])
 
 // Order Model
 model Order {
@@ -193,20 +194,17 @@ model OrderItem {
 
 // Shop Model
 model Shop {
-  uniqueId             String             @id @default(uuid()) @map("unique_id")
-  name                 String
-  ownerId              String
-  previewImage         String?            @map("preview_image")
-  customizedTemplateId Int
-  customizedTemplate   CustomizedTemplate @relation(fields: [customizedTemplateId], references: [id])
-  categoryId           Int?               @map("category")
-  category             ShopCategory?      @relation(fields: [categoryId], references: [id])
-  createdDate          DateTime           @default(now()) @map("created_date")
-  updatedDate          DateTime           @updatedAt @map("updated_date")
-  suspense             Boolean            @default(false)
-  status               String             @default("unpaid")
-  nextPaymentDueDate   DateTime?          @map("next_payment_due_date")
-  lastPaymentDate      DateTime?          @map("last_payment_date")
+  uniqueId           String    @id @default(uuid()) @map("unique_id")
+  name               String
+  ownerId            String
+  logo               String
+  licenceImage       String    @map("licence_image")
+  previewImage       String?   @map("preview_image")
+  updatedDate        DateTime  @updatedAt @map("updated_date")
+  suspense           Boolean   @default(false)
+  status             String    @default("unpaid")
+  nextPaymentDueDate DateTime? @map("next_payment_due_date")
+  lastPaymentDate    DateTime? @map("last_payment_date")
 
   owner       Merchant     @relation("MerchantOwnedShop", fields: [ownerId], references: [uniqueId])
   shopRatings ShopRating[]
@@ -238,7 +236,6 @@ model CustomizedTemplate {
 
   originalTemplate Template         @relation(fields: [originalTemplateId], references: [id])
   customizedPages  CustomizedPage[]
-  Shop             Shop[]
 
   @@unique([modifiedById, originalTemplateId])
 }
@@ -268,8 +265,36 @@ model Picture {
   image String
 }
 
+model Myshop {
+  id          Int     @id @default(autoincrement())
+  name        String
+  prviewImage String
+  merchant    String?
+}
+
+model Mytemplate {
+  id            Int            @id @default(autoincrement())
+  templateName  String
+  templatePrice String
+  PreviewImage  String
+  description   String
+  status        TemplateStatus @default(Pending)
+}
+
+model MyPage {
+  id         Int    @id @default(autoincrement())
+  templateId Int    @default(autoincrement())
+  data       Json
+  name       String?
+}
+
 enum UserRole {
   CUSTOMER
   ADMIN
   MERCHANT
+}
+
+enum TemplateStatus {
+  Pending
+  publish
 }

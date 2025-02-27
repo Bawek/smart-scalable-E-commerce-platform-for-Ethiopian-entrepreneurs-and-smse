@@ -25,43 +25,25 @@ import {
   useCreateShopMutation,
 } from "@/lib/features/shop/shop";
 import { useGetshopMerchantQuery } from "@/lib/features/shop/publicShopSlice";
+import { toast } from "react-hot-toast";
 import CustomToaster from "@/app/[locale]/components/sitebuilder/Toaster/Toaster";
 import { AlertDialogDemo } from "./AlertDialoge";
 import { AddProduct } from "./ProductForm/FormDialogue";
 import { useDispatch, useSelector } from "react-redux";
 import useCheckUnauthorized from "@/lib/features/auth/unauthorise";
-import { useToast } from "@/hooks/use-toast";
-const filterAssets = (assets, group) => {
-  const images = assets
-    ? assets.map((items) => {
-        if (items.group === group) {
-          return items.url;
-        }
-      })
-    : [];
-  const imageData = images.filter((items) => {
-    if (!undefined) {
-      return items;
-    }
-  });
-  return imageData;
-};
 
-const WithGrapesjs = ({ data, page, templateId }) => {  
-  // seting toasting
-  const {toast} = useToast() 
+const WithGrapesjs = ({ data, page, templateId }) => {
   console.log(page);
   const [pageContent, setpageContent] = useState({});
   const [
     createShop,
-    { isLoading: iscreateshopLoading, isError, error: createShopError },
+    { error: createShopError },
   ] = useCreateShopMutation();
   const [merchantId, setMerchantId] = useState(null);
   const [customizedTemplateData, setCustomizedTemplateData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [originalTemplate, setOriginalTemplate] = useState(null);
   const [error, setError] = useState(null);
-  const dispatch = useDispatch();
   const status = useSelector((state) => state.status.status);
   const pageName = useSelector((state) => state.status.pageName);
   const shopName = localStorage.getItem("shopName");
@@ -70,19 +52,16 @@ const WithGrapesjs = ({ data, page, templateId }) => {
   const [uploadImage, setUploadedImage] = useState([]);
   const {
     data: shop,
-    isLoading: shopLoading,
     status: shopstatus,
   } = useGetshopMerchantQuery(merchantId);
   const [triggerRequest, setTriggerRequest] = useState(false);
   const {
     data: customizedTemplateDataHook,
     refetch,
-    isLoading: isLoadingQuery,
     error: queryError,
   } = useGetCustomizedTemplateQuery(merchantId);
   const { data: template, isLoading: templateLoading } =
     useGetWebBuilderQuery(templateId);
-  const modifier_merchant = useSelector((state) => state.merchant);
   const {
     data: ShopCategoryData,
     error: ShopCategoryError,
@@ -335,7 +314,7 @@ const WithGrapesjs = ({ data, page, templateId }) => {
     });
   };
 
-  const addPage = (editor) => {};
+  const addPage = () => { };
 
   // add devices
   const addDevices = (editor) => {
@@ -351,15 +330,12 @@ const WithGrapesjs = ({ data, page, templateId }) => {
   const isStylesOpen = (editor) => {
     editor.on("component:selected", handleopen);
     editor.on("component:deselected", handleClose);
-    editor.on("run:preview:before", function () {});
+    editor.on("run:preview:before", function () { });
   };
 
   // add dynamic styles
   const addStyleManager = (editor) => {
     const styleManager = editor.StyleManager;
-    const sector = styleManager.getSector("advanced");
-    /** added custom fonts */
-    const fontProperty = styleManager.getProperty("appearance", "font-family");
     // let list = fontProperty.get('list');
     // list.push({ value: 'Manrope, sans-serif', name: 'Manrope' });
     // list.push({ value: 'Nunito, sans-serif', name: 'Nunito' });
@@ -463,30 +439,14 @@ const WithGrapesjs = ({ data, page, templateId }) => {
     toggleDrawer();
   };
 
-  const updatePage = () => {
-    props.updatePage({
-      page_id: data._id,
-      body: {
-        content: {
-          html: editor.getHtml(),
-          css: editor.getCss(),
-          customheader: initialComponents.custom_head,
-          customfooter: initialComponents.custom_footer,
-        },
-      },
-    });
-  };
 
-  const previewPage = () => {
-    window.open(data.live_url, "_blank");
-  };
 
-  const [customisedTemplate, { isLoading: isCreating }] =
+  const [customisedTemplate] =
     useCustomisedTemplateMutation();
 
   const [
     updateCustomisedTemplate,
-    { error: updateerror, isLoading: isUpdating },
+    { error: updateerror },
   ] = useUpdatecustomizedTemplateMutation();
   useCheckUnauthorized(updateerror);
   useEffect(() => {
@@ -510,7 +470,6 @@ const WithGrapesjs = ({ data, page, templateId }) => {
 
   const updatePageHandler = async (isPublish = false) => {
     toast.dismiss();
-    const loadingToast = toast.loading("Saving...", { duration: 500 });
     try {
       const modifiedPagesData = {};
 

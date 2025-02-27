@@ -20,7 +20,7 @@ const Card = (props) => {
     error,
     isLoading: pageLoading,
   } = useGetPageContentQuery(templateId);
-
+console.log(page,'my own db pages')
   useCheckUnauthorized(error);
   const [initAppData, setData] = useState(null);
   const [pages, setpages] = useState([]);
@@ -37,7 +37,8 @@ const Card = (props) => {
   // }, []);
 
   // Fetch customized pages only when merchantId is set
-  const [merchantId] = useLocalStorage();
+  // const [merchantId] = useLocalStorage();
+  const merchantId = '67890'
   console.log(merchantId);
 
   const { data: customized_pages, isLoading: customized_pagesLoading } =
@@ -68,7 +69,7 @@ const Card = (props) => {
       console.log("sending the not customised page");
       console.log(page);
 
-      const pageConfigs = page.map((pageItem) => ({
+      const pageConfigs = page.pages.map((pageItem) => ({
         name: pageItem?.name,
         brand_url: "",
         canonical: null,
@@ -91,7 +92,7 @@ const Card = (props) => {
       {displayPage && initAppData ? (
         <WithGrapesjs
           templateId={templateId}
-          page={pages}
+          page={pages.pages}
           {...props}
           data={initAppData}
           setData={setData}

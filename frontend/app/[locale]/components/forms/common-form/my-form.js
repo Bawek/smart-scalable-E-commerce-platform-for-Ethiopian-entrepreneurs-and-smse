@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
     Form,
     FormControl,
@@ -12,12 +13,10 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader } from "@mui/material";
-import { CardDescription, CardFooter, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Reusable Form Component
-export function CustomForm({ fields, schema, onSubmit }) {
+export function CustomForm({ fields, schema, onSubmit, title, description, file, setFile }) {
     const form = useForm({
         resolver: zodResolver(schema),
         defaultValues: fields.reduce((acc, field) => {
@@ -28,11 +27,10 @@ export function CustomForm({ fields, schema, onSubmit }) {
 
     return (
         <Card className="max-w-[400px] flex flex-col items-center mx-auto">
-            <CardHeader>
-                <CardTitle>Merchant Registration</CardTitle>
+            <CardHeader className='text-center'>
+                <CardTitle>{title}</CardTitle>
                 <CardDescription>
-                    Create a new merchant account to start selling on our platform. 
-                    Fill out the form below to provide the necessary information for your store.
+                    {description}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -59,13 +57,33 @@ export function CustomForm({ fields, schema, onSubmit }) {
                                                 </select>
                                             ) : field.type === "checkbox" ? (
                                                 <input {...formField} type="checkbox" className="input-class" />
-                                            ) : (
-                                                <Input
-                                                    {...formField}
-                                                    placeholder={field.placeholder || ""}
-                                                    type={field.type || "text"}
-                                                />
-                                            )}
+                                            )
+                                                : field.type === 'file' ? (
+                                                    <div>
+                                                        <Input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(event) => {
+                                                                const file = event.target.files?.[0];
+                                                                if (file) {
+                                                                    formField.onChange(file);
+                                                                    setFile(file);
+                                                                }
+                                                            }}
+                                                        />
+                                                        {
+                                                            file &&
+                                                            <img src={URL.createObjectURL(file || './computer.png')} alt="privew" />
+                                                        }
+                                                    </div>
+                                                )
+                                                    : (
+                                                        <Input
+                                                            {...formField}
+                                                            placeholder={field.placeholder || ""}
+                                                            type={field.type || "text"}
+                                                        />
+                                                    )}
                                         </FormControl>
                                         {field.description && (
                                             <FormDescription>{field.description}</FormDescription>

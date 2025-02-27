@@ -10,13 +10,13 @@ const useCheckUnauthorized = (error) => {
   const { toast } = useToast(); // Ensure correct toast usage
 
   useEffect(() => {
-    if (error?.status === 401) {
+    if (error) {
       toast({
         title: "Unauthorized",
         description: "Unauthorized access. Redirecting to login...",
         variant: "destructive",
       });
-      router.push("/auth/login");
+      // router.push("/auth/login");
     }
   }, [error, router, toast]);
 };

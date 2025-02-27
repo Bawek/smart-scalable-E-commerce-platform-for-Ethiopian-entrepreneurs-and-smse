@@ -3,6 +3,7 @@
   font-size: 1.2rem;
 }
 .gjs-blocks-c .block5-preview,
+.gjs-blocks-c .block13-preview,
 .gjs-blocks-c .block7-preview {
   background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)),
     url("../../../../../public/shoes-product-card.png") !important;
