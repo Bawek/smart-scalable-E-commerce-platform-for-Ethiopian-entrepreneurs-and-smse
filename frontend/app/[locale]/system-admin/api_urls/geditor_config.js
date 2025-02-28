@@ -2,9 +2,13 @@ import grapesjs from "grapesjs";
 // import "grapesjs/dist/css/grapes.min.css";
 import gjsBlockBasic from "grapesjs-blocks-basic";
 import $ from 'jquery'
-import grapesjsBlockBootstrap from "grapesjs-blocks-bootstrap4";
+// import grapesjsBlockBootstrap from "grapesjs-blocks-bootstrap4";
 import grapesjsPluginExport from "grapesjs-plugin-export";
 import grapesjsStyleBg from "grapesjs-style-bg";
+// import { plugin1 } from "./plugin";
+import { plugin1 } from "../plugin";
+import block from "grapesjs-blocks-basic";
+import pluginForms from "grapesjs-plugin-forms";
 
 import {
   addEditorCommand,
@@ -20,7 +24,7 @@ import {
   toggleSidebar,
   traitManager,
 } from "./geditor_utils";
-import tailwindComponent from "../plugins/tailwind";
+// import tailwindComponent from "../plugins/tailwind";
 // import swiperComponent from "../plugins/swiper";
 // import chartLibComponent from "../plugins/charts";
 // Example of the assets you want to pre-load in the Asset Manager
@@ -54,7 +58,7 @@ const geditorConfig = (assets, currentPage) => {
     deviceManager: deviceManager,
     assetManager: {
       // Basic configuration
-      storageType: "local",  // 'local' for localStorage, 'server' for server-side storage
+      storageType: "server",  // 'local' for localStorage, 'server' for server-side storage
       storeOnChange: true,   // Whether to store assets in the manager automatically when they change
       storeAfterUpload: true, // Store asset after upload
       credentials: "include",  // Credentials for cross-origin requests, can be "same-origin" or "include"
@@ -62,27 +66,27 @@ const geditorConfig = (assets, currentPage) => {
       uploadName: "files",    // Name of the field to be sent during the upload (used in the FormData object)
       dropZone: ".asset-dropzone", // Selector for the drop area where files can be dragged and dropped
 
-      // File upload configuration
       uploadFile: function (e) {
         const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
         const formData = new FormData();
         Array.from(files).forEach((file) => {
-          formData.append("files", file);  // Append each file
+          formData.append("files", file); // Append each file
         });
 
         // Send the files to the server
-        fetch("http://localhost:8000/shop/upload/", {
+        fetch("http://localhost:8000/api/image/upload", {
           method: "POST",
           body: formData,
         })
           .then((response) => response.json())
           .then((data) => {
-            if (Array.isArray(data)) {
-              const images = data.map((item) => ({
-                type: "image",
-                src: item,  // The image path or URL returned by the server
-              }));
-              editor.AssetManager.add(images);  // Add assets to the AssetManager
+            console.log('Image upload response:', data.success, data.url);
+
+            // Check if the response contains the expected URL
+            if (data.success && data.url) {
+              console.log('enter hat')
+              const images = [{ type: "image", src: data.url }];
+              editor.AssetManager.add(images);  // Add the uploaded image to the AssetManager
             } else {
               console.error("Unexpected response format");
             }
@@ -91,6 +95,7 @@ const geditorConfig = (assets, currentPage) => {
             console.error("Error uploading files:", error);
           });
       },
+
 
       // Customize the asset view in the AssetManager
       assets: [],  // Provide initial assets if any (Array of asset objects)
@@ -157,20 +162,7 @@ const geditorConfig = (assets, currentPage) => {
       styles: styles,
       scripts: scripts,
     },
-    plugins: [
-      gjsBlockBasic,
-      tailwindComponent,
-      grapesjsBlockBootstrap,
-      grapesjsPluginExport,
-      grapesjsStyleBg,
-    ],
-    pluginsOpts: {
-      gjsBlockBasic: {},
-      tailwindComponent: {},
-      grapesjsBlockBootstrap: {},
-      grapesjsPluginExport: {},
-      grapesjsStyleBg: {},
-    },
+    plugins: [plugin1, block, pluginForms],
   });
 
   addEditorCommand(editor);

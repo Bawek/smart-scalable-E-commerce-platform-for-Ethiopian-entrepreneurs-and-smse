@@ -58,6 +58,7 @@ const Editor = () => {
         if (editor) {
             editor.setComponents(currentPage?.html);
             editor.setStyle(currentPage?.css);
+            console.log('loaded')
         }
         else {
             console.log(editor, 'editor')
