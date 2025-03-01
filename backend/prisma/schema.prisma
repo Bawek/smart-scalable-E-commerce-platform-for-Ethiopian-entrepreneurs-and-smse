@@ -279,13 +279,21 @@ model Mytemplate {
   PreviewImage  String
   description   String
   status        TemplateStatus @default(Pending)
+
+  // Relation: One template can have many pages
+  pages MyPage[]
 }
 
 model MyPage {
-  id         Int    @id @default(autoincrement())
-  templateId Int    @default(autoincrement())
-  data       Json
-  name       String?
+  id         String  @id
+  templateId Int
+  js         String?
+  css        String
+  html       String
+  name       String
+
+  // Relation: Many pages belong to one template
+  template Mytemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {

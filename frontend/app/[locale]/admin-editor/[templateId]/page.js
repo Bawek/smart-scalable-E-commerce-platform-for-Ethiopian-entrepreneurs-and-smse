@@ -32,9 +32,9 @@ const Editor = () => {
             toast.error('something go wrong')
         }
     }
-    useEffect(() => {
-        fetchPages()
-    }, [])
+    // useEffect(() => {
+    //     fetchPages()
+    // }, [currentPage,editor])
 
     useEffect(() => {
         async function getAllAssets() {
@@ -81,7 +81,7 @@ const Editor = () => {
                         <span className="navbar-brand mb-0 h3 logo">Admin pannel</span>
                     </div>
                 </nav>
-                <PageSection pages={pages} />
+                <PageSection templateId={templateId} />
                 <Sidebar />
             </div>
             <div

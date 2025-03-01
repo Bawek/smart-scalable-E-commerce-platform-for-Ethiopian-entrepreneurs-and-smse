@@ -165,7 +165,7 @@ const geditorConfig = (assets, currentPage) => {
     plugins: [plugin1, block, pluginForms],
   });
 
-  addEditorCommand(editor);
+  addEditorCommand(editor,currentPage);
   editor.on("run:preview", () => {
     console.log("It will trigger when we click on preview icon");
     // This will be used to hide border

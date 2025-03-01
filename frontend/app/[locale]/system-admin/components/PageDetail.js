@@ -1,9 +1,10 @@
 'use client'
 import { setCurrentPage } from "@/lib/features/admin-my/currentPageSlice";
 import Link from "next/link";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 function PageDetail({ page }) {
+  const currentPage = useSelector((state) => state.currentPage)
   const dispatch = useDispatch()
   const { name } = page;
   return (
@@ -13,12 +14,19 @@ function PageDetail({ page }) {
       </Link> */}
       <h1>{name}</h1>
       <div>
-        <button onClick={() => dispatch(setCurrentPage({
-          name: page.name,
-          js: page.js,
-          css: page.css,
-          html: page.html
-        }))} className="btn btn-sm btn-outline-primary">
+        <button onClick={() => {
+          console.log(currentPage,'now current page')
+
+          dispatch(setCurrentPage({
+            id: page.id,
+            name: page.name,
+            js: "",
+            css: page.css,
+            html: page.html
+          }
+          ))
+        }
+        } className="btn btn-sm btn-outline-primary">
           <i className="fa fa-pencil"></i>
         </button>
         <button className="btn btn-sm btn-outline-danger">

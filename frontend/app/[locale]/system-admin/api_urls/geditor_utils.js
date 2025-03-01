@@ -496,7 +496,7 @@ export const deviceManager = {
     ],
 };
 
-export const addEditorCommand = (editor) => {
+export const addEditorCommand = (editor, currentPage) => {
     // Commands
     editor.Commands.add("set-device-desktop", {
         run: (editor) => editor.setDevice("Desktop"),
@@ -506,12 +506,49 @@ export const addEditorCommand = (editor) => {
     });
 
     // Save Button
+    // editor.Commands.add("saveDb", {
+    //     run: (editor, sender) => {
+    //         sender && sender.set("active");
+    //         editor.store();
+    //     },
+    // });
     editor.Commands.add("saveDb", {
-        run: (editor, sender) => {
+        run: async (editor, sender) => {
             sender && sender.set("active");
-            editor.store();
+
+            // Extract content
+            const html = editor.getHtml();
+            const css = editor.getCss();
+            // Send data to backend
+            try {
+                const response = await fetch("http://localhost:8000/api/pages/register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        templateId: currentPage.templateId,
+                        id: currentPage.id,
+                        name: currentPage.name,
+                        html,
+                        css,
+                        js: ''
+                    }),
+                });
+
+                console.log(response, 'on the freist response')
+                if (response.ok) {
+                    toast.success("Page saved successfully!");  // Show success toast when saving
+                } else {
+                    toast.success("Error saving page!");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                toast.success("Failed to save page.")
+            }
         },
     });
+
 
     //Clear Button
     editor.Commands.add("cmd-clear", {
@@ -540,39 +577,46 @@ export const addEditorCommand = (editor) => {
     });
 };
 
-export const storageSetting = (pageId) => {
-    console.log(pageId, 'this is the current page id');
+export const storageSetting = (currentPage) => {
+    console.log(currentPage, 'this is the current page id');
     return {
         type: "remote",
         autosave: true, // Store data automatically
         autoload: true,
         stepsBeforeSave: 3,
         options: {
-            remote: {
-                urlLoad: `${API_HOST}/pages/update/2`,  // Use dynamic pageId
-                urlStore: `${API_HOST}/pages/update/2}`,  // Use dynamic pageId
+            // remote: {
+            //     urlLoad: `${API_HOST}/pages/update/2`,  // Use dynamic pageId
+            //     urlStore: `${API_HOST}/pages/update/2}`,  // Use dynamic pageId
 
-                fetchOptions: (opts) =>
-                    opts.method === "POST" ? { method: "PATCH" } : {},
+            //     fetchOptions: (opts) => {
+            //         opts.method === "POST" ? { method: "PATCH" } : {},
+            //         {
+            //             body: JSON.stringify({
 
-                // Called when data is saved (onStore)
-                onStore: (data) => {
-                    console.log(data, 'this is the object');  // Log saved data
-                    toast.success("Page saved successfully!");  // Show success toast when saving
-                    return { name: "Homepage", data };  // Save with name
-                },
+            //             })
+            //         }
+            //     },
+            //     // Called when data is saved (onStore)
+            //     // onStore: (data) => {
 
-                // Called when data is loaded (onLoad)
-                onLoad: (result) => {
-                    console.log(result, 'one loading one see');  // Log loaded data
-                    if (result) {
-                        toast.success("Page loaded successfully!");  // Show success toast when loading
-                    } else {
-                        toast.error("Failed to load page.");  // Error if no data found
-                    }
-                    return result.data;
-                }
-            },
+            //     //     data.getComponents()
+            //     //     console.log(data, 'this is the object');  // Log saved data
+            //     //     toast.success("Page saved successfully!");  // Show success toast when saving
+            //     //     return {};  // Save with name
+            //     // },
+
+            //     // // Called when data is loaded (onLoad)
+            //     // onLoad: (result) => {
+            //     //     console.log(result, 'one loading one see');  // Log loaded data
+            //     //     if (result) {
+            //     //         toast.success("Page loaded successfully!");  // Show success toast when loading
+            //     //     } else {
+            //     //         toast.error("Failed to load page.");  // Error if no data found
+            //     //     }
+            //     //     return result.data;
+            //     // }
+            // },
         },
     };
 };

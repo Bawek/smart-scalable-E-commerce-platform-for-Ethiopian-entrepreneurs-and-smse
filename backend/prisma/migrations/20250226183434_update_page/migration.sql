@@ -1,18 +1,13 @@
-/*
-  Warnings:
+-- Drop the incorrect table
+DROP TABLE IF EXISTS "Mypage";
 
-  - You are about to drop the `Mypage` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropTable
-DROP TABLE "Mypage";
-
--- CreateTable
+-- Create the corrected table
 CREATE TABLE "MyPage" (
-    "id" SERIAL NOT NULL,
-    "templateId" SERIAL NOT NULL,
-    "data" JSONB NOT NULL,
-    "name" TEXT,
-
-    CONSTRAINT "MyPage_pkey" PRIMARY KEY ("id")
+    "id" SERIAL PRIMARY KEY,
+    "templateId" INTEGER NOT NULL,
+    "js" TEXT,
+    "css" TEXT NOT NULL,
+    "html" TEXT NOT NULL,
+    "name" TEXT
 );
+
