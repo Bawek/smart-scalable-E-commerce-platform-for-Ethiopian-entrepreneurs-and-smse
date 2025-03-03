@@ -265,6 +265,12 @@ model Picture {
   image String
 }
 
+model MyMerchant {
+  id   String @id
+  name String
+  age  Int
+}
+
 model Myshop {
   id          Int     @id @default(autoincrement())
   name        String

@@ -13,6 +13,7 @@ const shopRouter = require('./routes/shop.route')
 const imageRouter = require('./routes/image.route')
 const pagesRouter = require('./routes/pages.route')
 const templateRouter = require('./routes/template.route')
+const paymentRouter = require('./routes/payment.route')
 require('dotenv').config
 // constants  
 const PORT = process.env.PORT || 8000
@@ -21,8 +22,8 @@ const PORT = process.env.PORT || 8000
 const app = express()
 //default middleware
 app.use(cors({
-    origin:['http://localhost:3000'],
-    credentials:true
+    origin: ['http://localhost:3000'],
+    credentials: true
 }))
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static('uploads'))
@@ -30,8 +31,11 @@ app.use(express.json())
 // usage of clark middleware
 app.use(clerkMiddleware())
 // app Router 
+// chapa payment route
+app.use('/api/payment', paymentRouter)
 app.use('/api/merchant', merchantRouter)
 // Accounts route
+
 app.use('/api/accounts', accountRouter)
 app.use('/api/shops', shopRouter)
 app.use('/api/image', imageRouter)

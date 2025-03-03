@@ -4,21 +4,6 @@ import { plugin1 } from "./plugin";
 import block from "grapesjs-blocks-basic";
 import pluginForms from "grapesjs-plugin-forms";
 
-function loadDependency(plugin) {
-  // plugin.forEach((value) => require(`../dist/${value.name}.min`));
-}
-
-const getOptions = (plugin) => {
-  let optMap = new Map();
-  plugin.forEach((value) => {
-    let keyString = value.name;
-    let blocks = value.blocks;
-    let blockCategories = value.blockCategories;
-    optMap.set(keyString, { blocks, blockCategories });
-  });
-  return Object.fromEntries(optMap);
-};
-
 const WithGrapesjsConfig = (CustomtemplateId) => {
   // const pluginName = dynamicConfiguration.plugin.map((value) => value.name);
   // const pluginOpts = getOptions(dynamicConfiguration.plugin);

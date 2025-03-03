@@ -1,85 +1,85 @@
-import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const webBuilder = createApi({
 	reducerPath: "webBuilder",
 	baseQuery: fetchBaseQuery({
-	  baseUrl: "http://localhost:8000/api/",
-	//   prepareHeaders: (headers, { getState }) => {
-	// 	const token = localStorage.getItem('access_token'); // Adjust based on your token storage strategy
-	// 	if (token) {
-	// 	  headers.set('Authorization', `Bearer ${token}`);
-	// 	}
-	// 	return headers;
-	//   },
+		baseUrl: "http://localhost:8000/api/",
+		//   prepareHeaders: (headers, { getState }) => {
+		// 	const token = localStorage.getItem('access_token'); // Adjust based on your token storage strategy
+		// 	if (token) {
+		// 	  headers.set('Authorization', `Bearer ${token}`);
+		// 	}
+		// 	return headers;
+		//   },
 	}),
 	tagTypes: [
-	  "WebBuilders",
-	  "CustomizedTemplate",
-	  "customisedPage",
-	  "Page",
-	  "Template",
+		"WebBuilders",
+		"CustomizedTemplate",
+		"customisedPage",
+		"Page",
+		"Template",
 	],
 	endpoints: (builder) => ({
-	  getWebBuilders: builder.query({
-		query: () => `http://localhost:8000/api/pages/get-all`,
-		providesTags: ["WebBuilders"],
-	  }),
-	  getTemplatebyType: builder.query({
-		query: (type) => `templatetype/${type}/`,
-		providesTags: ["WebBuilders"],
-	  }),
-	  getWebBuilder: builder.query({
-		query: (templateId) => `template/getTemplate/${templateId}/`,
-		providesTags: ["WebBuilders"],
-	  }),
-	  getPageContent: builder.query({
-		query: (templateId) => `http://localhost:8000/api/pages/get-all`,
-		providesTags: ["Template"],
-	  }),
-	  getPage: builder.query({
-		query: ({ templateId, pageId }) =>
-		  `template/getPage/${templateId}/${pageId}/`,
-		providesTags: ["Page"],
-	  }),
-	  getTemplatePages: builder.query({
-		query: (pageId) => `template/getTemplatePages/${pageId}/`,
-		providesTags: ["Page"],
-	  }),
-	  addTemplate: builder.mutation({
-		query: ({ id, ...content }) => ({
-		  url: `template/getTemplate/${id}/`,
-		  method: "POST",
-		  body: content,
+		getWebBuilders: builder.query({
+			query: () => `http://localhost:8000/api/templates/get-all`,
+			providesTags: ["WebBuilders"],
 		}),
-		invalidatesTags: ["Template"],
-	  }),
-	  updateTemplate: builder.mutation({
-		query: ({ id, ...content }) => ({
-		  url: `template/getTemplate/${id}/`,
-		  method: "PATCH",
-		  body: content,
+		getTemplatebyType: builder.query({
+			query: (type) => `templatetype/${type}/`,
+			providesTags: ["WebBuilders"],
 		}),
-		invalidatesTags: ["Template"],
-	  }),
-	  updatePageContent: builder.mutation({
-		query: ({ templateId, page_id, ...content }) => ({
-		  url: `template/updatePageContent/${templateId}/${page_id}/`,
-		  method: "PATCH",
-		  body: content,
+		getWebBuilder: builder.query({
+			query: (templateId) => `template/getTemplate/${templateId}/`,
+			providesTags: ["WebBuilders"],
 		}),
-		invalidatesTags: ["Page"],
-	  }),
-	  deleteTemplate: builder.mutation({
-		query: (id) => ({
-		  url: `template/getTemplate/${id}/`,
-		  method: "DELETE",
+		getPageContent: builder.query({
+			query: (templateId) => `http://localhost:8000/api/pages/get-by-template/${templateId}`,
+			providesTags: ["Template"],
 		}),
-		invalidatesTags: ["Template"],
-	  }),
+		getPage: builder.query({
+			query: ({ templateId, pageId }) =>
+				`template/getPage/${templateId}/${pageId}/`,
+			providesTags: ["Page"],
+		}),
+		getTemplatePages: builder.query({
+			query: (pageId) => `template/getTemplatePages/${pageId}/`,
+			providesTags: ["Page"],
+		}),
+		addTemplate: builder.mutation({
+			query: ({ id, ...content }) => ({
+				url: `template/getTemplate/${id}/`,
+				method: "POST",
+				body: content,
+			}),
+			invalidatesTags: ["Template"],
+		}),
+		updateTemplate: builder.mutation({
+			query: ({ id, ...content }) => ({
+				url: `template/getTemplate/${id}/`,
+				method: "PATCH",
+				body: content,
+			}),
+			invalidatesTags: ["Template"],
+		}),
+		updatePageContent: builder.mutation({
+			query: ({ templateId, page_id, ...content }) => ({
+				url: `template/updatePageContent/${templateId}/${page_id}/`,
+				method: "PATCH",
+				body: content,
+			}),
+			invalidatesTags: ["Page"],
+		}),
+		deleteTemplate: builder.mutation({
+			query: (id) => ({
+				url: `template/getTemplate/${id}/`,
+				method: "DELETE",
+			}),
+			invalidatesTags: ["Template"],
+		}),
 	}),
-  });
-  
-  export const {
+});
+
+export const {
 	useGetWebBuildersQuery,
 	useUpdatePageContentMutation,
 	useGetWebBuilderQuery,
@@ -90,8 +90,8 @@ export const webBuilder = createApi({
 	useDeleteTemplateMutation,
 	useGetTemplatePagesQuery,
 	useGetTemplatebyTypeQuery,
-  } = webBuilder;
-  
+} = webBuilder;
+
 // Export selectors for each query endpoint
 // export const selectGetWebBuildersResult =
 // 	webBuilder.endpoints.getWebBuilders.select();

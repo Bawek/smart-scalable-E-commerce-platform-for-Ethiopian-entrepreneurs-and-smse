@@ -8,7 +8,7 @@ import MenuBar from "../components/MenuBar/MenuBar";
 export default function Shop() {
   const params = useParams()
   const shopId = params.shopId;
-  console.log(shopId,'params value')
+  // console.log(shopId,'params value')
   const [homepage, setHomepage] = useState({});
   const { data, error, isLoading } = useGetshopQuery(shopId);
   const router = useRouter();

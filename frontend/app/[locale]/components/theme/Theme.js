@@ -1,39 +1,46 @@
 "use client";
-import Image from "next/image";
-
 import Link from "next/link";
+import Image from "next/image";
 import React from "react";
+import {Card, CardHeader, CardFooter, CardContent } from "@/components/ui/card";
 
-function Theme({ theme }) {
+const Theme = ({ theme })=> {
+  console.log(theme);
+
   return (
-    <div className=" w-80  text-black pb-6 bg-blueGray-200 border rounded-md">
-      <div className=" w-[300px] h-[270px]">
-        <Link href={`site-builder/${theme.id}`}>
-          <img
-            src='./computer.png'
+    <Card className="w-80 bg-white border border-gray-300 rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl">
+      {/* Image Section */}
+      <CardHeader className="relative overflow-hidden rounded-t-lg">
+        <Link href={`/site-builder/${theme.id}`}>
+          <Image
+            src={`http://localhost:8000/images/${theme.PreviewImage}` || "/default-image.png"}
             alt={theme.name}
             width={300}
             height={270}
-            className="   "
+            className="w-full h-full object-cover"
           />
         </Link>
-      </div>
+      </CardHeader>
 
-      <div className=" flex justify-between mt-2 mx-1">
-        <div className=" flex flex-col">
-          <p className="text-black underline text-sm capitalize hidden lg:inline-block font-semibold">
-            {theme.name}
-          </p>
-          <p className=" mt-3">By Suk Bederete</p>
-        </div>
+      {/* Card Body (Theme Name, Description) */}
+      <CardContent className="flex flex-col p-3">
+        <p className="text-gray-700 text-sm font-semibold capitalize truncate max-w-[150px]">
+          {theme.name}
+        </p>
+        <p className="text-gray-500 text-xs mt-1">By Suk Bederete</p>
+        <p className="text-gray-500 text-xs mt-1">{theme.description}</p>
+      </CardContent>
+
+      {/* Card Footer (Select Button) */}
+      <CardFooter className="flex justify-between items-center px-3 py-2">
         <Link
-          href={`site-builder/${theme.id}`}
-          className="bg-blueGray-800 text-white hover:bg-blue-200 h-8 active:bg-blueGray-600  active:bg-opacity-100 text-sm font-bold uppercase px-3  rounded shadow hover:shadow-lg outline-none  focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+          href={`/site-builder/${theme.id}`}
+          className="bg-blue-600 text-white hover:bg-blue-500 active:bg-blue-700 text-sm font-bold uppercase px-4 py-1 rounded-md shadow-md transition-all duration-200"
         >
-          Select{" "}
+          Select
         </Link>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }
 

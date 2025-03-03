@@ -56,7 +56,7 @@ const getPagesByTemplate = async (req, res, next) => {
             where: { templateId: parseInt(templateId) }, // Filter by templateId
         });
 
-        res.status(200).json({
+        res.status(200).json({ 
             pages,
             status: 'success',
             message: 'Pages retrieved successfully.',

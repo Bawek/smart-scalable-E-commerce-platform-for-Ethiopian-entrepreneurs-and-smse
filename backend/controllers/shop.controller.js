@@ -8,36 +8,6 @@ const registerShop = async (req, res, next) => {
         merchant,
     } = req.body
     try {
-        // const shop = await prisma.merchant.findFirst({
-        //     where: {
-        //         userId: ownerId
-        //     }
-        // })
-        // if (!shop) {
-        //     // If an account exists with the email, return error
-        //     return next(new httpError('Not registered with this Account. Please try again.', 409));
-        // }
-        // const isShopPresent = await prisma.shop.findFirst({
-        //     where: {
-        //         name: name
-        //     }
-        // })
-        // // If BankAccount is provided, perform additional checks or logic here
-        // if (isShopPresent) {
-        //     return next(new httpError('This Name is already associated with another account.', 409));
-
-        // }
-        // // If ShopName is provided, perform additional checks or logic here
-        // const isExistphysicalShopName = await prisma.merchant.findFirst({
-        //     where: {
-        //         physicalShopName: physicalShopName
-        //     }
-        // })
-        // if (isExistphysicalShopName) {
-        //     return next(new httpError('This physicalShopName is already associated with another account.', 409));
-
-        // }
-        // Register the new account (additional validation as necessary)
         const newShop = await prisma.myshop.create({
             data: {
                 name,
