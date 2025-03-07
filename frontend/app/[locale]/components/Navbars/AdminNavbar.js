@@ -3,22 +3,25 @@
 import React from "react";
 import NotificationPop from "../Prompt/Notification";
 import UserDropdown from "@/app/[locale]/components/Dropdowns/UserDropdown.js";
+import Link from "next/link";
+import { useSelector } from "react-redux";
+import { selectAll } from "@/lib/features/auth/accountSlice";
 
 export default function Navbar({ notification, setNotification }) {
+  const user = useSelector(selectAll)
   return (
     <>
       {/* Navbar */}
       <nav className="w-full hidden md:flex sticky top-0 z-10 bg-gray-800/90 backdrop-blur-2xl shadow-md p-2">
         <div className="w-full mx-auto flex items-center justify-between px-6">
           {/* Brand */}
-          <a
+          <Link
             className="text-white text-lg font-semibold tracking-wide"
             href="#pablo"
             onClick={(e) => e.preventDefault()}
           >
             Dashboard
-          </a>
-
+          </Link>
           {/* Search Form */}
           <form className="hidden md:flex items-center space-x-2">
             <div className="relative flex items-center">
@@ -42,7 +45,7 @@ export default function Navbar({ notification, setNotification }) {
             </div>
 
             {/* User Dropdown */}
-            <UserDropdown />
+            <UserDropdown user={user} />
           </div>
         </div>
       </nav>

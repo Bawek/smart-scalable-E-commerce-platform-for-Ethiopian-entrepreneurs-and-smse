@@ -1,81 +1,66 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function FooterSmall(props) {
-  const [isSticky, setIsSticky] = useState(false);
-
   // Handle sticky footer on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 0) {
-        setIsSticky(true);
-      } else {
-        setIsSticky(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <footer
       className={
         (props.absolute
-          ? "absolute w-full bottom-0 bg-blueGray-800"
-          : "fixed bottom-0 left-0 w-full bg-blueGray-800 z-50") + " pb-6"
+          ? "absolute w-full bottom-0"
+          : "fixed bottom-0 left-0 w-full z-50") + " pb-6"
       }
     >
+      <hr className="min-w-full w-full mb-6 border-b-1 border-blueGray-600" />
       <div
-        className={`container mx-auto px-4 ${isSticky ? 'fixed bottom-0 left-0 w-full bg-blueGray-800 z-50' : 'absolute bottom-0 w-full bg-blueGray-800'}`}
+        className={`container mx-auto px-4  ? 'fixed bottom-0 left-0 z-50' : 'absolute w-full bg-blueGray-800'}`}
       >
-        <hr className="mb-6 border-b-1 border-blueGray-600" />
         <div className="flex flex-wrap items-center md:justify-between justify-center">
           <div className="w-full md:w-4/12 px-4">
             <div className="text-sm text-blueGray-500 font-semibold py-1 text-center md:text-left">
               Copyright © {new Date().getFullYear()}{" "}
-              <a
+              <Link
                 href="https://www.creative-tim.com?ref=nnjs-footer-small"
-                className="text-white hover:text-blueGray-300 text-sm font-semibold py-1"
+                className="no-underline text-slate-600 hover:text-blueGray-300 text-sm font-semibold py-1"
               >
                 Creative Tim
-              </a>
+              </Link>
             </div>
           </div>
           <div className="w-full md:w-8/12 px-4">
             <ul className="flex flex-wrap list-none md:justify-end justify-center">
               <li>
-                <a
+                <Link
                   href="https://www.creative-tim.com?ref=nnjs-footer-small"
-                  className="text-white hover:text-blueGray-300 text-sm font-semibold block py-1 px-3"
+                  className=" no-underline text-slate-600 hover:text-blueGray-300 text-sm font-semibold block py-1 px-3"
                 >
                   Creative Tim
-                </a>
+                </Link>
               </li>
               <li>
-                <a
+                <Link
                   href="https://www.creative-tim.com/presentation?ref=nnjs-footer-small"
-                  className="text-white hover:text-blueGray-300 text-sm font-semibold block py-1 px-3"
+                  className="no-underline text-slate-600 hover:text-blueGray-300 text-sm font-semibold block py-1 px-3"
                 >
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a
+                <Link
                   href="http://blog.creative-tim.com?ref=nnjs-footer-small"
-                  className="text-white hover:text-blueGray-300 text-sm font-semibold block py-1 px-3"
+                  className="no-underline text-slate-600  hover:text-blueGray-300 text-sm font-semibold block py-1 px-3"
                 >
                   Blog
-                </a>
+                </Link>
               </li>
               <li>
-                <a
+                <Link
                   href="https://github.com/creativetimofficial/notus-nextjs/blob/main/LICENSE.md?ref=nnjs-footer-small"
-                  className="text-white hover:text-blueGray-300 text-sm font-semibold block py-1 px-3"
+                  className=" no-underline text-slate-600 hover:text-blueGray-300 text-sm font-semibold block py-1 px-3"
                 >
                   MIT License
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

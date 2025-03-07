@@ -93,6 +93,7 @@
     "react-redux": "^9.2.0",
     "react-resizable-panels": "^2.1.7",
     "react-toastify": "^11.0.3",
+    "redux-persist": "^6.0.0",
     "sass": "^1.85.0",
     "sonner": "^1.7.3",
     "tailwind-merge": "^2.6.0",

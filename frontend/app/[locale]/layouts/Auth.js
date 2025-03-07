@@ -11,15 +11,17 @@ export default function Auth({ children }) {
       <Navbar transparent />
       <main>
         <section className="relative w-full h-full py-40 min-h-screen">
-          <div
+          {/* <div
             className="absolute top-0 -z-10 w-full h-full bg-blueGray-800 bg-no-repeat bg-full"
             style={{
               backgroundImage: "url('/img/register_bg_2.png')",
             }}
           >
             
-          </div>
-          {children}
+          </div> */}
+          <main className="min-w-full flex justify-center items-center">
+            {children}
+          </main>
           <FooterSmall absolute />
         </section>
       </main>

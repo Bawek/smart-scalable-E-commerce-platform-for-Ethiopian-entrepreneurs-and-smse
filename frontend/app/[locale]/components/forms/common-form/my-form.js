@@ -26,14 +26,14 @@ export function CustomForm({ fields, schema, onSubmit, title, description, file,
     });
 
     return (
-        <Card className="max-w-[400px] flex flex-col items-center mx-auto">
+        <Card className="max-w-[500px] flex flex-col items-center mx-auto">
             <CardHeader className='text-center'>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>
                     {description}
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className='w-full'>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
                         {/* Dynamically Render Fields */}
