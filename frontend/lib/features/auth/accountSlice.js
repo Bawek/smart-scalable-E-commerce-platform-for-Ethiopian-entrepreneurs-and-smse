@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const accountSlice = createSlice({
     name: "account",
-    initialState: { email: null, firestName: null, accessToken: null },
+    initialState: { email: null, firestName: null, accessToken: null, role: null },
     reducers: {
         setCredential: (state, action) => {
             const { email, firestName, accessToken } = action.payload;
@@ -12,6 +12,7 @@ const accountSlice = createSlice({
             state.email = null;
             state.accessToken = null;
             state.firestName = null
+            state.role = null
         },
     },
 });

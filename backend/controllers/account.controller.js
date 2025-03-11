@@ -83,7 +83,8 @@ const login = async (req, res, next) => {
             firestName: accountExist.firestName,
             lastName: accountExist.lastName,
             id:accountExist.id,
-            status:'success'
+            status:'success',
+            role:accountExist.role
         })
     } catch (error) {
         console.log('Account registration error:', error);

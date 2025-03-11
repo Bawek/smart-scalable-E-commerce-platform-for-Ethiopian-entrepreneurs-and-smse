@@ -92,14 +92,12 @@ const data = {
 export function AppSidebar({
   ...props
 }) {
-  // const { user, logout } = useAuth()
   return (
     (<Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         {/* <TeamSwitcher teams={data.teams} /> */}
       </SidebarHeader>
       <SidebarContent>
-        {/* <SidebarSearch /> */}
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>

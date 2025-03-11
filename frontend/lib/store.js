@@ -28,6 +28,16 @@ const persistConfig = {
 
 const persistedAuthReducer = persistReducer(persistConfig, accountSlice);
 
+// Logger middleware for development (optional, can be removed in production)
+const loggerMiddleware = (storeAPI) => (next) => (action) => {
+	if (process.env.NODE_ENV === 'development') {
+	  console.log('Dispatching:', action);
+	  const result = next(action);
+	  console.log('Next State:', storeAPI.getState());
+	  return result;
+	}
+	return next(action); // Don't log in production
+  };
 export const makeStore = () => {
 	const store = configureStore({
 		reducer: {
@@ -56,6 +66,7 @@ export const makeStore = () => {
 				.concat(authSlice.middleware)
 				.concat(shopSlice.middleware)
 				.concat(accountApi.middleware)
+				.concat(loggerMiddleware) // Add logger middleware only in development
 				.concat(publicShopSlice.middleware),
 	});
 

@@ -1,89 +1,12 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
+'use client'
+import React from 'react'
+import Link from 'next/link'
+const CustomerHome = () => {
+const handleClick = ()=>{
 
-// components
-import { useParams, useRouter } from "next/navigation";
-import initTranslations from "../i18n.js";
-import Footer from "./components/Footers/Footer.js";
-import Navbar from "./components/Navbars/AuthNavbar.js";
-import { useSelector } from "react-redux";
-import { selectAll } from "@/lib/features/auth/accountSlice.js";
-// import { useAuth } from "@clerk/nextjs";
-
-const i18nNamespaces = ["home"]; // Define your namespaces
-export default function Index() {
-  const params = useParams(); // Get params properly
-  const [locale, setLocale] = useState(null);
-  const router = useRouter();
-  const account = useSelector(selectAll)
-  const [merchantId, setMerchantId] = useState(null);
-  const [navbarOpen, setNavbarOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false)
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-  useEffect(() => {
-    const checkUsers = () => {
-      setMerchantId('')
-    }
-    if (account.accessToken) {
-      checkUsers
-    }
-  }, [userId, user])
-  useEffect(() => {
-    if (params?.locale) {
-      setLocale(params.locale);
-    }
-  }, [params]);
-
-  useEffect(() => {
-    if (isMounted) {
-      if (typeof window !== "undefined") {
-        setMerchantId(localStorage.getItem("unique_id"));
-      }
-    }
-  }, []);
-  const handleClick = () => {
-    if (merchantId) {
-      router.push("/auth/register");
-    } else {
-      router.push(`/auth/register`);
-    }
-  };
-  const [translations, setTranslations] = useState({
-    t: () => { }, // Placeholder function until translations are loaded
-    resources: {},
-  });
-
-  useEffect(() => {
-    const loadTranslations = async () => {
-      try {
-        const { t, resources } = await initTranslations(locale, i18nNamespaces);
-        setTranslations({ t, resources });
-        console.log("Translations initialized successfully");
-      } catch (error) {
-        console.error("Error initializing translations:", error);
-        // Optionally, handle the error further here
-      }
-    };
-    loadTranslations();
-  }, [locale]); // Re-run the effect if the locale changes
-
-  if (!translations.t) {
-    return null; // Or a loading indicator
-  }
-
+}
   return (
-    <
-    >
-      {/* ToDo*/}
-      <Navbar
-        transparent
-        setNavbarOpen={setNavbarOpen}
-        navbarOpen={navbarOpen}
-      />
-      <main onClick={() => setNavbarOpen(false)}>
+      <main className='w-full'>
         <div className="relative pt-16 pb-32 flex content-center items-center justify-center min-h-screen-75">
           <div
             className="absolute top-0 w-full h-full bg-center bg-cover"
@@ -94,7 +17,7 @@ export default function Index() {
           >
             <span
               id="blackOverlay"
-              className="w-full h-full absolute opacity-75 bg-black"
+              className="w-full h-full absolute opacity-75 bg-gray-700"
             ></span>
           </div>
 
@@ -110,7 +33,7 @@ export default function Index() {
                 className="bg-blueGray-800 text-white hover:bg-blue-200 active:bg-blueGray-600  active:bg-opacity-100 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none  focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                 type="button"
               >
-                <Link href="/shop-list"> Shops List</Link>
+                <Link className='no-underline text-white' href="/shop-list"> Shops List</Link>
               </button>
               <div className="w-full lg:w-6/12 px-4 ml-auto mr-auto text-center">
                 <div className="pr-12">
@@ -650,7 +573,7 @@ export default function Index() {
           </div>
         </section>
       </main>
-      <Footer />
-    </>
-  );
+  )
 }
+
+export default CustomerHome
