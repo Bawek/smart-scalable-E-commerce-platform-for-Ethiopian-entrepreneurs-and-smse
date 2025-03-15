@@ -1,19 +1,32 @@
 import React from 'react'
-import { GalleryVerticalEnd } from "lucide-react"
+import CardLineChart from '../components/Cards/CardLineChart'
+import CardBarChart from '../components/Cards/CardBarChart'
+import CardPageVisits from '../components/Cards/CardPageVisits'
+import CardSocialTraffic from '../components/Cards/CardSocialTraffic'
 
 const MerchantDashbord = () => {
-    return (
-        <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
-        <div className="flex w-full max-w-sm flex-col gap-6">
-          <a href="#" className="flex items-center gap-2 self-center font-medium">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <GalleryVerticalEnd className="size-4" />
+  return (
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+        {/* <Admin> */}
+          <div className="flex flex-wrap">
+            <div className="w-full xl:w-8/12 mb-12 xl:mb-0 px-4">
+              <CardLineChart />
             </div>
-            Acme Inc.
-          </a>
-        </div>
-      </div>
-    )
+            <div className="w-full xl:w-4/12 px-4">
+              <CardBarChart />
+            </div>
+          </div>
+          <div className="flex flex-wrap mt-4">
+            <div className="w-full xl:w-8/12 mb-12 xl:mb-0 px-4">
+              <CardPageVisits />
+            </div>
+            <div className="w-full xl:w-4/12 px-4">
+              <CardSocialTraffic />
+            </div>
+          </div>
+        {/* </Admin> */}
+    </div>
+  )
 }
 
 export default MerchantDashbord

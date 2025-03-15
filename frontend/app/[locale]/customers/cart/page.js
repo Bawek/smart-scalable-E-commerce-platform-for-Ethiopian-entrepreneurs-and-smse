@@ -7,6 +7,7 @@ import { Minus, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect } from 'react';
+import Link from 'next/link';
 
 // const sampleCartItems = [
 //   {
@@ -43,16 +44,19 @@ import { useEffect } from 'react';
 
 const ResponsiveCartPage = () => {
   const [cartItems, setCartItems] = useState([]);
-  const [Loading,setLoading] = useState(false);
+  const [Loading, setLoading] = useState(true);
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const fetchCartItems = async () => {
     // Fetch cart items from the server
-    const response = await fetch('https://fakestoreapi.com/products');
+    try {
+      const response = await fetch('https://fakestoreapi.com/products');
 
-    const data = await response.json();
-    console.log(data, 'sample data')
-    setCartItems(data);
-    setLoading(true);
+      const data = await response.json();
+      setCartItems(data);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false)
+    }
   };
   useEffect(() => {
     fetchCartItems();
@@ -74,7 +78,7 @@ const ResponsiveCartPage = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {cartItems && cartItems.length > 0 ? (
+            {cartItems && cartItems.length > 0 && !Loading ? (
               cartItems.map((item) => (
                 <div key={item.id} className="flex flex-col md:flex-row items-center max-h-52 gap-4 p-4 border-b">
                   <img src={item.image} alt={item.name} className="w-24 h-24 rounded" />
@@ -100,9 +104,9 @@ const ResponsiveCartPage = () => {
                 No items in your cart
               </p>
             )}
-            
+
             {/* Skeleton Loading */}
-            {!Loading && cartItems.length === 0 && (
+            {!Loading && (
               <>
                 <Skeleton className="h-6 w-3/5 mb-4" />
                 <Skeleton className="h-6 w-2/4 mb-4" />
@@ -112,10 +116,12 @@ const ResponsiveCartPage = () => {
             )}
           </CardContent>
         </Card>
-    
-        <div className="mt-4 text-sm text-blue-600 cursor-pointer">&lt; Continue Shopping</div>
+
+        <div className="mt-4 text-sm text-blue-600 cursor-pointer">&lt; <span>
+          <Link className='no-underline' href={"/customers/products"}>Continue Shopping</Link>
+          </span></div>
       </div>
-    
+
       {/* Summary Section */}
       <div>
         <Card className="shadow-lg">
@@ -144,7 +150,7 @@ const ResponsiveCartPage = () => {
             </div>
           </CardContent>
         </Card>
-    
+
         <Card className="shadow-lg mt-4">
           <CardContent>
             <div className="space-y-2">

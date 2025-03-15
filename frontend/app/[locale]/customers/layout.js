@@ -16,7 +16,7 @@ export default function CustomerLayout({ children }) {
                 <CustomerNavigationMenu />
             </div>
             {/* Main content section */}
-            <main className=" max-w-[95%] mx-auto">
+            <main className="w-full  ">
                 {children}
             </main>
             {/* Footer section */}

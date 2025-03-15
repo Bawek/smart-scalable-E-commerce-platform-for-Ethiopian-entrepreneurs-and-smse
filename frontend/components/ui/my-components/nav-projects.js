@@ -1,6 +1,7 @@
 "use client"
 
 import {
+    Edit,
     Folder,
     Forward,
     MoreHorizontal,
@@ -24,6 +25,7 @@ import {
     useSidebar,
     
 } from "@/components/ui/sidebar"
+import Link from "next/link"
 
 export function NavProjects({
     projects,
@@ -32,15 +34,15 @@ export function NavProjects({
 
     return (
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-            <SidebarGroupLabel>Projects</SidebarGroupLabel>
+            <SidebarGroupLabel>Templates</SidebarGroupLabel>
             <SidebarMenu className="m-0 p-0">
                 {projects.map((item) => (
                     <SidebarMenuItem key={item.name}>
                         <SidebarMenuButton asChild>
-                            <a href={item.url}>
+                            <Link className="no-underline text-black" href={item.url}>
                                 <item.logo />
                                 <span>{item.name}</span>
-                            </a>
+                            </Link>
                         </SidebarMenuButton>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -56,16 +58,16 @@ export function NavProjects({
                             >
                                 <DropdownMenuItem>
                                     <Folder className="text-muted-foreground" />
-                                    <span>View Project</span>
+                                    <Link href={"#"} className="no-underline text-black">View Template</Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem>
                                     <Forward className="text-muted-foreground" />
-                                    <span>Share Project</span>
+                                    <Link href={"#"} className="no-underline text-black">Share Template</Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem>
-                                    <Trash2 className="text-muted-foreground" />
-                                    <span>Delete Project</span>
+                                    <Edit className="text-muted-foreground" />
+                                    <Link href={"#"} className="no-underline text-black">edit Template</Link>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

@@ -3,6 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Sheet, SheetTrigger, SheetContent, SheetTitle } from '@/components/ui/sheet';
+
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -11,10 +13,11 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { ShoppingBag, ShoppingCart, Menu, X } from "lucide-react";
+import { ShoppingBag, ShoppingCart, MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWindowSize } from "@uidotdev/usehooks";
 import ProfileMenu from "./profile";
+import { useState } from "react";
 
 // Platform information remains the same...
 const cartItems = 7;
@@ -79,65 +82,16 @@ const shopLinks = [
 ];
 
 
-const profileLinks = [
-  {
-    title: "Manage Profile",
-    dialogContent: (
-      <div className="space-y-4">
-        <p>Update your personal information and preferences.</p>
-        <div className="flex flex-col gap-2">
-          <Button variant="outline">Change Password</Button>
-          <Button variant="outline">Update Email</Button>
-          <Button asChild>
-            <Link href="/customers/manageAccount">Edit Full Profile</Link>
-          </Button>
-        </div>
-      </div>
-    ),
-  },
-  {
-    title: "Orders",
-    dialogContent: (
-      <div className="space-y-4">
-        <p>Your recent orders:</p>
-        <div className="border rounded-lg p-4">
-          <div className="flex justify-between">
-            <span>Order #1234</span>
-            <span className="text-green-600">Delivered</span>
-          </div>
-          <Button className="mt-4" asChild>
-            <Link href="/customers/orders">View All Orders</Link>
-          </Button>
-        </div>
-      </div>
-    ),
-  },
-  {
-    title: "Notifications",
-    dialogContent: (
-      <div className="space-y-4">
-        <p>Unread notifications:</p>
-        <div className="border rounded-lg p-4">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 bg-blue-500 rounded-full" />
-            <span>New message from support</span>
-          </div>
-          <Button className="mt-4" asChild>
-            <Link href="/customers/notifications">View All Notifications</Link>
-          </Button>
-        </div>
-      </div>
-    ),
-  },
-];
 export function CustomerNavigationMenu() {
   const [isOpen, setIsOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const closeDrawer = () => setOpen(false);
   const { width } = useWindowSize();
   const account = {
-    accessToken: '1234567890',
-    refreshToken: '0987654321',
-    email: 'kskkk ',
-    username: 'kskkk ',
+    accessToken:'jsjjsj',
+    email:'maytotmat@gmail.com',
+    name:'maytotmat'
+
   };
   const isMobile = (width || 0) < 768;
 
@@ -157,10 +111,10 @@ export function CustomerNavigationMenu() {
 
   return (
     <nav className={`sticky w-full top-0 z-50 bg-white dark:bg-black backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow duration-300 ${hasScrolled ? "shadow-md" : ""}`}>
-      <div className="max-w-[95%] mx-auto flex h-16 items-center justify-between px-4">
+      <div className="max-w-[98%] mx-auto flex h-16 items-center justify-between">
         <Link
           href="/customers"
-          className="flex items-center flex-nowrap md:min-w-64 py-3 no-underline gap-2 font-semibold"
+          className={`${isMobile ? 'hidden' : 'flex'} items-center flex-nowrap md:min-w-64 py-3 no-underline gap-2 font-semibold`}
         >
           <ShoppingBag className="h-6 w-6 text-green-400" /> {/* Icon with a color */}
           <span className="bg-gradient-to-r capitalize from-green-400 via-yellow-400 to-red-400 bg-clip-text text-transparent">
@@ -168,13 +122,17 @@ export function CustomerNavigationMenu() {
           </span>
         </Link>
 
-        <div>
-          {!isMobile ? (
-            <DesktopMenu account={account} />
-          ) : (
-            <MobileMenu isOpen={isOpen} setIsOpen={setIsOpen} account={account} />
-          )}
-        </div>
+
+        {!isMobile ? (
+          <DesktopMenu account={account} />
+        ) : (
+          <MobileMenu
+            account={account}
+            open={open}
+            setOpen={setOpen}
+            closeDrawer={closeDrawer}
+          />
+        )}
       </div>
     </nav>
   );
@@ -182,7 +140,7 @@ export function CustomerNavigationMenu() {
 
 function DesktopMenu({ account }) {
   return (
-    <div className="container flex items-center h-16 gap-4">
+    <div className="container flex items-center h-16 gap-2">
       {/* Navigation Menu */}
       <NavigationMenu className="mr-1">
         <NavigationMenuList className="my-auto">
@@ -205,8 +163,8 @@ function DesktopMenu({ account }) {
         <NavigationMenuList className="my-auto">
           <NavigationMenuItem>
             <NavigationMenuTrigger className="text-sm">Shops</NavigationMenuTrigger>
-            <NavigationMenuContent className="absolute left-0 w-[400px] p-4">
-              <ul className="grid gap-3">
+            <NavigationMenuContent className="absolute left-0  lg:w-[500px] p-4">
+              <ul className="grid gap-3 w-[300px] lg:w-full lg:grid-cols-2 ">
                 {shopLinks.map((link) => (
                   <ListItem key={link.title} title={link.title} href={link.href}>
                     {link.description}
@@ -220,7 +178,7 @@ function DesktopMenu({ account }) {
 
       {/* Main Navigation Links */}
       {[
-        { href: "/product-list", label: "Market Place" },
+        { href: "/customers/products", label: "Market Place" },
       ].map((navItem) => (
         <Link key={navItem.label} href={navItem.href} className="text-sm no-underline text-black dark:text-white">
           {navItem.label}
@@ -238,18 +196,26 @@ function DesktopMenu({ account }) {
       </Link>
 
       {/* Right Section - User Profile / Authentication */}
-      <div className="ml-auto flex items-center">
+      <div className="ml-auto flex items-center gap-2">
         {account?.accessToken ? (
           <ProfileMenu />
 
         ) : (
           <>
-            <Button variant="ghost" asChild>
-              <Link href="/customers/auth/register" className="no-underline text-black dark:text-white">Register</Link>
-            </Button>
-            <Button variant="ghost" asChild className="mr-2">
-              <Link href="/customers/auth/login" className="no-underline text-black dark:text-white">Login</Link>
-            </Button>
+            <Link
+              className="no-underline text-white bg-slate-500 hover:bg-black font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
+              href="/customers/auth/login"
+            >
+              Login
+            </Link>
+
+            <Link
+              className="no-underline text-white bg-slate-500 hover:bg-black font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
+              href="/customers/auth/login"
+            >
+              Register
+            </Link>
+
           </>
         )}
       </div>
@@ -258,55 +224,133 @@ function DesktopMenu({ account }) {
   );
 }
 
-function MobileMenu({ isOpen, setIsOpen, account }) {
+function MobileMenu({ account, open, setOpen, closeDrawer }) {
   return (
-    <>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="md:hidden"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        <span className="sr-only">Toggle menu</span>
-      </Button>
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTitle asChild>
+        <Link
+          href="/customers"
+          onClick={closeDrawer}
+          className="w-full flex items-center gap-2 no-underline"
+        >
+          <ShoppingBag className="h-8 w-8 text-green-400" />
+          <span className="text-xl font-bold bg-gradient-to-r from-green-400 via-yellow-400 to-red-400 bg-clip-text text-transparent">
+            E-Commerce Platform
+          </span>
+        </Link>
+      </SheetTitle>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-10 w-10 md:hidden hover:bg-transparent"
+          aria-label="Open menu"
+        >
+          <MenuIcon className="h-10 w-10" size={40} />
+        </Button>
+      </SheetTrigger>
 
-      {isOpen && (
-        <div className="absolute left-0 top-16 w-full border-b bg-background shadow-lg">
-          <div className="container px-4 py-4">
-            <div className="grid gap-2">
-              <div className="pb-2">
-                <h3 className="mb-2 px-2 text-sm font-semibold text-muted-foreground">
-                  Explore Platforms
-                </h3>
-                <div className="grid gap-1">
-                  <MobileLink href="/marketplace">Marketplace</MobileLink>
-                  <MobileLink href="/cart">Cart</MobileLink>
-                  <MobileLink href="/order-history">Order History</MobileLink>
-                </div>
+      <SheetContent side="left" className="h-full w-[300px] p-0">
+        {/* Drawer Content */}
+        <div className="h-full flex flex-col">
+          {/* Header */}
+          <div className="p-4 border-b">
+            <div className="flex items-center justify-between">
+
+            </div>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-6">
+              {/* Company Links */}
+              <div className="space-y-2">
+                <h3 className="px-2 text-sm font-semibold text-muted-foreground">Company</h3>
+                <ul className="space-y-1">
+                  {companyLinks.map((link) => (
+                    <li key={link.title}>
+                      <MobileLink href={link.href} onClick={closeDrawer}>
+                        {link.title}
+                      </MobileLink>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
-              <div className="pb-2">
-                <h3 className="mb-2 px-2 text-sm font-semibold text-muted-foreground">
-                  Your Account
-                </h3>
-                <div className="grid gap-1">
-                  {companyLinks.map((platform) => (
-                    <MobileLink key={platform.title} href={platform.href}>
+              {/* Shop Links */}
+              <div className="space-y-2">
+                <h3 className="px-2 text-sm font-semibold text-muted-foreground">Shop</h3>
+                <div className="space-y-1">
+                  {shopLinks.map((platform) => (
+                    <MobileLink
+                      key={platform.title}
+                      href={platform.href}
+                      onClick={closeDrawer}
+                    >
                       {platform.title}
                     </MobileLink>
                   ))}
                 </div>
               </div>
 
-              <MobileLink href="/support" className="mt-2 border-t pt-2">
-                Customer Support
+              {/* Market Place Link */}
+              <MobileLink
+                href="/customers/products"
+                onClick={closeDrawer}
+                className="block py-2 font-medium"
+              >
+                Market Place
               </MobileLink>
             </div>
           </div>
+
+          {/* Footer Section */}
+          <div className="p-4 border-t">
+            <div className="flex items-center justify-between">
+              {/* Cart Button */}
+              <Link
+                href="/customers/cart"
+                onClick={closeDrawer}
+                className="relative flex items-center gap-2"
+              >
+                <ShoppingCart className="h-8 w-8" />
+                {cartItems > 0 && (
+                  <span className="absolute -top-1 -right-2 w-5 h-5 flex items-center justify-center bg-red-600 text-white text-xs font-bold rounded-full">
+                    {cartItems}
+                  </span>
+                )}
+              </Link>
+
+              {/* Auth Buttons */}
+              <div className="flex items-center gap-2">
+                {account?.accessToken ? (
+                  <ProfileMenu onItemSelect={closeDrawer} />
+                ) : (
+                  <>
+                    <Link
+                      className="no-underline text-white bg-slate-500 hover:bg-black font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
+                      href="/customers/auth/login"
+                      onClick={closeDrawer}
+                    >
+                      Login
+                    </Link>
+
+                    <Link
+                      className="no-underline text-white bg-slate-500 hover:bg-black font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
+                      href="/customers/auth/login"
+                      onClick={closeDrawer}
+                    >
+                      Register
+                    </Link>
+
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-    </>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -315,10 +359,9 @@ const MobileLink = ({ href, children, className }) => {
     <Link
       href={href}
       className={cn(
-        "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+        "flex items-center no-underline text-black rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-slate-400 hover:text-accent-foreground",
         className
       )}
-      onClick={() => setIsOpen(false)}
     >
       {children}
     </Link>
