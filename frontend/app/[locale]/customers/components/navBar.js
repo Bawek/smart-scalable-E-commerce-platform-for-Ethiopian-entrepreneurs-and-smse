@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Sheet, SheetTrigger, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetClose } from '@/components/ui/sheet';
 
 import {
   NavigationMenu,
@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useWindowSize } from "@uidotdev/usehooks";
 import ProfileMenu from "./profile";
 import { useState } from "react";
+import { Cancel } from "@mui/icons-material";
 
 // Platform information remains the same...
 const cartItems = 7;
@@ -88,9 +89,9 @@ export function CustomerNavigationMenu() {
   const closeDrawer = () => setOpen(false);
   const { width } = useWindowSize();
   const account = {
-    accessToken:'jsjjsj',
-    email:'maytotmat@gmail.com',
-    name:'maytotmat'
+    accessToken: 'jsjjsj',
+    email: 'maytotmat@gmail.com',
+    name: 'maytotmat'
 
   };
   const isMobile = (width || 0) < 768;
@@ -243,10 +244,10 @@ function MobileMenu({ account, open, setOpen, closeDrawer }) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 md:hidden hover:bg-transparent"
+          className="md:hidden hover:bg-transparent"
           aria-label="Open menu"
         >
-          <MenuIcon className="h-10 w-10" size={40} />
+          <MenuIcon className="h-6 w-6" />
         </Button>
       </SheetTrigger>
 
@@ -256,7 +257,16 @@ function MobileMenu({ account, open, setOpen, closeDrawer }) {
           {/* Header */}
           <div className="p-4 border-b">
             <div className="flex items-center justify-between">
-
+              <Link
+                href="/customers"
+                onClick={closeDrawer}
+                className="flex items-center gap-2 no-underline"
+              >
+                <ShoppingBag className="h-8 w-8 text-green-400" />
+                <span className="text-sm font-bold bg-gradient-to-r from-green-400 via-yellow-400 to-red-400 bg-clip-text text-transparent">
+                  E-Commerce Platform
+                </span>
+              </Link>
             </div>
           </div>
 
@@ -327,22 +337,16 @@ function MobileMenu({ account, open, setOpen, closeDrawer }) {
                   <ProfileMenu onItemSelect={closeDrawer} />
                 ) : (
                   <>
-                    <Link
-                      className="no-underline text-white bg-slate-500 hover:bg-black font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
-                      href="/customers/auth/login"
-                      onClick={closeDrawer}
-                    >
-                      Login
-                    </Link>
-
-                    <Link
-                      className="no-underline text-white bg-slate-500 hover:bg-black font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
-                      href="/customers/auth/login"
-                      onClick={closeDrawer}
-                    >
-                      Register
-                    </Link>
-
+                    <Button asChild variant="ghost" className="px-4">
+                      <Link href="/customers/auth/login" onClick={closeDrawer}>
+                        Login
+                      </Link>
+                    </Button>
+                    <Button asChild className="px-4">
+                      <Link href="/customers/auth/register" onClick={closeDrawer}>
+                        Register
+                      </Link>
+                    </Button>
                   </>
                 )}
               </div>

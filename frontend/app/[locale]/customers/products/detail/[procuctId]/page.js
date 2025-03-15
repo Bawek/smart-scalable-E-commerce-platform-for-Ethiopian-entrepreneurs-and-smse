@@ -11,33 +11,36 @@ import {
 import { useEmblaCarousel } from 'embla-carousel-react';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Rating } from "@mui/material";
 import { Badge } from "@/components/ui/badge";
 
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useWindowSize } from "@uidotdev/usehooks";
+import { useEffect } from "react";
+import Rating from "../../../components/Rating";
 
 export default function ProductDetailPage() {
   const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
   const { width } = useWindowSize();
   const isMobile = (width || 0) < 548;
+  const [api, setApi] = useState(null);
+  const [current, setCurrent] = useState(0);
+  useEffect(() => {
+    if (!api) return;
 
-  const colors = { black: "#000000", navy: "#000080", beige: "#f5f5dc" };
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
 
   const handleThumbnailClick = (index) => {
-    setSelectedImageIndex(index);
+    api?.scrollTo(index);
   };
 
-  const handleNext = () => {
-    setSelectedImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-  };
+  const colors = { black: "#000000", navy: "#000080", beige: "#f5f5dc" };
+  const [productRating, setProductRating] = useState(4.2);
 
-  const handlePrevious = () => {
-    setSelectedImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
-  };
   const relatedProducts = [
     { id: 1, name: "Urban Trekker Jacket", price: "$399", image: "/images/products/f5.jpg" },
     { id: 2, name: "Mountain Explorer Parka", price: "$459", image: "/images/products/f6.jpg" },
@@ -56,7 +59,6 @@ export default function ProductDetailPage() {
     "Multiple pockets",
     "Breathable lining"
   ];
-
   return (
     <div className="container mx-auto px-4 md:px-6 py-6 md:py-8">
       <div className={`${isMobile ? "max-w-[70%]" : "w-full"} grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8`}>
@@ -67,7 +69,7 @@ export default function ProductDetailPage() {
             {images.map((img, index) => (
               <div
                 key={index}
-                className={`relative aspect-square min-w-[80px] md:min-w-[100px] cursor-pointer border-2 ${selectedImageIndex === index ? 'border' : 'border-transparent'
+                className={`relative aspect-square min-w-[80px] md:min-w-[100px] cursor-pointer border-2 ${current === index ? 'border' : 'border-transparent'
                   }`}
                 onClick={() => handleThumbnailClick(index)}
               >
@@ -84,13 +86,16 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Main Carousel */}
-          <Carousel className={`relative group order-1 md:order-2`}>
+          <Carousel
+            className={`w-full h-full relative group order-1 md:order-2`}
+            setApi={setApi}
+          >
             <CarouselContent>
               {images.map((img, index) => (
                 <CarouselItem key={index}>
                   <div className="relative aspect-square">
                     <Image
-                      src={images[selectedImageIndex]}
+                      src={img}
                       alt={`Product view ${index + 1}`}
                       fill
                       className="rounded-lg object-cover"
@@ -105,11 +110,11 @@ export default function ProductDetailPage() {
             {/* Navigation buttons */}
             <div className="absolute top-1/2 -translate-y-1/2 w-full px-2 md:px-4 flex justify-between">
               <CarouselPrevious
-                onClick={handlePrevious}
+                onClick={() => api?.scrollPrev()}
                 className="static transform-none bg-white/80 hover:bg-white shadow-lg hover:shadow-xl h-8 w-8 md:h-10 md:w-10"
               />
               <CarouselNext
-                onClick={handleNext}
+                onClick={() => api?.scrollNext()}
                 className="static transform-none bg-white/80 hover:bg-white shadow-lg hover:shadow-xl h-8 w-8 md:h-10 md:w-10"
               />
             </div>
@@ -121,7 +126,11 @@ export default function ProductDetailPage() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Bailey Poly Jacket</h1>
             <div className="flex items-center gap-2 mt-1 md:mt-2">
-              <Rating />
+              <Rating
+                rating={productRating}
+                onRatingChange={setProductRating}
+              />
+
               <Link href="#reviews" className="text-sm text-gray-600">
                 (128 reviews)
               </Link>
@@ -202,7 +211,18 @@ export default function ProductDetailPage() {
         </TabsList>
 
         {/* Tabs content remains same with responsive spacing */}
-        {/* ... */}
+        <TabsContent value="description">
+          <p>The Bailey Poly Jacket combines urban style with outdoor functionality. Designed for transitional weather, featuring water-resistant fabric and modern minimalist design.</p>
+        </TabsContent>
+        <TabsContent value="features">
+          <ul>
+            {features.map((feature, index) => (
+              <li key={index}>{feature}</li>
+            ))}
+          </ul>
+        </TabsContent>
+        <TabsContent value="reviews">Reviews will be displayed here.</TabsContent>
+        <TabsContent value="shipping">Shipping & Return details will be displayed here.</TabsContent>
       </Tabs>
 
       {/* Related Products Section */}
