@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetClose } from '@/components/ui/sheet';
-
+import logo from '../../../../public/logos/main.png'
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -89,9 +89,7 @@ export function CustomerNavigationMenu() {
   const closeDrawer = () => setOpen(false);
   const { width } = useWindowSize();
   const account = {
-    accessToken: 'jsjjsj',
-    email: 'maytotmat@gmail.com',
-    name: 'maytotmat'
+
 
   };
   const isMobile = (width || 0) < 768;
@@ -117,7 +115,7 @@ export function CustomerNavigationMenu() {
           href="/customers"
           className={`${isMobile ? 'hidden' : 'flex'} items-center flex-nowrap md:min-w-64 py-3 no-underline gap-2 font-semibold`}
         >
-          <ShoppingBag className="h-6 w-6 text-green-400" /> {/* Icon with a color */}
+          <ShoppingBag className="h-6 w-6 text-green-400" /> 
           <span className="bg-gradient-to-r capitalize from-green-400 via-yellow-400 to-red-400 bg-clip-text text-transparent">
             E-Commerce plafform
           </span>
@@ -204,14 +202,14 @@ function DesktopMenu({ account }) {
         ) : (
           <>
             <Link
-              className="no-underline text-white bg-slate-500 hover:bg-black font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
+              className="no-underline text-white bg-orange-700 hover:bg-orange-800 font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
               href="/customers/auth/login"
             >
               Login
             </Link>
 
             <Link
-              className="no-underline text-white bg-slate-500 hover:bg-black font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
+              className="no-underline text-white bg-orange-700 hover:bg-orange-800font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
               href="/customers/auth/login"
             >
               Register

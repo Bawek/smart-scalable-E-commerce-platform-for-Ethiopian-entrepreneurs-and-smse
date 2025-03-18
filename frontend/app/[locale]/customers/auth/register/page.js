@@ -62,7 +62,8 @@ export default function Register() {
   };
 
   return (
-    <Card className="w-full max-w-[450px] shadow-xl hover:shadow-2xl transition-shadow duration-300 rounded-2xl border-0">
+<div className="w-full flex justify-center items-center">
+<Card className="w-full max-w-[450px] shadow-xl hover:shadow-2xl transition-shadow duration-300 rounded-2xl border-0">
       <CardHeader className="text-center space-y-4">
         <CardTitle className="text-3xl font-bold text-blue-600">
           Join Our Marketplace 🌟
@@ -185,5 +186,6 @@ export default function Register() {
         </p>
       </CardFooter>
     </Card>
+</div>
   );
 }

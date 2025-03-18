@@ -26,11 +26,9 @@ export default function RootLayout({ children }) {
             <div className=" flex flex-col w-full min-h-screen">
               <div id="page-transition"></div>
 
-              <ClientLayout>
                 {children}
                 <Toaster />
                 <ToastContainer />
-              </ClientLayout>
             </div>
           </AppProvider>
         </body>
