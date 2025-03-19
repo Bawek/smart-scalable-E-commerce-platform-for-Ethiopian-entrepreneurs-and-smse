@@ -11,7 +11,7 @@ const ProductItem = ({ product }) => {
             <Card key={product.id} className="group relative overflow-hidden transition-shadow hover:shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-[500px] flex flex-col justify-between">
                 <div className="relative">
                     <img
-                        src={product.image}
+                        src={product.thumbnail}
                         alt={product.title}
                         className="h-60 w-full object-cover rounded-t-lg transition-transform duration-300 ease-in-out group-hover:scale-105"
                     />

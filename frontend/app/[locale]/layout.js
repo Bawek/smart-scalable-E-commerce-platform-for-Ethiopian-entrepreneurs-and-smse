@@ -12,7 +12,7 @@ import '../../styles/bootstrap.scss'
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Suk-Bederete",
+  title: "E-commerce platform",
   description: "ecommerce application",
 };
 
