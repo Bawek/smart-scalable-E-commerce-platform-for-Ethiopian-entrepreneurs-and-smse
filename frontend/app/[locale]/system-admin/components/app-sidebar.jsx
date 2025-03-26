@@ -2,13 +2,12 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  SquareTerminal,
+  Collapsible,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import {
+  Settings,
+  ShoppingBag,
 } from "lucide-react"
 // import SidebarSearch from '@/components/nav-main'
 // import { NavMain } from "@/components/nav-main"
@@ -18,76 +17,44 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenu,
+  SidebarGroup,
+  SidebarTrigger
 } from "@/components/ui/sidebar"
+
 import { NavUser } from "./nav-user"
 import { NavMain } from "./nav-main"
-const logout = () =>{
+const logout = () => {
 
 }
 const user = {
-  name:'mebrat',
-  email:'maytotmat@gmail.com',
-  photoURL:'./electronics.jpg'
+  name: 'mebrat',
+  email: 'maytotmat@gmail.com',
+  photoURL: './electronics.jpg'
 }
-// This is sample data.
 const data = {
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
-      title: "Generals",
+      title: "Administration",
       url: "#",
-      icon: SquareTerminal,
+      icon: Settings,
       isActive: true,
       items: [
-        {
-          title: "Dashboard",
-          url: "/",
-        },
-        {
-          title: "Manage Template",
-          url: "/system-admin/manage-template",
-        },
-        {
-          title: "Categories",
-          url: "/admin/categories",
-        },
+        { title: "Dashboard", url: "/system-admin" },
+        { title: "Manage Shops", url: "/admin/manage-shops" }, // For approval/suspension (BR-04, UC-11)
+        { title: "Manage Templates", url: "/system-admin/manage-template" }, // UC-10
+        { title: "Manage Users", url: "/admin/manage-users" }, // Merchants & customers (Actors section)
+        { title: "Manage Orders", url: "/admin/manage-orders" }, // UC-05
+        { title: "Product Categories", url: "/admin/manage-categories" }, // Implicit from product management scope
+        { title: "Analytics & Reports", url: "/admin/analytics" }, // Functional req: Sales/visitor stats
+        { title: "System Settings", url: "/admin/settings" }, // Payment config, platform rules (Business Rules)
+        { title: "Compliance & Logs", url: "/admin/compliance" }, // Legal feasibility (BR-01, BR-04)
       ],
     },
   ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-}
+};
 
 export function AppSidebar({
   ...props
@@ -95,7 +62,23 @@ export function AppSidebar({
   return (
     (<Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        {/* <TeamSwitcher teams={data.teams} /> */}
+        {/* header */}
+        <SidebarGroup>
+          <SidebarMenu className="m-0 p-0">
+            <Collapsible
+              asChild
+              className="group/collapsible">
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton tooltip={'Go home page'}>
+                    <ShoppingBag className="-ml-2 text-green-600" />
+                    <span> Admin Dashboard</span>
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+              </SidebarMenuItem>
+            </Collapsible>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />

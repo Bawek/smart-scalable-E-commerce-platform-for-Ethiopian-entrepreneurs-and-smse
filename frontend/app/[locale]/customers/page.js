@@ -1,5 +1,8 @@
+
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import logo from '../../../public/e-commerce-logo.png'
+
 export default function Home() {
   const handleClick = () => {
 
@@ -462,6 +465,10 @@ export default function Home() {
               </h5>
             </div>
           </div>
+        </div>
+        <div>
+          <h1>hello world manner</h1>
+          <img src={'e-commerce-logo-main.png'} className="max-w-20 h-20" alt="manner" />
         </div>
       </section>
     </main>

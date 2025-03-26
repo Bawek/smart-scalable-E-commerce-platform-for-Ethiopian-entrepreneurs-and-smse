@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetClose } from '@/components/ui/sheet';
-import logo from '../../../../public/logos/main.png'
+import logo from '../../../../public/logos/e-commerce-logo.png'
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -19,6 +19,7 @@ import { useWindowSize } from "@uidotdev/usehooks";
 import ProfileMenu from "./profile";
 import { useState } from "react";
 import { Cancel } from "@mui/icons-material";
+import Image from "next/image";
 
 // Platform information remains the same...
 const cartItems = 7;
@@ -115,13 +116,9 @@ export function CustomerNavigationMenu() {
           href="/customers"
           className={`${isMobile ? 'hidden' : 'flex'} items-center flex-nowrap md:min-w-64 py-3 no-underline gap-2 font-semibold`}
         >
-          <ShoppingBag className="h-6 w-6 text-green-400" /> 
-          <span className="bg-gradient-to-r capitalize from-green-400 via-yellow-400 to-red-400 bg-clip-text text-transparent">
-            E-Commerce plafform
-          </span>
+          <img src={'e-commerce-logo-main.png'} className="w-10 h-10"  alt="logo" />
         </Link>
-
-
+{/* mobile navbar */}
         {!isMobile ? (
           <DesktopMenu account={account} />
         ) : (

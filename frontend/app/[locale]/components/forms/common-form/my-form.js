@@ -14,9 +14,10 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect } from "react";
 
 // Reusable Form Component
-export function CustomForm({ fields, schema, onSubmit, title, description, file, setFile }) {
+export function CustomForm({ fields, schema, onSubmit, title, description, file, setFile, data }) {
     const form = useForm({
         resolver: zodResolver(schema),
         defaultValues: fields.reduce((acc, field) => {
@@ -24,16 +25,24 @@ export function CustomForm({ fields, schema, onSubmit, title, description, file,
             return acc;
         }, {}),
     });
-
+    useEffect(() => {
+        if (data) {
+            // If no data is provided, use the sample data as default
+            Object.entries(data).forEach(([key, value]) => {
+                form.setValue(key, value);
+            });
+        }
+        console.log("values are",data, form.getValues())
+    }, [data, file, form]);
     return (
-        <Card className="max-w-[500px] flex flex-col items-center mx-auto">
+        <Card className="max-w-[500px] flex flex-col items-center mx-auto overflow-y-auto">
             <CardHeader className='text-center'>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>
                     {description}
                 </CardDescription>
             </CardHeader>
-            <CardContent className='w-full'>
+            <CardContent >
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
                         {/* Dynamically Render Fields */}
