@@ -1,22 +1,161 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
+import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Pencil, Trash2, CheckCircle, XCircle } from "lucide-react";
+import CustomDataTable from "@/components/ui/my-components/my-table";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 // Dummy shop data (Replace with API call)
-const initialShops = [
-  { id: 1, name: "Shop One", owner: "John Doe", status: "Pending" },
-  { id: 2, name: "Shop Two", owner: "Jane Smith", status: "Active" },
-  { id: 3, name: "Shop Three", owner: "Mike Johnson", status: "Suspended" },
+const data = [
+  { shopId: "1", name: "Shop 1", owner: "Owner 1", status: "Active" },
+  { shopId: "2", name: "Shop 2", owner: "Owner 2", status: "Inactive" },
+  { shopId: "3", name: "Shop 3", owner: "Owner 3", status: "Active" },
+  { shopId: "4", name: "Shop 4", owner: "Owner 4", status: "Pending" },
+  { shopId: "5", name: "Shop 5", owner: "Owner 5", status: "Active" },
+  { shopId: "6", name: "Shop 6", owner: "Owner 6", status: "Inactive" },
+  { shopId: "7", name: "Shop 7", owner: "Owner 7", status: "Active" },
+  { shopId: "8", name: "Shop 8", owner: "Owner 8", status: "Pending" },
+  { shopId: "9", name: "Shop 9", owner: "Owner 9", status: "Inactive" },
+  { shopId: "10", name: "Shop 10", owner: "Owner 10", status: "Active" }
 ];
 const ManageShops = () => {
-  const [shops, setShops] = useState(initialShops);
+  const [shops, setShops] = useState([
+    { id: "1", name: "Shop 1", owner: "Owner 1", status: "Active" },]);
   const [selectedShop, setSelectedShop] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const { toast } = useToast()
+  const router = useRouter()
+  // columns
+  const columns = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "shopId",
+      header: "Shop Id",
+      cell: ({ row }) => (
+        <div className="capitalize">{row.getValue("shopId")}</div>
+      ),
+    },
+    {
+      accessorKey: "name",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Shop Name
+            <ArrowUpDown />
+          </Button>
+        )
+      },
+      cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
+    },
+    {
+      accessorKey: "owner",
+      header: () => <div className="text-right">Shop Owner</div>,
+      cell: ({ row }) => {
+        return <div className="text-right font-medium">{row.getValue("owner")}</div>
+      },
+    },
+    {
+      accessorKey: "status",
+      header: () => <div className="text-right">Shop status</div>,
+      cell: ({ row }) => {
+        return <div className="text-right font-medium">
+          <Badge variant={row.getValue("status") === "Active" ? "default" : row.getValue("status") === "Inactive" ? "destructive" : "warning"}>
+            {row.getValue("status")}
+          </Badge>
+        </div>
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const shop = row.original;
 
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreHorizontal />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Shop Actions</DropdownMenuLabel>
+
+              <DropdownMenuItem
+                className="cursor-pointer hover:bg-amber-100"
+                onClick={() => {
+                  navigator.clipboard.writeText(shop.id);
+                  toast({
+                    title: "Copied",
+                    description: <p className="text-black">{shop?.id}</p>,
+                    variant: "default"
+                  });
+                }}
+              >
+                Copy Shop ID
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => openEditModal(shop)}
+              >
+                Edit Status
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => router.push(`/system-admin/manage-shops/${shop.shopId}`)}
+              >
+                View Details
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+        );
+      },
+    }
+  ]
   // Approve a shop
   const approveShop = (id) => {
     setShops(shops.map(shop => shop.id === id ? { ...shop, status: "Active" } : shop));
@@ -41,55 +180,6 @@ const ManageShops = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">Manage Shops</h1>
-
-      {/* Shop List Table */}
-      <div className="bg-white p-4 rounded-lg shadow-md">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {shops.map(shop => (
-              <TableRow key={shop.id}>
-                <TableCell>{shop.id}</TableCell>
-                <TableCell>{shop.name}</TableCell>
-                <TableCell>{shop.owner}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 text-sm rounded ${shop.status === "Active" ? "bg-green-200 text-green-800" : shop.status === "Pending" ? "bg-yellow-200 text-yellow-800" : "bg-red-200 text-red-800"}`}>
-                    {shop.status}
-                  </span>
-                </TableCell>
-                <TableCell className="flex gap-2">
-                  {shop.status === "Pending" && (
-                    <>
-                      <Button size="sm" onClick={() => approveShop(shop.id)} className="bg-green-500">
-                        <CheckCircle className="w-4 h-4" /> Approve
-                      </Button>
-                      <Button size="sm" onClick={() => rejectShop(shop.id)} className="bg-red-500">
-                        <XCircle className="w-4 h-4" /> Reject
-                      </Button>
-                    </>
-                  )}
-                  <Button size="sm" onClick={() => openEditModal(shop)} className="bg-blue-500">
-                    <Pencil className="w-4 h-4" /> Edit
-                  </Button>
-                  <Button size="sm" onClick={() => rejectShop(shop.id)} className="bg-gray-500">
-                    <Trash2 className="w-4 h-4" /> Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
       {/* Edit Shop Modal */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent>
@@ -121,6 +211,16 @@ const ManageShops = () => {
           )}
         </DialogContent>
       </Dialog>
+      <div>
+        <div className="flex flex-col md:flex-row items-center justify-between">
+          <h1 className="text-2xl font-semibold text-gray-800">Manage Shops</h1>
+        </div>
+        <CustomDataTable
+          data={data}
+          columns={columns}
+          searchColumen="name"
+        />
+      </div>
     </div>
   );
 };
