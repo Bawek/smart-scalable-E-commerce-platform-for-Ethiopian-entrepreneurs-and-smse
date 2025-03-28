@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useEffect } from "react";
 
 // Reusable Form Component
-export function CustomForm({ fields, schema, onSubmit, title, description, file, setFile, data }) {
+export function CustomForm({ fields, schema, onSubmit, file, setFile, data }) {
     const form = useForm({
         resolver: zodResolver(schema),
         defaultValues: fields.reduce((acc, field) => {
@@ -35,14 +35,6 @@ export function CustomForm({ fields, schema, onSubmit, title, description, file,
         console.log("values are",data, form.getValues())
     }, [data, file, form]);
     return (
-        <Card className="max-w-[500px] flex flex-col items-center mx-auto overflow-y-auto">
-            <CardHeader className='text-center'>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>
-                    {description}
-                </CardDescription>
-            </CardHeader>
-            <CardContent >
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
                         {/* Dynamically Render Fields */}
@@ -103,18 +95,10 @@ export function CustomForm({ fields, schema, onSubmit, title, description, file,
                             />
                         ))}
                         {/* Submit Button */}
-                        <Button type="submit" className="w-full">
+                        <Button type="submit" className="w-full bg-orange-700">
                             Submit
                         </Button>
                     </form>
                 </Form>
-
-            </CardContent>
-            <CardFooter>
-                <p className="text-center text-sm text-gray-500">
-                    &copy; {new Date().getFullYear()} E-commerce Platform. All rights reserved.
-                </p>
-            </CardFooter>
-        </Card>
     );
 }

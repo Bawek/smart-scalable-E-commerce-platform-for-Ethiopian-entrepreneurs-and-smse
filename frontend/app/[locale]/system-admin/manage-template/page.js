@@ -2,17 +2,7 @@
 import { PlusCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
 import { ArrowUpDown, MoreHorizontal } from "lucide-react"
-
 import { Checkbox } from "@/components/ui/checkbox"
 import {
     DropdownMenu,
@@ -22,12 +12,20 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import CustomDataTable from "@/components/ui/my-components/my-table";
+import { CustomForm } from "../../components/forms/common-form/my-form";
+import { fields } from "../lib/template-uload-form-controls";
+import { pageSchema } from "../lib/templateValidation";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet"
 
 
 const data = [
@@ -140,20 +138,30 @@ const Templates = () => {
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Template Actions</DropdownMenuLabel>
                             <DropdownMenuItem
-                                onClick={() => navigator.clipboard.writeText(template)}
+                                className="cursor-pointer"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(template.id)
+                                    toast({
+                                        title: "Copied",
+                                        description: <p className="text-black">{template?.id}</p>,
+                                        variant: "default"
+                                    })
+                                }}
                             >
-                                Copy template
+                                Copy template Id
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
+                                className="cursor-pointer"
                                 onClick={() => router.push(`manage-template/${template.id}`)}
                             >
-                                Update settings
+                                Edit settings
                             </DropdownMenuItem>
                             <DropdownMenuItem
+                                className="cursor-pointer"
                                 onClick={() => router.push(`/admin-editor/${template.id}`)}
                             >
-                                Edit content
+                                Edit By tool
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -162,16 +170,11 @@ const Templates = () => {
         }
 
     ]
-    const [name, setName] = useState("");
-    const [showPopup, setShowPopup] = useState(false)
+    const [isOpen, setIsOpen] = useState(false)
     const [templates, setTemplates] = useState([])
     const [pages, setPages] = useState([])
-    // const currentPageId = useSelector((state)=>state.currentPageId)
     const [file, setFile] = useState()
     const { toast } = useToast()
-    //   const { pageStore } = useSelector((state) => state);
-    //   const { pages } = pageStore;
-
     const fetchTemplates = async () => {
         try {
             const response = await axios.get('http://localhost:8000/api/templates/get-all')
@@ -188,17 +191,7 @@ const Templates = () => {
     useEffect(() => {
         fetchTemplates()
     }, [])
-    const closeModal = () => {
-        setShowPopup(!showPopup)
-    }
     const handleSubmit = async (data) => {
-        console.log(data)
-        toast({
-            title: "Unauthorized",
-            description: <code> {JSON.stringify(data)}</code>,
-            variant: "destructive",
-        });
-        // setShowPopup(false)
         const formData = new FormData()
         formData.append('status', data.status)
         formData.append('templateName', data.templateName)
@@ -209,22 +202,29 @@ const Templates = () => {
             const response = await axios.post('http://localhost:8000/api/templates/register', formData)
             console.log(response)
             if (response.data.status !== 'success') {
-                toast({
-                    title: 'Error',
-                    description: response?.error?.message
-                })
+                return toast({
+                    title: "Error",
+                    description: <code className="text-black"> {response?.error?.message}</code>,
+                    variant: "destructive",
+                });
+
             }
-            setShowPopup(false)
             toast({
                 title: 'Success',
-                description: response?.data?.message
+                description: <p className="text-black"> {response?.data?.message || 'Successfully add the Template'}</p>,
+                variant: "default"
             })
+            setIsOpen(false)
             router.refresh()
             window.location.reload()
 
         } catch (error) {
             console.log('template creation error', error)
-            toast.error('something go wrong')
+            toast({
+                title: "Error",
+                description: <p className="text-black"> {"sorry something go wrong"}</p>,
+                variant: "destructive",
+            });
         }
 
     };
@@ -234,40 +234,30 @@ const Templates = () => {
             <div className="flex flex-col md:flex-row items-center justify-between">
                 <h1 className="text-2xl font-semibold text-gray-800">Manage Template</h1>
                 <div className="flex justify-end">
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button>
+                    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                        <SheetTrigger>
+                            <Button className="bg-orange-700">
                                 <PlusCircle />
                                 Add Template
                             </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                            <DialogHeader>
-                                <DialogTitle>Edit profile</DialogTitle>
-                                <DialogDescription>
-                                    Make changes to your profile here. Click save when you're done.
-                                </DialogDescription>
-                            </DialogHeader>
- 
-                            <form className="grid gap-4 py-4">
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="name" className="text-right">
-                                        Name
-                                    </Label>
-                                    <Input id="name" value="Pedro Duarte" className="col-span-3" />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="username" className="text-right">
-                                        Username
-                                    </Label>
-                                    <Input id="username" value="@peduarte" className="col-span-3" />
-                                </div>
-                                <DialogFooter>
-                                    <Button type="submit">Save changes</Button>
-                                </DialogFooter>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
+                        </SheetTrigger>
+                        <SheetContent className="overflow-y-auto max-h-screen">
+                            <SheetHeader>
+                                <SheetTitle>Add Template</SheetTitle>
+
+                            </SheetHeader>
+                            <section>
+                                <CustomForm
+                                    fields={fields}
+                                    onSubmit={handleSubmit}
+                                    schema={pageSchema}
+                                    file={file}
+                                    setFile={setFile}
+                                    data={""}
+                                />
+                            </section>
+                        </SheetContent>
+                    </Sheet>
                 </div>
             </div>
             <CustomDataTable

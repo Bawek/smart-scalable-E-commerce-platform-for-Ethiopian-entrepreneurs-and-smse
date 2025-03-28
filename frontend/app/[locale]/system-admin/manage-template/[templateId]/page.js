@@ -10,7 +10,7 @@ const EditTemplate = () => {
     const params = useParams()
     const [file, setFile] = useState()
     const handleSubmit = (data) => {
-console.log(data,'submited')
+        console.log(data, 'submited')
     }
     const sampleData = {
         templateName: "Modern E-Commerce Template",
@@ -21,18 +21,19 @@ console.log(data,'submited')
     };
     const templateId = params.templateId
     return (
-        <div>
-            <CustomForm
-                title='Create Template'
-                description={' Please fill all the fields Carefully.'}
-                fields={fields}
-                onSubmit={handleSubmit}
-                schema={pageSchema}
-                file={file}
-                setFile={setFile}
-                data={sampleData}
+        <div className='pb-5 flex flex-col items-center justify-center w-full'>
+            <h1 className='text-2xl font-bold mb-4'>Edit Template</h1>
+            <div>
+                <CustomForm
+                    fields={fields}
+                    onSubmit={handleSubmit}
+                    schema={pageSchema}
+                    file={file}
+                    setFile={setFile}
+                    data={sampleData}
 
-            />
+                />
+            </div>
         </div>
     )
 }
