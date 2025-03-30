@@ -12,11 +12,9 @@ export default function PageSection({ templateId }) {
   const [pages, setPages] = useState([]);
   const [name, setName] = useState("");
   const [isValid, setIsValid] = useState(true);
-
   const dispatch = useDispatch();
   const router = useRouter();
   const currentPage = useSelector((state) => state.currentPage);
-
   /** 🔹 Fetch Pages */
   useEffect(() => {
     let isMounted = true;
@@ -32,9 +30,7 @@ export default function PageSection({ templateId }) {
         toast.error("Something went wrong while fetching pages.");
       }
     };
-
     fetchPages();
-
     return () => {
       isMounted = false; // Cleanup to avoid memory leaks
     };
@@ -42,6 +38,7 @@ export default function PageSection({ templateId }) {
 
   /** 🔹 Handle Delete Page */
   const handleDeletePage = async (id) => {
+    console.log(id, 'id')
     try {
       const response = await axios.delete(`http://localhost:8000/api/pages/delete/${id}`);
       if (response.data.status === "success") {
@@ -55,7 +52,6 @@ export default function PageSection({ templateId }) {
       toast.error("Something went wrong while deleting.");
     }
   };
-
   /** 🔹 Handle Create Page */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,20 +59,72 @@ export default function PageSection({ templateId }) {
       setIsValid(false);
       return;
     }
-
     const newPage = {
       id: crypto.randomUUID(), // Unique ID
       name,
-      js: "",
-      css: "",
-      html: "",
+      html: `
+      <section class="hero-section">
+          <h1>Welcome to Our Platform</h1>
+          <p>Build, customize, and create stunning ${name} pages effortlessly.</p>
+          <button class="cta-button">Get Started</button>
+      </section>
+  `,
+      css: `
+      body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          background: #f5f7fa;
+          color: #333;
+          text-align: center;
+      }
+      .hero-section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          height: 100vh;
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          color: white;
+          padding: 20px;
+          border-radius: 10px;
+      }
+      .hero-section h1 {
+          font-size: 2.5rem;
+          margin-bottom: 10px;
+      }
+      .hero-section p {
+          font-size: 1.2rem;
+          margin-bottom: 20px;
+      }
+      .cta-button {
+          padding: 12px 24px;
+          font-size: 1rem;
+          background: #ff7eb3;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: 0.3s;
+      }
+      .cta-button:hover {
+          background: #ff5777;
+      }
+  `,
+      js: `
+      document.querySelector('.cta-button')?.addEventListener('click', () => {
+          alert('Welcome! Let’s start building.');
+      });
+  `,
       templateId
     };
-
-    dispatch(setCurrentPage(newPage));
-    setPages([...pages, newPage]); // Optimistically update state
-    closeModal();
-    router.refresh();
+    const response = await axios.post('http://localhost:8000/api/pages/register', newPage)
+    console.log("pages add", response)
+    if (response.data.status === "success") {
+      dispatch(setCurrentPage(newPage));
+      setPages([...pages, newPage]);
+      closeModal();
+    }
+    // router.refresh();
   };
 
   /** 🔹 Close Modal */
@@ -125,33 +173,40 @@ export default function PageSection({ templateId }) {
 
       {/* Page List */}
       <ul className="list-group pages">
-        {pages.map((page) => (
-          <li key={page.id} className="flex justify-between items-center p-2 border-b">
-            <h5 className="text-sm font-medium">{page.name}</h5>
-            <div className="flex gap-2">
-              <button
-                onClick={() => dispatch(setCurrentPage({
-                  id: page.id,
-                  name: page.name,
-                  js: page.js || "",
-                  css: page.css || "",
-                  html: page.html || "",
-                  templateId
-                }))}
-                className="p-1 text-blue-500 hover:text-blue-900"
-              >
-                <i className="fa fa-pencil"></i>
-              </button>
-              <button
-                onClick={() => handleDeletePage(page.id)}
-                className="p-1 text-red-500 hover:text-red-900 rounded"
-              >
-                <i className="fa fa-trash"></i>
-              </button>
-            </div>
-          </li>
+        {pages && pages.length > 0 ?
+          (
+            pages.map((page) => (
+              <li key={page.id} className={`flex justify-between items-center p-2 border-b ${currentPage.name === page.name ? "border-l border-orange-700 bg-orange-100 drop-shadow-lg" :""}`}>
+                {
+                    <h5>{page.name}</h5>
+                }
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => dispatch(setCurrentPage({
+                      id: page.id,
+                      name: page.name,
+                      js: page.js || "",
+                      css: page.css || "",
+                      html: page.html || "",
+                      templateId
+                    }))}
+                    className="p-1 text-blue-500 hover:text-blue-900"
+                  >
+                    <i className="fa fa-pencil"></i>
+                  </button>
+                  <button
+                    onClick={() => handleDeletePage(page.id)}
+                    className="p-1 text-red-500 hover:text-red-900 rounded"
+                  >
+                    <i className="fa fa-trash"></i>
+                  </button>
+                </div>
+              </li>
 
-        ))}
+            ))
+          )
+          : <p>please add page!.</p>
+        }
       </ul>
     </div>
   );

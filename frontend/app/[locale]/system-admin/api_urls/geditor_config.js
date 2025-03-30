@@ -1,5 +1,6 @@
 import grapesjs from "grapesjs";
 // import "grapesjs/dist/css/grapes.min.css";
+import 'grapesjs/dist/css/grapes.min.css';
 import gjsBlockBasic from "grapesjs-blocks-basic";
 import $ from 'jquery'
 // import grapesjsBlockBootstrap from "grapesjs-blocks-bootstrap4";
@@ -165,7 +166,7 @@ const geditorConfig = (assets, currentPage) => {
     plugins: [plugin1, block, pluginForms],
   });
 
-  addEditorCommand(editor,currentPage);
+  addEditorCommand(editor, currentPage);
   editor.on("run:preview", () => {
     console.log("It will trigger when we click on preview icon");
     // This will be used to hide border

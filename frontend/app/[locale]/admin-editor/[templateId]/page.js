@@ -23,18 +23,16 @@ const Editor = () => {
             const response = await axios.get('http://localhost:8000/api/pages/get-all')
             console.log(response)
             if (response.data.status === 'success') {
-
                 setPages(response.data?.pages)
             }
-
         } catch (error) {
             console.log('template creation error', error)
             toast.error('something go wrong')
         }
     }
-    // useEffect(() => {
-    //     fetchPages()
-    // }, [currentPage,editor])
+    useEffect(() => {
+        fetchPages()
+    }, [currentPage, editor])
 
     useEffect(() => {
         async function getAllAssets() {
@@ -45,7 +43,6 @@ const Editor = () => {
                 setAssets(error.message);
             }
         }
-
         getAllAssets();
     }, []);
 
@@ -53,12 +50,10 @@ const Editor = () => {
         const editor = geditorConfig(assets, currentPage);
         setEditor(editor);
     }, [currentPage, assets]);
-
     const onLoad = () => {
         if (editor) {
             editor.setComponents(currentPage?.html);
             editor.setStyle(currentPage?.css);
-            console.log('loaded')
         }
         else {
             console.log(editor, 'editor')

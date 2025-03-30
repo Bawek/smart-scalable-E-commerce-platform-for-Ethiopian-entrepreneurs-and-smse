@@ -1,13 +1,13 @@
 export const fields = [
     {
-        name: "templateName",
+        name: "name",
         label: "Template Name",
         placeholder: "Enter your Template Name",
         description: "Provide the Template Name.",
         type: "text", // Text input
     },
     {
-        name: "templatePrice",
+        name: "price",
         label: "Template Price",
         placeholder: "Enter your Template Price",
         description: "Provide the Template Price.",
@@ -26,7 +26,7 @@ export const fields = [
         name: "description",
         label: "description",
         description: "Enter yourdescription  .",
-        type: "textarea", // Select input
+        type: "textarea",
         placeholder: "Enter yourdescription ",
 
     },
@@ -34,19 +34,23 @@ export const fields = [
     {
         type: "select", // Select input
         label: "Status ",
-        name:'status',
+        name: 'status',
         options: [
             {
                 label: "Select Status ",
-                value:'pending',
+                value: 'NULL',
             },
             {
-                label: "pending",
-                value:'Pending',
+                label: "PENDING",
+                value: "PENDING",
             },
             {
-                label: "puplish ",
-                value:'puplish',
+                label: "SUSPENDED",
+                value: 'SUSPENDED',
+            },
+            {
+                label: "ACTIVE",
+                value: 'ACTIVE',
             },
 
         ]

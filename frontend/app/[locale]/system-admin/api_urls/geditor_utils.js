@@ -521,8 +521,8 @@ export const addEditorCommand = (editor, currentPage) => {
             const css = editor.getCss();
             // Send data to backend
             try {
-                const response = await fetch("http://localhost:8000/api/pages/register", {
-                    method: "POST",
+                const response = await fetch(`http://localhost:8000/api/pages/update/${currentPage.id}`, {
+                    method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -535,8 +535,6 @@ export const addEditorCommand = (editor, currentPage) => {
                         js: ''
                     }),
                 });
-
-                console.log(response, 'on the freist response')
                 if (response.ok) {
                     toast.success("Page saved successfully!");  // Show success toast when saving
                 } else {
@@ -548,8 +546,6 @@ export const addEditorCommand = (editor, currentPage) => {
             }
         },
     });
-
-
     //Clear Button
     editor.Commands.add("cmd-clear", {
         run: (editor) => {
@@ -557,7 +553,6 @@ export const addEditorCommand = (editor, currentPage) => {
             editor.CssComposer.clear();
         },
     });
-
     //Undo
     editor.Commands.add("undo", {
         run: (editor) => editor.UndoManager.undo(),

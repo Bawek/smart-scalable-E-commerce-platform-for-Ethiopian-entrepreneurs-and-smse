@@ -12,9 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Pencil, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import CustomDataTable from "@/components/ui/my-components/my-table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -34,8 +32,7 @@ const data = [
   { shopId: "10", name: "Shop 10", owner: "Owner 10", status: "Active" }
 ];
 const ManageShops = () => {
-  const [shops, setShops] = useState([
-    { id: "1", name: "Shop 1", owner: "Owner 1", status: "Active" },]);
+  const [shops, setShops] = useState(data);
   const [selectedShop, setSelectedShop] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast()
@@ -123,10 +120,10 @@ const ManageShops = () => {
               <DropdownMenuItem
                 className="cursor-pointer hover:bg-amber-100"
                 onClick={() => {
-                  navigator.clipboard.writeText(shop.id);
+                  navigator.clipboard.writeText(shop.shopId);
                   toast({
                     title: "Copied",
-                    description: <p className="text-black">{shop?.id}</p>,
+                    description: <p className="text-black">{shop?.shopId}</p>,
                     variant: "default"
                   });
                 }}
@@ -156,16 +153,6 @@ const ManageShops = () => {
       },
     }
   ]
-  // Approve a shop
-  const approveShop = (id) => {
-    setShops(shops.map(shop => shop.id === id ? { ...shop, status: "Active" } : shop));
-  };
-
-  // Reject a shop
-  const rejectShop = (id) => {
-    setShops(shops.filter(shop => shop.id !== id));
-  };
-
   // Open edit modal
   const openEditModal = (shop) => {
     setSelectedShop(shop);
@@ -174,12 +161,12 @@ const ManageShops = () => {
 
   // Save edited shop
   const saveShopChanges = () => {
-    setShops(shops.map(shop => (shop.id === selectedShop.id ? selectedShop : shop)));
+    setShops(shops.map(shop => (shop.shopId === selectedShop.shopId ? selectedShop : shop)));
     setIsEditing(false);
   };
 
   return (
-    <div className="p-6">
+    <div className="">
       {/* Edit Shop Modal */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent>
@@ -213,10 +200,10 @@ const ManageShops = () => {
       </Dialog>
       <div>
         <div className="flex flex-col md:flex-row items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-800">Manage Shops</h1>
+          <h1 className="text-2xl mx-auto font-semibold text-gray-800">Manage Shops</h1>
         </div>
         <CustomDataTable
-          data={data}
+          data={shops}
           columns={columns}
           searchColumen="name"
         />

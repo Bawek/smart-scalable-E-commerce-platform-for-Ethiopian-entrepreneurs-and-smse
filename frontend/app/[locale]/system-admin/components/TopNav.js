@@ -16,7 +16,7 @@ function TopNav() {
         <div className="panel__devices"></div>
         <div className="panel__editor"></div>
         <div className="panel__basic-actions"></div>
-        <Link href={'/system-admin/manage-template'} className="border border-red-500 text-red-500 px-2 py-1">Go Templates</Link>
+        <Link href={'/system-admin/manage-template'} className="border border-red-500 text-red-500 hover:bg-orange-700 rounded-md hover:text-white px-2 py-1">Go Templates</Link>
       </div>
     </nav>
   );
