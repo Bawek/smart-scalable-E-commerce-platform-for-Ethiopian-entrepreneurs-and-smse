@@ -275,7 +275,7 @@ const WithGrapesjs = ({ data, page, templateId }) => {
   //   });
   //   editor.on('load', onLoad);
   // };
-
+  // deviceManager
   /** add commands */
   const addCommands = (editor) => {
     const commands = editor.Commands;

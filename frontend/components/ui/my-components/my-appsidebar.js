@@ -116,7 +116,7 @@ const data = {
       url: "#",
       icon: Settings,
       items: [
-        { title: "Business Settings", url: "#" },
+        { title: "Business Settings", url: "business-setting" },
         { title: "Payment Settings", url: "#" },
         { title: "Shipping Settings", url: "#" },
         { title: "Security", url: "#" },

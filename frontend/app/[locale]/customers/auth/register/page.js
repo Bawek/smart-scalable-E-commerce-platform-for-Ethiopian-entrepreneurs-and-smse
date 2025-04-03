@@ -43,51 +43,96 @@ export default function Register() {
       if (response?.status !== 'success') {
         return toast({
           title: "Failed",
-          description: 'Registration Failed. Please Try Again'
+          description: 'Registration Failed. Please Try Again',
+          duration: 3000
         });
       }
       toast({
         title: "Form Submitted Successfully!",
-        description: "please login here to preced with us."
+        description: "please login here to preced with us.",
+        duration: 3000
       });
-      router.push('/customers/auth/login');
+      router.push('/merchant');
       redirect;
     } catch (error) {
       console.log('error on merchant registration', error);
       toast({
         title: "Failed",
-        description: 'Registration Failed. Please Try Again'
+        description: 'Registration Failed. Please Try Again',
+        duration: 3000
       });
     }
   };
 
   return (
-<div className="w-full flex justify-center items-center">
-<Card className="w-full max-w-[450px] shadow-xl hover:shadow-2xl transition-shadow duration-300 rounded-2xl border-0">
-      <CardHeader className="text-center space-y-4">
-        <CardTitle className="text-3xl font-bold text-blue-600">
-          Join Our Marketplace 🌟
-        </CardTitle>
-        <CardDescription className="text-gray-600">
-          Start your journey with us in just 2 minutes!
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleRegister)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="w-full flex justify-center items-center">
+      <Card className="w-full max-w-[450px] shadow-xl hover:shadow-2xl transition-shadow duration-300 rounded-2xl border-0">
+        <CardHeader className="text-center space-y-4">
+          <CardTitle className="text-3xl font-bold text-blue-600">
+            Join Our Marketplace 🌟
+          </CardTitle>
+          <CardDescription className="text-gray-600">
+            Start your journey with us in just 2 minutes!
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleRegister)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="firestName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">
+                        First Name <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="John"
+                          {...field}
+                          className="rounded-lg focus:ring-2 focus:ring-blue-500 border-gray-300"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-sm" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">
+                        Last Name <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Doe"
+                          {...field}
+                          className="rounded-lg focus:ring-2 focus:ring-blue-500 border-gray-300"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-sm" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="firestName"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 font-medium">
-                      First Name <span className="text-red-500">*</span>
+                      Email <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        type="text"
-                        placeholder="John"
+                        type="email"
+                        placeholder="john@example.com"
                         {...field}
                         className="rounded-lg focus:ring-2 focus:ring-blue-500 border-gray-300"
                       />
@@ -96,18 +141,19 @@ export default function Register() {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
-                name="lastName"
+                name="password"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 font-medium">
-                      Last Name <span className="text-red-500">*</span>
+                      Password <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        type="text"
-                        placeholder="Doe"
+                        type="password"
+                        placeholder="••••••••"
                         {...field}
                         className="rounded-lg focus:ring-2 focus:ring-blue-500 border-gray-300"
                       />
@@ -116,76 +162,33 @@ export default function Register() {
                   </FormItem>
                 )}
               />
-            </div>
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 font-medium">
-                    Email <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="john@example.com"
-                      {...field}
-                      className="rounded-lg focus:ring-2 focus:ring-blue-500 border-gray-300"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500 text-sm" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 font-medium">
-                    Password <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      {...field}
-                      className="rounded-lg focus:ring-2 focus:ring-blue-500 border-gray-300"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500 text-sm" />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-6 rounded-xl transition-all hover:shadow-lg"
-              disabled={isLoading}
+              <Button
+                className="w-full bg-gradient-to-r from-green-600 via-yellow-400 to-red-400 hover:from-green-700 hover:to-orange-700 text-white font-semibold py-4 rounded-xl transition-all hover:shadow-lg"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <span className="animate-pulse">Creating Account...</span>
+                ) : (
+                  <>🚀 Get Started Now</>
+                )}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+        <CardFooter className="block text-center pb-8">
+          <p className="text-gray-600">
+            Already have an account?{' '}
+            <Link
+              className="text-blue-600 cursor-pointer hover:text-indigo-800 font-semibold no-underline underline-offset-4 transition-colors"
+              href="/customers/auth/login"
             >
-              {isLoading ? (
-                <span className="animate-pulse">Creating Account...</span>
-              ) : (
-                <>🚀 Get Started Now</>
-              )}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter className="block text-center pb-8">
-        <p className="text-gray-600">
-          Already have an account?{' '}
-          <Link
-            className="text-blue-600 cursor-pointer hover:text-indigo-800 font-semibold no-underline underline-offset-4 transition-colors"
-            href="/customers/auth/login"
-          >
-            Sign In
-          </Link>
-          {' '} Here.
-        </p>
-      </CardFooter>
-    </Card>
-</div>
+              Sign In
+            </Link>
+            {' '} Here.
+          </p>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
