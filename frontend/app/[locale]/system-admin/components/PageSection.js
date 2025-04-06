@@ -6,9 +6,11 @@ import { setCurrentPage } from "@/lib/features/admin-my/currentPageSlice";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { useToast } from "@/hooks/use-toast";
 
 export default function PageSection({ templateId }) {
   const [show, setShow] = useReducer((show) => !show, false);
+  const { toast } = useToast()
   const [pages, setPages] = useState([]);
   const [name, setName] = useState("");
   const [isValid, setIsValid] = useState(true);
@@ -117,13 +119,31 @@ export default function PageSection({ templateId }) {
   `,
       templateId
     };
-    const response = await axios.post('http://localhost:8000/api/pages/register', newPage)
-    console.log("pages add", response)
-    if (response.data.status === "success") {
+    try {
+      const response = await axios.post('http://localhost:8000/api/pages/register', newPage)
+      if (response.data?.status !== "success") {
+        closeModal();
+        toast({
+          title: 'Error',
+          description: response.data?.message || 'Something went wrong. please try Again.',
+          duration: 2000,
+        })
+        return
+      }
+
+      console.log("pages add", response)
       dispatch(setCurrentPage(newPage));
       setPages([...pages, newPage]);
       closeModal();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: response.data?.message || 'Something went wrong. please try Again.',
+        duration: 2000,
+        variant: "destructive"
+      })
     }
+    closeModal();
     // router.refresh();
   };
 
@@ -176,9 +196,9 @@ export default function PageSection({ templateId }) {
         {pages && pages.length > 0 ?
           (
             pages.map((page) => (
-              <li key={page.id} className={`flex justify-between items-center p-2 border-b ${currentPage.name === page.name ? "border-l border-orange-700 bg-orange-100 drop-shadow-lg" :""}`}>
+              <li key={page.id} className={`flex justify-between items-center p-2 border-b ${currentPage.name === page.name ? "border-l border-orange-700 bg-orange-100 drop-shadow-lg" : ""}`}>
                 {
-                    <h5>{page.name}</h5>
+                  <h5>{page.name}</h5>
                 }
                 <div className="flex gap-2">
                   <button

@@ -105,7 +105,7 @@ const getById = async (req, res, next) => {
     const { pageId } = req.params
     console.log('pages update', req.body)
     try {
-        const page = await prisma.mypage.findFirst({
+        const page = await prisma.page.findFirst({
             where: {
                 id: Number(pageId)
             },

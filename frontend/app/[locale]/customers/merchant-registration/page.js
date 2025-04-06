@@ -16,9 +16,9 @@ const Images = [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQS40jswRvC7NjQH5tKE6Z8J1jpxyPK2zA7SQ&s'
 ]
 const MerchantRegistrationPrompt = () => {
-    const [currentPrompt, setCurrentPrompt] = useState(1)
+    const [currentPrompt, setCurrentPrompt] = useState(2)
     return (
-        <div className='w-[95%] mx-auto flex flex-col  h-screen md:flex-row'>
+        <div className='w-[95%] mx-auto flex flex-col md:flex-row'>
             <div className='w-full md:w-2/3 flex flex-col items-center'>
                 {
                     currentPrompt === 1 ?

@@ -3,16 +3,51 @@ const httpError = require("../middlewares/httpError")
 
 const registerShop = async (req, res, next) => {
     const {
+        merchantId,
         name,
-        prviewImage,
-        merchant,
+        slug,
+        description,
+        businessHours,
     } = req.body
+    if (!req.file) return next(new httpError("Sorry Your logo is Required."))
+
     try {
-        const newShop = await prisma.myshop.create({
+        const merchant = await prisma.merchant.findFirst({
+            where: {
+                id: merchantId
+            }
+        })
+        if (!merchant) {
+            // If an shop exists with the name, return error
+            return next(new httpError('Please First Register as merchant to do so. Please try again.', 409));
+        }
+        const shop = await prisma.shop.findFirst({
+            where: {
+                name: name
+            }
+        })
+        if (shop) {
+            // If an shop exists with the name, return error
+            return next(new httpError('Someone has already registered with this Name. Please try again.', 409));
+        }
+        const newShop = await prisma.shop.create({
             data: {
                 name,
-                prviewImage,
-                merchant,
+                slug,
+                description,
+                businessHours,
+                logoImageUrl: req.file.filename,
+                merchant: {
+                    connect: { id: merchantId }
+                },
+                template: {
+                    connect: { id: "799bcba8-d595-4b4f-94b4-ed93464235b4" }
+                },
+                location: {
+                    connect: {
+                        id: merchant.locationId
+                    }
+                }
             }
         });
 
@@ -37,8 +72,8 @@ const getAllShop = async (req, res, next) => {
     }
 }
 const getById = async (req, res, next) => {
-    const {shopId} = req.params
-    console.log(shopId,'shopId')
+    const { shopId } = req.params
+    console.log(shopId, 'shopId')
     try {
         const pages = await prisma.page.findMany()
         const shop = await prisma.myshop.findFirst({
@@ -46,7 +81,7 @@ const getById = async (req, res, next) => {
                 id: Number(shopId)
             },
         })
-        res.status(200).json({shop,pages})
+        res.status(200).json({ shop, pages })
     } catch (error) {
         next(new httpError(error.message, 500))
     }

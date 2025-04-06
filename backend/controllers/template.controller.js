@@ -10,7 +10,15 @@ const registerTemplate = async (req, res, next) => {
         status
     } = req.body
     if (!req.file) return res.status(400).json({ message: 'File is required', success: false })
+
     try {
+        const template = await prisma.template.findFirst({
+            where: {
+                name: name
+            }
+        })
+        if (!template) return res.status(409).json({ message: 'The is Registered please change the name', success: false })
+
         const newTemplate = await prisma.template.create({
             data: {
                 name,
@@ -51,10 +59,17 @@ const getTemplateById = async (req, res, next) => {
                 id: templateId
             }
         })
-        console.log(template.previewImage)
+        const pages = await prisma.page.findMany({
+            where: {
+                templateId: templateId
+            } 
+        })
         res.status(201).json({
             status: 'success',
-            template
+            template: {
+                ...template,
+                pages
+            }
         })
     } catch (error) {
         console.log('template register error', error)

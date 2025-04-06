@@ -8,7 +8,7 @@ import status from "./features/uiBuilder/status";
 import { webBuilder } from "./features/webBuilder/webBuilder";
 import { productsApi } from "./features/products/products";
 import { authSlice } from "./features/auth/authMerchant";
-import { shopSlice } from "./features/shop/shop";
+import { shopApi } from "./features/shop/shop";
 import editorReducer from "./features/editor";
 import shopNameSlice from "./features/shop/shopNameSlice";
 import { publicShopSlice } from "./features/shop/publicShopSlice";
@@ -18,6 +18,7 @@ import promptSlice from "./features/prompt";
 import accountSlice from "./features/auth/accountSlice";
 import AdminEditor from "./features/admin-my/admin-editor";
 import { accountApi } from "./features/auth/accountApi";
+import { templateApi } from "./features/templates/templateApi";
 
 // Redux Persist Configuration for the auth slice
 const persistConfig = {
@@ -31,9 +32,9 @@ const persistedAuthReducer = persistReducer(persistConfig, accountSlice);
 // Logger middleware for development (optional, can be removed in production)
 const loggerMiddleware = (storeAPI) => (next) => (action) => {
 	if (process.env.NODE_ENV === 'development') {
-	  console.log('Dispatching:', action);
+	//   console.log('Dispatching:', action);
 	  const result = next(action);
-	  console.log('Next State:', storeAPI.getState());
+	//   console.log('Next State:', storeAPI.getState());
 	  return result;
 	}
 	return next(action); // Don't log in production
@@ -45,7 +46,8 @@ export const makeStore = () => {
 			[productsApi.reducerPath]: productsApi.reducer,
 			[accountApi.reducerPath]: accountApi.reducer,
 			[authSlice.reducerPath]: authSlice.reducer,
-			[shopSlice.reducerPath]: shopSlice.reducer,
+			[shopApi.reducerPath]: shopApi.reducer,
+			[templateApi.reducerPath]: templateApi.reducer,
 			[publicShopSlice.reducerPath]: publicShopSlice.reducer,
 			merchant: merchantSlice,
 			shopName: shopNameSlice,
@@ -64,7 +66,8 @@ export const makeStore = () => {
 				.concat(webBuilder.middleware)
 				.concat(productsApi.middleware)
 				.concat(authSlice.middleware)
-				.concat(shopSlice.middleware)
+				.concat(shopApi.middleware)
+				.concat(templateApi.middleware)
 				.concat(accountApi.middleware)
 				.concat(loggerMiddleware) // Add logger middleware only in development
 				.concat(publicShopSlice.middleware),

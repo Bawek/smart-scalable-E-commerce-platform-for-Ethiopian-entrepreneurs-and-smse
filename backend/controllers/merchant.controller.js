@@ -2,56 +2,47 @@ const prisma = require("../config/db")
 const httpError = require("../middlewares/httpError")
 
 const registerMerchant = async (req, res, next) => {
+    console.log('merchant')
     const {
-        hasPhysicalStore,
-        userId,
-        bankAccountNumber,
-        physicalShopName,
-        physicalShopAddress,
-        physicalShopCity,
-        physicalShopPhoneNumber,
+        accountId,
+        locationId,
+        businessName,
+        ownerName,
+        businessPhone,
+        bussinessEmail,
+        cbeAccountNo,
+        businessType,
     } = req.body
-    console.log('unitl here')
+    if (!req.file) return next(new httpError("Sorry Your Identity Card is Required."))
+
+    console.log('merchant', req.body)
     try {
         const merchant = await prisma.merchant.findFirst({
             where: {
-                userId: userId
+                AND: {
+                    businessName,
+                    businessPhone,
+                    bussinessEmail,
+                    cbeAccountNo
+                }
             }
         })
         if (merchant) {
             // If an account exists with the email, return error
             return next(new httpError('Someone has already registered with this Account. Please try again.', 409));
         }
-        const isBankAccountExit = await prisma.merchant.findFirst({
-            where: {
-                bankAccountNumber: bankAccountNumber
-            }
-        })
-        // If BankAccount is provided, perform additional checks or logic here
-        if (isBankAccountExit) {
-            return next(new httpError('This BankNumber is already associated with another account.', 409));
-
-        }
-        // // If ShopName is provided, perform additional checks or logic here
-        // const isExistphysicalShopName = await prisma.merchant.findFirst({
-        //     where: {
-        //         physicalShopName: physicalShopName
-        //     }
-        // })
-        // if (isExistphysicalShopName) {
-        //     return next(new httpError('This physicalShopName is already associated with another account.', 409));
-
-        // }
         // Register the new account (additional validation as necessary)
         const newMerchant = await prisma.merchant.create({
             data: {
-                hasPhysicalStore,
-                userId,
-                bankAccountNumber,
-                physicalShopName,
-                physicalShopAddress,
-                physicalShopCity,
-                physicalShopPhoneNumber
+                accountId,
+                identityCard: req.file.filename,
+                locationId,
+                businessName,
+                ownerName,
+                businessPhone,
+                bussinessEmail,
+                cbeAccountNo,
+                businessType
             }
         });
 
@@ -98,7 +89,7 @@ const registerMyMerchant = async (req, res, next) => {
 }
 const getMyMerchant = async (req, res, next) => {
     try {
-        const merchant = await prisma.myMerchant.findMany()
+        const merchant = await prisma.merchant.findMany()
 
         // Success: Return the newly created account
         return res.status(201).json({

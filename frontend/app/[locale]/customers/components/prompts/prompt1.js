@@ -24,6 +24,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useRegisterLocationMutation } from '@/lib/features/location/locationapi';
+import { useRegisterMerchantMutation } from '@/lib/features/merchant/registrationApi';
 
 const businessCategories = [
     "Electrical", "Clothing & Fashion", "Electronics & Gadgets", "Furniture & Home Decor", "Automobile & Spare Parts",
@@ -32,8 +34,8 @@ const businessCategories = [
 
 const schema = z.object({
     businessName: z.string().min(1, "Business name is required"),
-    phoneNumber: z.string().min(1, "Phone number is required").regex(/^\+?[0-9]*$/, "Phone number is not valid"),
-    businessEmail: z.string().email("Invalid email address"),
+    businessPhone: z.string().min(1, "Phone number is required").regex(/^\+?[0-9]*$/, "Phone number is not valid"),
+    bussinessEmail: z.string().email("Invalid email address"),
     businessType: z.string().min(1, "Business category is required"),
     ownerName: z.string().min(1, "Owner name is required"),
     identityCard: z
@@ -41,22 +43,81 @@ const schema = z.object({
         .refine(file => file.size > 0, "Identity card is required")
         .refine(file => ['image/jpeg', 'image/png', 'image/gif'].includes(file.type), "File must be an image (JPEG, PNG, or GIF)"),
     town: z.string().min(1, "Town is required"),
-    country: z.string().min(1, "Country is required"),
     region: z.string().min(1, "Region is required"),
+    woreda: z.string().min(1, "Region is required"),
     kebele: z.string().min(1, "Kebele is required"),
     cbeAccountNo: z.string().min(1, "CBE account number is required"),
 });
 const PersonalDetail = ({ currentPrompt, setCurrentPrompt }) => {
+    const [registerLocation, { isLoading, isError, isSuccess }] = useRegisterLocationMutation();
+    const [registerMerchant, { isLoading: mIsLoading, isError: mIsError, isSuccess: mIsSuccess }] = useRegisterMerchantMutation();
     const { toast } = useToast();
     const form = useForm({
         resolver: zodResolver(schema)
     });
-
     const handleNext = async (data) => {
-        setCurrentPrompt(currentPrompt + 1);
-        console.log(data, 'data');
-    };
+        const formData = new FormData();
 
+        // Prepare location data
+        const locationData = {
+            town: data.town,
+            region: data.region,
+            kebele: data.kebele,
+            woreda: data.woreda,
+        };
+
+        // Add all form fields to FormData
+        Object.entries(data).forEach(([key, value]) => {
+            formData.append(key, value);
+        });
+
+        try {
+            // Step 1: Register Location
+            const locationResponse = await registerLocation(locationData).unwrap();
+
+            if (!locationResponse || locationResponse.status !== "success") {
+                return toast({
+                    title: "Error",
+                    description: "Failed to register location. Please try again.",
+                    duration: 2000,
+                    variant: "destructive",
+                });
+            }
+
+            // Step 2: Register Merchant
+            formData.append("locationId", locationResponse.location.id);
+            formData.append("accountId", "d89b614f-4747-4f8d-bc9e-b96adb51e96a");
+
+            const merchantResponse = await registerMerchant(formData).unwrap();
+
+            if (!merchantResponse || merchantResponse.status !== "success") {
+                return toast({
+                    title: "Error",
+                    description: "Failed to register merchant. Please try again.",
+                    duration: 2000,
+                    variant: "destructive",
+                });
+            }
+
+            // Success
+            toast({
+                title: "Success",
+                description: "Congratulations! Your Account has been created successfully.",
+                duration: 2000,
+            });
+
+            setCurrentPrompt((prev) => prev + 1);
+
+        } catch (error) {
+            console.error("Merchant registration error:", error);
+            toast({
+                title: "Error",
+                description: "Something went wrong. Please try again.",
+                duration: 2000,
+                variant: "destructive",
+            });
+        }
+    };
     return (
         <div className="max-w-[400px] flex flex-col shadow-none items-center mx-auto bg-white p-6 rounded-lg overflow-y-auto">
             <div className='text-center mb-4'>
@@ -79,7 +140,7 @@ const PersonalDetail = ({ currentPrompt, setCurrentPrompt }) => {
                         )} />
 
                         {/* Phone Number */}
-                        <FormField control={form.control} name="phoneNumber" render={({ field }) => (
+                        <FormField control={form.control} name="businessPhone" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Phone Number <span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
@@ -90,7 +151,7 @@ const PersonalDetail = ({ currentPrompt, setCurrentPrompt }) => {
                         )} />
 
                         {/* Business Email */}
-                        <FormField control={form.control} name="businessEmail" render={({ field }) => (
+                        <FormField control={form.control} name="bussinessEmail" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Business Email <span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
@@ -173,11 +234,11 @@ const PersonalDetail = ({ currentPrompt, setCurrentPrompt }) => {
                                     </FormItem>
                                 )} />
 
-                                <FormField control={form.control} name="country" render={({ field }) => (
+                                <FormField control={form.control} name="woreda" render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Country <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel>Woreda <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input value={field.value || ""} type="text" placeholder="Enter your Country" {...field} />
+                                            <Input value={field.value || ""} type="text" placeholder="Enter your woreda" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
