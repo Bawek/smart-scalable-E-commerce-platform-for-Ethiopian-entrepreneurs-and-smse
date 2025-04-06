@@ -40,16 +40,13 @@ model Merchant {
   id               String          @id @default(uuid())
   accountId        String          @unique
   account          Account         @relation(fields: [accountId], references: [id])
-  cleAccountNo     String
+  identityCard     String
   locationId       String
   businessName     String
   ownerName        String
   businessPhone    String          @unique
   bussinessEmail   String          @unique
   cbeAccountNo     String          @unique
-  physicalShop     Boolean?        @default(false)
-  tradeLicense     String          @unique //upload document
-  tinCertificate   String          @unique //upload document
   businessType     String
   status           StatusIndicator @default(PENDING)
   registrationDate DateTime        @default(now())

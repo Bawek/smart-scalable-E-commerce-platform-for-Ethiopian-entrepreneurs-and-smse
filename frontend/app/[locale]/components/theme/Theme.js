@@ -2,18 +2,24 @@
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
-import {Card, CardHeader, CardFooter, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardFooter, CardContent } from "@/components/ui/card";
+import { imageViewer } from "../../system-admin/lib/imageViewer";
+import { useState } from "react";
+import { useEffect } from "react";
 
-const Theme = ({ theme })=> {
+const Theme = ({ theme }) => {
   console.log(theme);
+  const [image, setImage] = useState([])
+  useEffect(() => {
+    setImage(theme.PreviewImage)
+  }, [])
 
   return (
     <Card className="w-80 bg-white border border-gray-300 rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl">
-      {/* Image Section */}
       <CardHeader className="relative overflow-hidden rounded-t-lg">
         <Link href={`/site-builder/${theme.id}`}>
           <Image
-            src={`http://localhost:8000/images/${theme.PreviewImage}` || "/default-image.png"}
+            src={imageViewer(image[0])}
             alt={theme.name}
             width={300}
             height={270}

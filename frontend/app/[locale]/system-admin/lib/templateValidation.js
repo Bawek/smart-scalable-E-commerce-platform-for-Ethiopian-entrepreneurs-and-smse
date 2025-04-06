@@ -2,17 +2,23 @@ import { z } from "zod";
 
 // Define schema for validation based on fields array
 export const pageSchema = z.object({
-    templateName: z.string().min(1, {
-        message: "page name is required",
+    name: z.string().min(1, {
+        message: "Page name is required",
     }),
-    status: z.string().min(1, {
-        message: "page name is required",
+
+    status: z.enum(["ACTIVE", "SUSPENDED", "PENDING"], {
+        errorMap: () => {
+            return { message: "Status must be one of ACTIVE, SUSPENDED, or PENDING" };
+        },
     }),
+
     PreviewImage: z.instanceof(File).optional(),
-    templatePrice: z.string().min(1, {
-        message: "page name is required",
+
+    price: z.string().min(1, {
+        message: "Price is required",
     }),
+
     description: z.string().min(1, {
-        message: "page name is required",
+        message: "Description is required",
     }),
 });

@@ -1,11 +1,20 @@
 
+'use client'
 import { Button } from "@/components/ui/button"
+import { selectAll } from "@/lib/features/auth/accountSlice"
 import Link from "next/link"
-import logo from '../../../public/e-commerce-logo.png'
-
+import { useRouter } from "next/navigation"
+import { useSelector } from "react-redux"
 export default function Home() {
+  const router = useRouter()
+  const user = useSelector(selectAll)
   const handleClick = () => {
-
+    if (user && user.role === "MERCHANT") {
+      router.push('/merchant')
+    }
+    else {
+      router.push('customers/auth/register')
+    }
   }
   return (
     <main className='min-w-full'>
@@ -26,7 +35,14 @@ export default function Home() {
             </p>
             <div className="mt-8 flex justify-center gap-4">
               <Button className="hover:opacity-90 hover:bg-orange-800 bg-orange-700" size="lg">Explore Shops</Button>
-              <Button className="hover:opacity-90 hover:bg-orange-800 bg-orange-700" size="lg">Create Your Shop</Button>
+              <Button onClick={handleClick} className="hover:opacity-90 hover:bg-orange-800 bg-orange-700" size="lg">
+                {
+                  user.role === "MERCHANT" ?
+                    "Go Dashboard"
+                    :
+                    "Create Your Shop"
+                }
+              </Button>
             </div>
           </div>
         </div>
@@ -406,7 +422,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-{/* last slogan section */}
+      {/* last slogan section */}
       <section className="relative block bg-gray-50">
         <div
           className="bottom-auto top-0 left-0 right-0 w-full absolute pointer-events-none overflow-hidden -mt-20 h-20"

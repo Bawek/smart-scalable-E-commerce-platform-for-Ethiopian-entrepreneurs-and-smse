@@ -5,13 +5,13 @@ import geditorConfig from "../../system-admin/api_urls/geditor_config";
 import PageSection from "../../system-admin/components/PageSection";
 import Sidebar from "../../system-admin/components/Sidebar";
 import TopNav from "../../system-admin/components/TopNav";
+import '../../../../styles/mystyle.css'
 import 'bootstrap'
 // import { useSelector } from "react-redux";
 import { API_HOST } from "../../system-admin/api_urls/geditor_utils";
 import { useParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-
 const Editor = () => {
     const [editor, setEditor] = useState(null);
     const [assets, setAssets] = useState([]);
@@ -23,18 +23,16 @@ const Editor = () => {
             const response = await axios.get('http://localhost:8000/api/pages/get-all')
             console.log(response)
             if (response.data.status === 'success') {
-
                 setPages(response.data?.pages)
             }
-
         } catch (error) {
             console.log('template creation error', error)
             toast.error('something go wrong')
         }
     }
-    // useEffect(() => {
-    //     fetchPages()
-    // }, [currentPage,editor])
+    useEffect(() => {
+        fetchPages()
+    }, [currentPage, editor])
 
     useEffect(() => {
         async function getAllAssets() {
@@ -45,7 +43,6 @@ const Editor = () => {
                 setAssets(error.message);
             }
         }
-
         getAllAssets();
     }, []);
 
@@ -53,12 +50,10 @@ const Editor = () => {
         const editor = geditorConfig(assets, currentPage);
         setEditor(editor);
     }, [currentPage, assets]);
-
     const onLoad = () => {
         if (editor) {
             editor.setComponents(currentPage?.html);
             editor.setStyle(currentPage?.css);
-            console.log('loaded')
         }
         else {
             console.log(editor, 'editor')
@@ -71,17 +66,17 @@ const Editor = () => {
         }
     }, [editor, currentPage]);
     return (
-        <div className="app">
+        <div className="App">
             <div
                 id="navbar"
                 className="sidenav d-flex flex-column overflow-scroll position-fixed"
             >
                 <nav className="navbar navbar-light">
                     <div className="container-fluid">
-                        <span className="navbar-brand mb-0 h3 logo">Admin pannel</span>
+                        <span className="navbar-brand mb-0 h3 logo">Admin Builder</span>
                     </div>
                 </nav>
-                <PageSection templateId={templateId} />
+                <PageSection templateId={templateId}/>
                 <Sidebar />
             </div>
             <div
@@ -96,3 +91,5 @@ const Editor = () => {
 };
 
 export default Editor;
+
+

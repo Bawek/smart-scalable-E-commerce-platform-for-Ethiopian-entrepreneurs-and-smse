@@ -14,8 +14,7 @@ const templateRouter = require('./routes/template.route')
 const paymentRouter = require('./routes/payment.route')
 const cookieParser = require('cookie-parser')
 const handleRefreshToken = require('./controllers/refreshToken.controller')
-
-
+const locationRouter = require('./routes/location.route')
 require('dotenv').config
 // constants  
 const PORT = process.env.PORT || 8000
@@ -41,16 +40,11 @@ app.use('/api/merchant', merchantRouter)
 app.get('/api/refresh-token', handleRefreshToken)
 
 app.use('/api/accounts', accountRouter)
+app.use('/api/location', locationRouter)
 app.use('/api/shops', shopRouter)
 app.use('/api/image', imageRouter)
 app.use('/api/pages', pagesRouter)
 app.use('/api/templates', templateRouter)
-app.get('/', async (req, res) => {
-    const users = await clerkClient.users.getUserList({
-        limit: 10
-    })
-    res.status(200).json(users)
-})
 //app routes
 
 // handling errors

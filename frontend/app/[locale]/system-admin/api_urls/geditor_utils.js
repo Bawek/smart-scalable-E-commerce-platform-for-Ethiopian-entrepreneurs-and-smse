@@ -409,20 +409,21 @@ export const traitManager = {
 export const selectorManager = {
     appendTo: "#styles-container",
 };
+
 export const panels = {
     defaults: [
         {
             id: "basic-actions",
             el: ".panel__basic-actions",
-            // buttons: [
-            //     {
-            //         id: "visibility",
-            //         active: true, // active by default
-            //         className: "btn-toggle-borders",
-            //         label: '<i class="fa fa-clone"></i>',
-            //         command: "sw-visibility", // Built-in command
-            //     },
-            // ],
+            buttons: [
+                {
+                    id: "visibility",
+                    active: true, // active by default
+                    className: "btn-toggle-borders",
+                    label: '<i class="fa fa-clone"></i>',
+                    command: "sw-visibility", // Built-in command
+                },
+            ],
         },
         {
             id: "editor-actions",
@@ -430,35 +431,38 @@ export const panels = {
             buttons: [
                 {
                     id: "saveDb",
-                    className: "fa fa-save btn-save", // Corrected className
-                    command: "saveDb",
-                },
-
-                {
-                    id: "cmd-clear",
                     className: "fa fa-trash",
-                    command: "cmd-clear",
+                    command: "saveDb",
                 },
                 {
                     id: "undo",
-                    className: "fa fa-undo",
-                    command: "undo",
+                    className: "undo",
+                    command: "core:undo",
+                    attributes: { title: "Undo (CTRL/CMD + Z)" },
                 },
                 {
                     id: "redo",
-                    className: "fa fa-repeat",
-                    command: "redo",
+                    className: "redo",
+                    command: "core:redo",
+                    attributes: { title: "Redo (CTRL/CMD + SHIFT + Z)" },
                 },
                 {
-                    id: "export",
-                    className: "fa fa-download",
-                    command: "export",
+                    id: "clean-all",
+                    className: "trash",
+                    command: "core:canvas-clear",
+                    attributes: { title: "Empty canvas" },
+                },
+                {
+                    id: "codeExport",
+                    className: "export",
+                    command: "export-template",
+                    attributes: { title: "Export Code" },
                 },
                 {
                     id: "preview",
                     className: "fa fa-eye",
-                    command: "preview",
-                },
+                    command: "preview"
+                }
             ],
         },
         {
@@ -466,17 +470,22 @@ export const panels = {
             el: ".panel__devices",
             buttons: [
                 {
-                    id: "device-desktop",
-                    label: '<i class="fa fa-television"></i>',
-                    command: "set-device-desktop",
-                    active: true,
-                    togglable: false,
+                    id: "deviceXl",
+                    className: "screenWindow",
+                    command: "set-device-xl",
+                    attributes: { title: "Extra Large" },
                 },
                 {
-                    id: "device-mobile",
-                    label: '<i class="fa fa-mobile"></i>',
-                    command: "set-device-mobile",
-                    togglable: false,
+                    id: "deviceSm",
+                    className: "tabWindow",
+                    command: "set-device-sm",
+                    attributes: { title: "Small" },
+                },
+                {
+                    id: "deviceXs",
+                    className: "mobilewindow",
+                    command: "set-device-xs",
+                    attributes: { title: "Extra Small" },
                 },
             ],
         },
@@ -486,7 +495,12 @@ export const deviceManager = {
     devices: [
         {
             name: "Desktop",
-            width: "",
+            width: "100%",
+        },
+        {
+            name: "Tablet",
+            width: "760px",
+            widthMedia: "480px",
         },
         {
             name: "Mobile",
@@ -495,13 +509,15 @@ export const deviceManager = {
         },
     ],
 };
-
 export const addEditorCommand = (editor, currentPage) => {
     // Commands
-    editor.Commands.add("set-device-desktop", {
+    editor.Commands.add("set-device-xl", {
         run: (editor) => editor.setDevice("Desktop"),
     });
-    editor.Commands.add("set-device-mobile", {
+    editor.Commands.add("set-device-sm", {
+        run: (editor) => editor.setDevice("Tablet"),
+    });
+    editor.Commands.add("set-device-xs", {
         run: (editor) => editor.setDevice("Mobile"),
     });
 
@@ -521,8 +537,8 @@ export const addEditorCommand = (editor, currentPage) => {
             const css = editor.getCss();
             // Send data to backend
             try {
-                const response = await fetch("http://localhost:8000/api/pages/register", {
-                    method: "POST",
+                const response = await fetch(`http://localhost:8000/api/pages/update/${currentPage.id}`, {
+                    method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -535,8 +551,6 @@ export const addEditorCommand = (editor, currentPage) => {
                         js: ''
                     }),
                 });
-
-                console.log(response, 'on the freist response')
                 if (response.ok) {
                     toast.success("Page saved successfully!");  // Show success toast when saving
                 } else {
@@ -548,8 +562,6 @@ export const addEditorCommand = (editor, currentPage) => {
             }
         },
     });
-
-
     //Clear Button
     editor.Commands.add("cmd-clear", {
         run: (editor) => {
@@ -557,7 +569,6 @@ export const addEditorCommand = (editor, currentPage) => {
             editor.CssComposer.clear();
         },
     });
-
     //Undo
     editor.Commands.add("undo", {
         run: (editor) => editor.UndoManager.undo(),
@@ -568,9 +579,9 @@ export const addEditorCommand = (editor, currentPage) => {
         run: (editor) => editor.UndoManager.redo(),
     });
 
-    editor.Commands.add("export", {
-        run: (editor) => editor.runCommand("gjs-export-zip"),
-    });
+    // editor.Commands.add("export", {
+    //     run: (editor) => editor.runCommand("gjs-export-zip"),
+    // });
 
     editor.Commands.add("new-tool-cmd", {
         run: (editor) => console.log("Checking New Toolbar"),

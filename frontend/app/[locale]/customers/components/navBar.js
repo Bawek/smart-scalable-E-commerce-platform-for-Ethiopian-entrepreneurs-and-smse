@@ -116,9 +116,9 @@ export function CustomerNavigationMenu() {
           href="/customers"
           className={`${isMobile ? 'hidden' : 'flex'} items-center flex-nowrap md:min-w-64 py-3 no-underline gap-2 font-semibold`}
         >
-          <img src={'e-commerce-logo-main.png'} className="w-10 h-10"  alt="logo" />
+          <img src={'e-commerce-logo-main.png'} className="w-10 h-10" alt="logo" />
         </Link>
-{/* mobile navbar */}
+        {/* mobile navbar */}
         {!isMobile ? (
           <DesktopMenu account={account} />
         ) : (

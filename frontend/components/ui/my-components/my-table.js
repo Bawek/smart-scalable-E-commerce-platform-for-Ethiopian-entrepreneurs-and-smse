@@ -27,8 +27,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Slider } from "@mui/material"
 
- export default function CustomDataTable({data,columns,searchColumen}) {
+export default function CustomDataTable({ data, columns, searchColumen }) {
   const [sorting, setSorting] = React.useState([])
   const [columnFilters, setColumnFilters] = React.useState([])
   const [columnVisibility, setColumnVisibility] = React.useState({})
@@ -55,15 +56,20 @@ import {
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
+      <div className="flex items-center gap-3 py-4">
         <Input
-          placeholder={`Filter ${searchColumen}...`}
+          placeholder={`Filter by ${searchColumen}...`}
           value={(table.getColumn(searchColumen)?.getFilterValue() || "")}
           onChange={(event) =>
             table.getColumn(searchColumen)?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
+        <Slider
+         defaultValue={50}
+          aria-label="Default" 
+          valueLabelDisplay="auto"
+           />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -102,9 +108,9 @@ import {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   )
                 })}

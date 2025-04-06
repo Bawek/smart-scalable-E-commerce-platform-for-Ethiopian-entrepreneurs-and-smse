@@ -3,7 +3,7 @@ import "grapesjs/dist/css/grapes.min.css";
 import { plugin1 } from "./plugin";
 import block from "grapesjs-blocks-basic";
 import pluginForms from "grapesjs-plugin-forms";
-
+// views-actions
 const WithGrapesjsConfig = (CustomtemplateId) => {
   // const pluginName = dynamicConfiguration.plugin.map((value) => value.name);
   // const pluginOpts = getOptions(dynamicConfiguration.plugin);

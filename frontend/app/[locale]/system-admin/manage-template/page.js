@@ -26,42 +26,11 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
-
-
-const data = [
-    {
-        id: "m5gr84i9",
-        price: 316,
-        status: "published",
-        name: "modern glove", // The template name you'd like
-    },
-    {
-        id: "3u1reuv4",
-        price: 242,
-        status: "published",
-        name: "classic leather", // Another example name
-    },
-    {
-        id: "derv1ws0",
-        price: 837,
-        status: "pending",
-        name: "vintage style",
-    },
-    {
-        id: "5kma53ae",
-        price: 874,
-        status: "published",
-        name: "sporty design",
-    },
-    {
-        id: "bhqecj4p",
-        price: 721,
-        status: "Unfinished",
-        name: "premium quality",
-    },
-];
+import { imageViewer } from "../lib/imageViewer";
 const Templates = () => {
     const router = useRouter()
+    const [templates, setTemplates] = useState([])
+    console.log(templates)
     const columns = [
         {
             id: "select",
@@ -86,11 +55,18 @@ const Templates = () => {
             enableHiding: false,
         },
         {
-            accessorKey: "status",
-            header: "Status",
+            accessorKey: "previewImage",
+            header: "Preview",
             cell: ({ row }) => (
-                <div className="capitalize">{row.getValue("status")}</div>
+                <div className="flex items-center justify-center w-12 h-12 rounded-md overflow-hidden">
+                    <img
+                        src={imageViewer(row.getValue("previewImage")[0])}  // Access the first item in the array
+                        alt="Preview"
+                        className="object-cover w-full h-full"
+                    />
+                </div>
             ),
+            enableSorting: true,
         },
         {
             accessorKey: "name",
@@ -121,6 +97,13 @@ const Templates = () => {
 
                 return <div className="text-right font-medium">{formatted}</div>
             },
+        },
+        {
+            accessorKey: "status",
+            header: "Status",
+            cell: ({ row }) => (
+                <div className="capitalize">{row.getValue("status")}</div>
+            ),
         },
         {
             id: "actions",
@@ -171,19 +154,17 @@ const Templates = () => {
 
     ]
     const [isOpen, setIsOpen] = useState(false)
-    const [templates, setTemplates] = useState([])
-    const [pages, setPages] = useState([])
-    const [file, setFile] = useState()
+    const [file, setFile] = useState(null)
     const { toast } = useToast()
     const fetchTemplates = async () => {
         try {
             const response = await axios.get('http://localhost:8000/api/templates/get-all')
-            console.log(response)
-            if (response.data.status === 'published",') {
+            console.log(response.data)
+            if (response.data.status === 'success') {
 
                 setTemplates(response.data?.templates)
             }
-
+            console.log(templates)
         } catch (error) {
             console.log('template creation error', error)
         }
@@ -193,14 +174,14 @@ const Templates = () => {
     }, [])
     const handleSubmit = async (data) => {
         const formData = new FormData()
+        console.log(data, 'tamplates')
         formData.append('status', data.status)
-        formData.append('templateName', data.templateName)
-        formData.append('templatePrice', data.templatePrice)
+        formData.append('name', data.name)
+        formData.append('price', data.price)
         formData.append('PreviewImage', data.PreviewImage)
         formData.append('description', data.description)
         try {
             const response = await axios.post('http://localhost:8000/api/templates/register', formData)
-            console.log(response)
             if (response.data.status !== 'success') {
                 return toast({
                     title: "Error",
@@ -209,14 +190,16 @@ const Templates = () => {
                 });
 
             }
+            setTemplates([...templates, response.data?.template])
             toast({
                 title: 'Success',
                 description: <p className="text-black"> {response?.data?.message || 'Successfully add the Template'}</p>,
                 variant: "default"
             })
             setIsOpen(false)
+            setFile(null)
             router.refresh()
-            window.location.reload()
+            // window.location.reload()
 
         } catch (error) {
             console.log('template creation error', error)
@@ -235,11 +218,9 @@ const Templates = () => {
                 <h1 className="text-2xl font-semibold text-gray-800">Manage Template</h1>
                 <div className="flex justify-end">
                     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                        <SheetTrigger>
-                            <Button className="bg-orange-700">
-                                <PlusCircle />
-                                Add Template
-                            </Button>
+                        <SheetTrigger className="flex gap-2 justify-center items-center text-white p-2 rounded-md hover:bg-slate-900 bg-orange-700">
+                            <PlusCircle />
+                            Add Template
                         </SheetTrigger>
                         <SheetContent className="overflow-y-auto max-h-screen">
                             <SheetHeader>
@@ -261,7 +242,7 @@ const Templates = () => {
                 </div>
             </div>
             <CustomDataTable
-                data={data}
+                data={templates}
                 columns={columns}
                 searchColumen="name"
             />

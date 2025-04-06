@@ -7,5 +7,5 @@ const router = express.Router()
 // Account routes
 router.post('/register', registerAccount)
 router.post('/login', login)
-router.get('/get-all', auth, getAllAccounts)
+router.get('/get-all', getAllAccounts)
 module.exports = router 

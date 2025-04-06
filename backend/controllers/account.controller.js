@@ -10,7 +10,6 @@ const registerAccount = async (req, res, next) => {
         email,
         password
     } = req.body;
-
     try {
         // Check if the email already exists
         const userAccount = await prisma.account.findFirst({
@@ -31,7 +30,6 @@ const registerAccount = async (req, res, next) => {
                 password: hashedPassword,
                 firestName,
                 lastName,
-                role: 'MERCHANT'
             }
         });
 
@@ -53,7 +51,7 @@ const login = async (req, res, next) => {
         const accountExist = await prisma.account.findFirst({
             where: {
                 email: email
-            }
+            } 
         })
         if (!accountExist) {
             return new httpError('incorrect email. please enter corrrect one or  register Firest', 404)
@@ -82,9 +80,9 @@ const login = async (req, res, next) => {
             email: accountExist.email,
             firestName: accountExist.firestName,
             lastName: accountExist.lastName,
-            id:accountExist.id,
-            status:'success',
-            role:accountExist.role
+            id: accountExist.id,
+            status: 'success',
+            role: accountExist.role
         })
     } catch (error) {
         console.log('Account registration error:', error);
