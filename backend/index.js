@@ -14,7 +14,7 @@ const templateRouter = require('./routes/template.route')
 const paymentRouter = require('./routes/payment.route')
 const cookieParser = require('cookie-parser')
 const handleRefreshToken = require('./controllers/refreshToken.controller')
-const paymentRoutes = require('./routes/paymentRoutes');
+
 
 require('dotenv').config
 // constants  
@@ -34,7 +34,7 @@ app.use(cookieParser())
 app.use(express.json())
 
 // chapa payment route
-app.use('/api', paymentRoutes);
+app.use('/api', paymentRouter);
 app.use('/api/merchant', merchantRouter)
 // Accounts route
 

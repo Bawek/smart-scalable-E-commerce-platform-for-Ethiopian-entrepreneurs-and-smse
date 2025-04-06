@@ -1,9 +1,8 @@
 const express = require('express');
-const { chapaPayment } = require('../controllers/payment.controller');
+const router = express.Router();
+const paymentController = require('../controllers/paymentController');
 
-const router = express.Router()
+router.post('/pay', paymentController.createPayment);
+router.get('/verify/:tx_ref', paymentController.verifyPayment);
 
-// Account routes
-router.post('/pay-check', chapaPayment)
-  
-module.exports = router 
+module.exports = router;
