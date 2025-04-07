@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/carousel"
 import { BarChart, Briefcase, LayoutDashboard, ShieldCheck } from 'lucide-react';
 import ShopRegistration from '../components/prompts/prompt2';
+import { useSearchParams } from 'next/navigation';
 const Images = [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQxXf28FCYTQ5vrRKnaK_XJAm8X_Y88fTJtA&s',
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrDWxMOdi5xdfF8I4IdmqNozyVyf10X4sNJA&s',
@@ -16,16 +17,13 @@ const Images = [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQS40jswRvC7NjQH5tKE6Z8J1jpxyPK2zA7SQ&s'
 ]
 const MerchantRegistrationPrompt = () => {
-    const [currentPrompt, setCurrentPrompt] = useState(2)
+    const [currentPrompt, setCurrentPrompt] = useState(1)
+    const searchParams = useSearchParams();
+    const accountId = searchParams.get('accountId');
     return (
         <div className='w-[95%] mx-auto flex flex-col md:flex-row'>
             <div className='w-full md:w-2/3 flex flex-col items-center'>
-                {
-                    currentPrompt === 1 ?
-                        <PersonalDetail currentPrompt={currentPrompt} setCurrentPrompt={setCurrentPrompt} />
-                        :
-                        <ShopRegistration currentPrompt={currentPrompt} setCurrentPrompt={setCurrentPrompt} />
-                }
+            <PersonalDetail currentPrompt={currentPrompt} />
             </div>
             <section className="w-1/2 hidden md:block">
                 <Carousel

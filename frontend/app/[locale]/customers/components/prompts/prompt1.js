@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -48,14 +48,18 @@ const schema = z.object({
     kebele: z.string().min(1, "Kebele is required"),
     cbeAccountNo: z.string().min(1, "CBE account number is required"),
 });
-const PersonalDetail = ({ currentPrompt, setCurrentPrompt }) => {
+const PersonalDetail = ({ currentPrompt }) => {
     const [registerLocation, { isLoading, isError, isSuccess }] = useRegisterLocationMutation();
     const [registerMerchant, { isLoading: mIsLoading, isError: mIsError, isSuccess: mIsSuccess }] = useRegisterMerchantMutation();
     const { toast } = useToast();
+    const searchParams = useSearchParams();
+    const accountId = searchParams.get('accountId');
+    const router = useRouter()
     const form = useForm({
         resolver: zodResolver(schema)
     });
-    const handleNext = async (data) => {
+    const handleSubmit = async (data) => {
+        console.log(accountId, 'accountid is here')
         const formData = new FormData();
 
         // Prepare location data
@@ -86,7 +90,7 @@ const PersonalDetail = ({ currentPrompt, setCurrentPrompt }) => {
 
             // Step 2: Register Merchant
             formData.append("locationId", locationResponse.location.id);
-            formData.append("accountId", "d89b614f-4747-4f8d-bc9e-b96adb51e96a");
+            formData.append("accountId", accountId);
 
             const merchantResponse = await registerMerchant(formData).unwrap();
 
@@ -105,9 +109,7 @@ const PersonalDetail = ({ currentPrompt, setCurrentPrompt }) => {
                 description: "Congratulations! Your Account has been created successfully.",
                 duration: 2000,
             });
-
-            setCurrentPrompt((prev) => prev + 1);
-
+            router.push("/merchant")
         } catch (error) {
             console.error("Merchant registration error:", error);
             toast({
@@ -121,12 +123,12 @@ const PersonalDetail = ({ currentPrompt, setCurrentPrompt }) => {
     return (
         <div className="max-w-[400px] flex flex-col shadow-none items-center mx-auto bg-white p-6 rounded-lg overflow-y-auto">
             <div className='text-center mb-4'>
-                <h2 className="text-xl font-semibold">Merchant Registration - Step {currentPrompt}/2</h2>
+                <h2 className="text-xl font-semibold">Merchant Informations.</h2>
                 <p className="text-gray-600">Business Details</p>
             </div>
             <div className='w-full'>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleNext)} className="space-y-6">
+                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
 
                         {/* Business Name */}
                         <FormField control={form.control} name="businessName" render={({ field }) => (
@@ -279,9 +281,9 @@ const PersonalDetail = ({ currentPrompt, setCurrentPrompt }) => {
                             )} />
                         </div>
 
-                        <div className="mt-6 flex justify-end">
-                            <Button type="submit" className="bg-orange-700">
-                                Next
+                        <div className="mt-6 w-full">
+                            <Button type="submit" className="bg-orange-700 w-full">
+                                {isLoading || mIsLoading ? "Submitting..." : "Submit"}
                             </Button>
                         </div>
                     </form>

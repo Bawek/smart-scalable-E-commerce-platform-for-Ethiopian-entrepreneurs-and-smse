@@ -16,7 +16,7 @@ function PreviewPage() {
     const [hasMounted, setHasMounted] = useState(false);
     useEffect(() => {
         setHasMounted(true)
-        if (hasMounted && !isLoading) {
+        if (hasMounted && !isLoading) { 
             console.log(data,'total data')
             setTimeout(() => {
                 data?.template.pages.map((page) => {

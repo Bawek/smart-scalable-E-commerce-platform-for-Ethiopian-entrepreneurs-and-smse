@@ -107,13 +107,16 @@ const SelectTheme = () => {
                             {theme.status === "Free" ? "Free Forever" : "Premium Template"}
                           </span>
                           <Button
+                          onClick={()=>{
+                            router.push(`/customers/templates/pay`)
+                          }}
                             className="bg-orange-700 hover:bg-orange-800"
                           >
                             {theme.status === "Free" ? "Use Template" : "Get Premium"}
                           </Button>
                         </div>
-                        <Button onClick={() => router.push(`/preview/${theme.id}`)} className="w-full bg-orange-700">preview</Button>
-                      </div>
+                        <Button onClick={() => window.open(`/preview/${theme.id}`, '_blank')} className="w-full bg-orange-700">preview</Button>
+                        </div>
                     </Card>
                   </motion.div>
                 ))

@@ -1,19 +1,18 @@
 import { appApi } from "@/lib/appApi";
 
 export const accountApi = appApi.injectEndpoints({
-    tagTypes: ["Account"],
+    // tagTypes: ["Account"],
     endpoints: (builder) => ({
         getMerchants: builder.query({
             query: () => `/merchants/`,
-            providesTags: ["Account"],
         }),
         getMerchant: builder.query({
             query: (unique_id) => `Account/merchant/${unique_id}/`, // Ensure this endpoint matches your backend
-            providesTags: ["Account"],
+            // providesTags: ["Account"],
         }),
         getAllOrders: builder.query({
             query: () => `order/all-orders/`,
-            providesTags: ["Shop"],
+            // providesTags: ["Shop"],
         }),
         // Login mutation
         login: builder.mutation({
@@ -24,7 +23,7 @@ export const accountApi = appApi.injectEndpoints({
                     body: formData,
                 };
             },
-            invalidatesTags: ["Account"],
+            // invalidatesTags: ["Account"],
         }),
 
         // Registration mutation
@@ -34,7 +33,7 @@ export const accountApi = appApi.injectEndpoints({
                 method: "POST",
                 body: formData,
             }),
-            invalidatesTags: ["Account"],
+            // invalidatesTags: ["Account"],
         }),
     }),
 });

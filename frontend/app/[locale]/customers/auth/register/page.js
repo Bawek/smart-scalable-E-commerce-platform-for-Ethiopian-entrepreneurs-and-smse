@@ -52,7 +52,7 @@ export default function Register() {
         description: "please login here to preced with us.",
         duration: 3000
       });
-      router.push('/merchant');
+      router.push(`/customers/merchant-registration?accountId=${response?.account?.id}`);
       redirect;
     } catch (error) {
       console.log('error on merchant registration', error);

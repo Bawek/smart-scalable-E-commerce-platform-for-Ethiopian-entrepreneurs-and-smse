@@ -24,7 +24,7 @@ const handleSubmit = async (e) => {
   setLoading(true);
 
   try {
-    const res = await axios.post('http://localhost:5000/api/pay', form, {
+    const res = await axios.post('http://localhost:8000/api/pay', form, {
       headers: {
         'Content-Type': 'application/json',
       },

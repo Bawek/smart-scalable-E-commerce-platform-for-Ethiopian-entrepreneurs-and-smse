@@ -20,6 +20,7 @@ import ProfileMenu from "./profile";
 import { useState } from "react";
 import { Cancel } from "@mui/icons-material";
 import Image from "next/image";
+import Logo from "@/components/ui/my-components/logo";
 
 // Platform information remains the same...
 const cartItems = 7;
@@ -112,12 +113,7 @@ export function CustomerNavigationMenu() {
   return (
     <nav className={`sticky w-full top-0 z-50 bg-white dark:bg-black backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow duration-300 ${hasScrolled ? "shadow-md" : ""}`}>
       <div className="max-w-[98%] mx-auto flex h-16 items-center justify-between">
-        <Link
-          href="/customers"
-          className={`${isMobile ? 'hidden' : 'flex'} items-center flex-nowrap md:min-w-64 py-3 no-underline gap-2 font-semibold`}
-        >
-          <img src={'e-commerce-logo-main.png'} className="w-10 h-10" alt="logo" />
-        </Link>
+        <Logo />
         {/* mobile navbar */}
         {!isMobile ? (
           <DesktopMenu account={account} />
@@ -207,7 +203,7 @@ function DesktopMenu({ account }) {
 
             <Link
               className="no-underline text-white bg-orange-700 hover:bg-orange-800font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
-              href="/customers/auth/login"
+              href="/customers/auth/register"
             >
               Register
             </Link>

@@ -35,6 +35,7 @@ const shopFormSchema = z.object({
 });
 const ShopRegistration = ({ currentPrompt, setCurrentPrompt }) => {
   const { toast } = useToast();
+  const router = useRouter()
   const [createShop, { isLoading, isError, isSuccess }] = useCreateShopMutation()
   const [imagePreview, setImagePereview] = useState()
   const form = useForm({

@@ -13,9 +13,8 @@ export default function SuccessInfoPage() {
 useEffect(() => {
     const verify = async () => {
       if (!tx_ref) return;
-
       try {
-        const res = await axios.get(`http://localhost:5000/api/verify/${tx_ref}`);
+        const res = await axios.get(`http://localhost:8000/api/verify/${tx_ref}`);
                 console.log(res.data, 'response');
 
 setPaymentData(res.data);
@@ -24,7 +23,6 @@ console.log(res.data, 'response data');
       } catch (err) {
         console.error('Verification failed:', err);
         console.log(err.response.data, 'error response',err);
-        setPaymentStatus({ error: 'Verification failed' });
       } finally {
         setLoading(false);
       }

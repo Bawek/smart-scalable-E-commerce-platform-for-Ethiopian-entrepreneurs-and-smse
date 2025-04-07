@@ -10,7 +10,6 @@ import Navbar from "./components/Navbars/AuthNavbar.js";
 import { useSelector } from "react-redux";
 import { selectAll } from "@/lib/features/auth/accountSlice.js";
 // import { useAuth } from "@clerk/nextjs";
-
 const i18nNamespaces = ["home"]; // Define your namespaces
 export default function Index() {
   const params = useParams(); // Get params properly
@@ -30,7 +29,7 @@ export default function Index() {
     if (account.accessToken) {
       checkUsers
     }
-  }, [userId, user])
+  }, [])
   useEffect(() => {
     if (params?.locale) {
       setLocale(params.locale);
