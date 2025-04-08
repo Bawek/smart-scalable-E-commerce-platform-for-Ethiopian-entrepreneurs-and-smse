@@ -7,10 +7,9 @@ export const MerchantRegistrationApi = appApi.injectEndpoints({
             query: () => `/merchant/get-all`,
             // providesTags: ["MerchantRegistration"],
         }),
-        // getMerchant: builder.query({
-        //     query: (unique_id) => `MerchantRegistration/merchant/${unique_id}/`, // Ensure this endpoint matches your backend
-        //     providesTags: ["MerchantRegistration"],
-        // }),
+        getMerchantById: builder.query({
+            query: (merchantId) => `merchant/get/${merchantId}/`,
+        }),
         // getAllOrders: builder.query({
         //     query: () => `order/all-orders/`,
         //     providesTags: ["Shop"],
@@ -41,5 +40,6 @@ export const MerchantRegistrationApi = appApi.injectEndpoints({
 
 export const {
     useRegisterMerchantMutation,
-    useGetAllMerchantsQuery
+    useGetAllMerchantsQuery,
+    useGetMerchantByIdQuery
 } = MerchantRegistrationApi;

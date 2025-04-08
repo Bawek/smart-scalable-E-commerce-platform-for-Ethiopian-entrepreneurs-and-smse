@@ -107,6 +107,10 @@
     @apply bg-background text-foreground;
   }
 }
+.hover\:zoom-image:hover {
+  transform: scale(1.5); /* Scale the image 1.5 times on hover */
+  transition: transform 0.3s ease; /* Smooth transition for zoom effect */
+}
 
 /*! tailwindcss v2.0.4 | MIT License | https://tailwindcss.com */
 

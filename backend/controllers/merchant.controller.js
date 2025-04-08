@@ -59,7 +59,11 @@ const registerMerchant = async (req, res, next) => {
 // get all merchants
 const getAllMerchant = async (req, res, next) => {
     try {
-        const merchant = await prisma.merchant.findMany()
+        const merchant = await prisma.merchant.findMany({
+            include: {
+                account: true
+            }
+        })
 
         // Success: Return the newly created account
         return res.status(201).json({
@@ -73,8 +77,33 @@ const getAllMerchant = async (req, res, next) => {
     }
 
 }
+const getMerchantById = async (req, res, next) => {
+    const { merchantId } = req.params;
+    try {
+        const merchant = await prisma.merchant.findUnique({
+            where: {
+                id: merchantId,
+            },
+            include: {
+                account: true, // Include related account information
+                location:true //Include his locations
+            },
+        });
+
+        if (!merchant) return next(new httpError("Merchant is Not Found", 404))
+        return res.status(200).json({
+            status: 'success',
+            merchant,
+        });
+    } catch (error) {
+        console.log('Get Merchant Error', error);
+        next(new httpError(error.message, 500)); 
+    }
+};
+
 
 module.exports = {
     registerMerchant,
-    getAllMerchant
+    getAllMerchant,
+    getMerchantById
 }

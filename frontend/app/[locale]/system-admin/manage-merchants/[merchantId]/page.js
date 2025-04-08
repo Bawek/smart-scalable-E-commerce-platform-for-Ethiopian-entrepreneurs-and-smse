@@ -1,38 +1,38 @@
 'use client'
+import { Button } from "@/components/ui/button";
+import { useGetMerchantByIdQuery } from "@/lib/features/merchant/registrationApi";
 import { CheckCircle, Trash, Edit, PhoneMissed } from "lucide-react"
+import { useParams } from "next/navigation";
+import { imageViewer } from "../../lib/imageViewer";
+import MerchantCard from "@/components/ui/my-components/imageMagnifier";
 const MerchantDetailPage = () => {
-    // Sample merchant data (replace with real data from your API)
-    const merchant = {
-        id: '12345',
-        name: 'Example Merchant LLC',
-        email: 'contact@example.com',
-        phone: '+1 (555) 123-4567',
-        status: 'active',
-        registrationDate: '2023-01-15',
-        lastLogin: '2023-10-20 14:30:00',
-        address: '123 Main St, New York, NY 10001',
-        services: {
-            onlinePayments: true,
-            posSystem: true,
-            inventoryManagement: false,
-            analytics: true,
-        },
-        documentsVerified: true,
-    };
+    const params = useParams()
+    const { merchantId } = params
+    const { data, isLoading, isError } = useGetMerchantByIdQuery(merchantId)
+    const merchant = data?.merchant
+    if (isLoading) {
+        return <div className="flex justify-center items-center min-h-screen">Loading...</div>
+    }
+    if (isError) {
+        return <div className="flex justify-center items-center min-h-screen text-red-500">something went wrong please refresh the page</div>
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-8">
             <div className="max-w-6xl mx-auto">
                 {/* Header Section */}
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900">{merchant.name}</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">{`${merchant?.account?.firestName} ${merchant?.account?.lastName}`}</h1>
                     <div className="flex gap-2">
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        {/* <Button className="">
                             Edit Merchant
-                        </button>
-                        <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                        </Button> */}
+                        <Button 
+                        className="bg-orange-700"
+                        onClick={() => window.history.back()}
+                        >
                             Back to List
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
@@ -42,7 +42,7 @@ const MerchantDetailPage = () => {
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
                         }`}>
-                        {merchant.status.charAt(0).toUpperCase() + merchant.status.slice(1)}
+                        {merchant?.status.charAt(0).toUpperCase() + merchant?.status.slice(1)}
                     </span>
                 </div>
 
@@ -65,12 +65,18 @@ const MerchantDetailPage = () => {
 
                             <div>
                                 <label className="text-sm text-gray-500">Last Login</label>
-                                <p className="font-medium">{merchant.lastLogin}</p>
+                                <p className="font-medium">{merchant?.status !== 'ACTIVE' ? "PENDING TILL YET" : merchant.lastLogin}</p>
                             </div>
-
-                            <div>
-                                <label className="text-sm text-gray-500">Address</label>
-                                <p className="font-medium">{merchant.address}</p>
+                            {/* Location Info */}
+                            <div className="mt-4">
+                                <label className="text-sm text-gray-500">Address Information</label>
+                                <div className="font-medium">
+                                    <p><strong>Town:</strong> {merchant?.location.town}</p>
+                                    <p><strong>Country:</strong> {merchant?.location.country}</p>
+                                    <p><strong>Region:</strong> {merchant?.location.region}</p>
+                                    <p><strong>Kebele:</strong> {merchant?.location.kebele}</p>
+                                    <p><strong>Woreda:</strong> {merchant?.location.woreda}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -84,35 +90,17 @@ const MerchantDetailPage = () => {
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <Edit className="w-5 h-5 text-gray-400" />
-                                    <span className="font-medium">{merchant.email}</span>
+                                    <span className="font-medium">{merchant?.account?.email}</span>
                                 </div>
 
                                 <div className="flex items-center gap-2">
                                     <PhoneMissed className="w-5 h-5 text-gray-400" />
-                                    <span className="font-medium">{merchant.phone}</span>
+                                    <span className="font-medium">{merchant?.businessPhone}</span>
                                 </div>
                             </div>
                         </div>
-
-                        {/* Services Card */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm">
-                            <h2 className="text-xl font-semibold mb-4">Enabled Services</h2>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                {Object.entries(merchant.services).map(([service, enabled]) => (
-                                    <div key={service} className="flex items-center gap-2">
-                                        {enabled ? (
-                                            <CheckCircle className="w-5 h-5 text-green-500" />
-                                        ) : (
-                                            <Trash className="w-5 h-5 text-red-500" />
-                                        )}
-                                        <span className="capitalize">
-                                            {service.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        {/* Display the identity card */}
+                        <MerchantCard merchant={merchant} />
                     </div>
                 </div>
 

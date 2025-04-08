@@ -18,13 +18,21 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useGetAllMerchantsQuery } from "@/lib/features/merchant/registrationApi";
+import { all } from "axios";
+import { imageViewer } from "../lib/imageViewer";
 
 const ManageShops = () => {
     const [merchants, setMerchants] = useState([
         { id: "1", name: "Shop 1", owner: "Owner 1", status: "Active" },]);
     const [selectedShop, setSelectedShop] = useState(null);
-    const { data, isLoading, isError } = useGetAllMerchantsQuery()
-    console.log(data,isLoading,isError,'memememmemm')
+    const { data: allMerchants, isLoading, isError } = useGetAllMerchantsQuery();
+    // prepare table data
+    const data = allMerchants?.merchant?.map(merchant => ({
+        name: `${merchant.account?.firestName} ${merchant.account?.lastName}`, // Corrected field names (firestName -> firstName)
+        email: merchant.account?.email,
+        status: merchant.status,
+        identityCard: merchant.identityCard
+    }));
     const [isEditing, setIsEditing] = useState(false);
     const { toast } = useToast()
     const router = useRouter()
@@ -53,11 +61,18 @@ const ManageShops = () => {
             enableHiding: false,
         },
         {
-            accessorKey: "merchantId",
-            header: "Merchant Id",
+            accessorKey: "identityCard",
+            header: "Identity Card",
             cell: ({ row }) => (
-                <div className="capitalize">{row.getValue("merchantId")}</div>
+                <div className="flex items-center justify-center w-12 h-12 rounded-md overflow-hidden">
+                    <img
+                        src={imageViewer(row.getValue("identityCard"))}  // Access the first item in the array
+                        alt="Preview"
+                        className="object-cover w-full h-full"
+                    />
+                </div>
             ),
+            enableSorting: true,
         },
         {
             accessorKey: "name",
@@ -75,15 +90,15 @@ const ManageShops = () => {
             cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
         },
         {
-            accessorKey: "shopName",
-            header: () => <div className="text-right">Shop Name</div>,
+            accessorKey: "email",
+            header: () => <div className="text-right">Email</div>,
             cell: ({ row }) => {
-                return <div className="text-right font-medium">{row.getValue("shopName")}</div>
+                return <div className="text-right font-medium">{row.getValue("email")}</div>
             },
         },
         {
             accessorKey: "status",
-            header: () => <div className="text-right">Shop status</div>,
+            header: () => <div className="text-right">status</div>,
             cell: ({ row }) => {
                 return <div className="text-right font-medium">
                     <Badge variant={row.getValue("status") === "Active" ? "default" : row.getValue("status") === "Inactive" ? "destructive" : "warning"}>
@@ -97,7 +112,7 @@ const ManageShops = () => {
             enableHiding: false,
             cell: ({ row }) => {
                 const merchant = row.original;
-
+                const currentMerchant = allMerchants?.merchant?.find(m => m?.account?.email === merchant.email)
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -111,11 +126,12 @@ const ManageShops = () => {
                             <DropdownMenuItem
                                 className="cursor-pointer hover:bg-amber-100"
                                 onClick={() => {
-                                    navigator.clipboard.writeText(merchant.merchantId);
+                                    navigator.clipboard.writeText(currentMerchant?.id);
                                     toast({
                                         title: "Copied",
-                                        description: <p className="text-black">{merchant?.merchantId}</p>,
-                                        variant: "default"
+                                        description: <p className="text-black">{currentMerchant?.id}</p>,
+                                        variant: "default",
+                                        duration: 2000
                                     });
                                 }}
                             >
@@ -133,7 +149,7 @@ const ManageShops = () => {
 
                             <DropdownMenuItem
                                 className="cursor-pointer"
-                                onClick={() => router.push(`/system-admin/manage-merchants/${merchant.merchantId}`)}
+                                onClick={() => router.push(`/system-admin/manage-merchants/${currentMerchant?.id}`)}
                             >
                                 View Details
                             </DropdownMenuItem>
@@ -155,12 +171,12 @@ const ManageShops = () => {
         setMerchants(merchants.map(shop => (shop.id === selectedShop.id ? selectedShop : shop)));
         setIsEditing(false);
     };
-if(isLoading){
-    return <h1 className="text-center">Loading...</h1>
-}
-if(isError){
-    return <h1 className="text-center">Sorry something wentm wrong please refresh the page Again</h1>
-}
+    if (isLoading) {
+        return <h1 className="text-center">Loading...</h1>
+    }
+    if (isError) {
+        return <h1 className="text-center">Sorry something wentm wrong please refresh the page Again</h1>
+    }
     return (
         <div>
             {/* Edit Shop Modal */}
@@ -199,7 +215,7 @@ if(isError){
                     <h1 className="text-2xl mx-auto font-semibold text-center text-gray-800">Manage Merchants</h1>
                 </div>
                 <CustomDataTable
-                    data={data?.merchant}
+                    data={data}
                     columns={columns}
                     searchColumen="name"
                 />
