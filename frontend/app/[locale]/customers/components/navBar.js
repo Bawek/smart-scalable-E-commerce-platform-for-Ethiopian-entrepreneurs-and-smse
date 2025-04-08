@@ -27,17 +27,17 @@ const cartItems = 7;
 const companyLinks = [
   {
     title: "Products",
-    href: "/products",
+    href: "/components/products",
     description: "Explore our product catalog and offerings",
   },
   {
     title: "Support",
-    href: "/support",
+    href: "customers/company/support",
     description: "Get technical support and assistance",
   },
   {
     title: "About",
-    href: "/about",
+    href: "/customers/company/about",
     description: "Learn more about our company and mission",
   },
   {

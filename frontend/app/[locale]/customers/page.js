@@ -118,7 +118,7 @@ export default function Home() {
                 and improved customer engagement, paving the way for a
                 thriving digital marketplace.
               </p>
-              <Link href="/" className="text-sm mt-3 mb-4 py-1 px-2 rounded-md bg-orange-800 text-white no-underline hover:opacity-75 text-blueGray-700 md:mt-8">
+              <Link href="/customers/auth/register" className="text-sm mt-3 mb-4 py-1 px-2 rounded-md bg-orange-800 text-white no-underline hover:opacity-75 text-blueGray-700 md:mt-8">
                 Join our platform!
               </Link>
             </div>
