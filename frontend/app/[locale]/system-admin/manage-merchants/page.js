@@ -12,32 +12,19 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Pencil, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import CustomDataTable from "@/components/ui/my-components/my-table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-
-// Dummy shop data (Replace with API call)
-const data = [
-    { merchantId: "1", name: "Merchant 1", shopName: "Owner 1", status: "Active" },
-    { merchantId: "2", name: "Merchant 2", shopName: "Owner 2", status: "Inactive" },
-    { merchantId: "3", name: "Merchant 3", shopName: "Owner 3", status: "Active" },
-    { merchantId: "4", name: "Merchant 4", shopName: "Owner 4", status: "Pending" },
-    { merchantId: "5", name: "Merchant 5", shopName: "Owner 5", status: "Active" },
-    { merchantId: "6", name: "Merchant 6", shopName: "Owner 6", status: "Inactive" },
-    { merchantId: "7", name: "Merchant 7", shopName: "Owner 7", status: "Active" },
-    { merchantId: "8", name: "Merchant 8", shopName: "Owner 8", status: "Pending" },
-    { merchantId: "9", name: "Merchant 9", shopName: "Owner 9", status: "Inactive" },
-    { merchantId: "10", name: "Merchant 10", shopName: "Owner 10", status: "Active" }
-];
+import { useGetAllMerchantsQuery } from "@/lib/features/merchant/registrationApi";
 
 const ManageShops = () => {
     const [merchants, setMerchants] = useState([
         { id: "1", name: "Shop 1", owner: "Owner 1", status: "Active" },]);
     const [selectedShop, setSelectedShop] = useState(null);
+    const { data, isLoading, isError } = useGetAllMerchantsQuery()
+    console.log(data,isLoading,isError,'memememmemm')
     const [isEditing, setIsEditing] = useState(false);
     const { toast } = useToast()
     const router = useRouter()
@@ -168,7 +155,12 @@ const ManageShops = () => {
         setMerchants(merchants.map(shop => (shop.id === selectedShop.id ? selectedShop : shop)));
         setIsEditing(false);
     };
-
+if(isLoading){
+    return <h1 className="text-center">Loading...</h1>
+}
+if(isError){
+    return <h1 className="text-center">Sorry something wentm wrong please refresh the page Again</h1>
+}
     return (
         <div>
             {/* Edit Shop Modal */}
@@ -207,7 +199,7 @@ const ManageShops = () => {
                     <h1 className="text-2xl mx-auto font-semibold text-center text-gray-800">Manage Merchants</h1>
                 </div>
                 <CustomDataTable
-                    data={data}
+                    data={data?.merchant}
                     columns={columns}
                     searchColumen="name"
                 />

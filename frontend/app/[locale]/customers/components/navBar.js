@@ -32,12 +32,12 @@ const companyLinks = [
   },
   {
     title: "Support",
-    href: "/support",
+    href: "/customers/company/support",
     description: "Get technical support and assistance",
   },
   {
     title: "About",
-    href: "/about",
+    href: "/customers/company/about",
     description: "Learn more about our company and mission",
   },
   {
@@ -91,8 +91,6 @@ export function CustomerNavigationMenu() {
   const closeDrawer = () => setOpen(false);
   const { width } = useWindowSize();
   const account = {
-
-
   };
   const isMobile = (width || 0) < 768;
 
@@ -111,7 +109,7 @@ export function CustomerNavigationMenu() {
   }, [isMobile, isOpen]);
 
   return (
-    <nav className={`sticky w-full top-0 z-50 bg-white dark:bg-black backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow duration-300 ${hasScrolled ? "shadow-md" : ""}`}>
+    <nav className={`sticky w-full top-0 z-50  dark:bg-black backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow duration-300 ${hasScrolled ? "shadow-md bg-white" : "bg-transparent"}`}>
       <div className="max-w-[98%] mx-auto flex h-16 items-center justify-between">
         <Logo />
         {/* mobile navbar */}
@@ -134,9 +132,9 @@ function DesktopMenu({ account }) {
   return (
     <div className="container flex items-center h-16 gap-2">
       {/* Navigation Menu */}
-      <NavigationMenu className="mr-1">
+      <NavigationMenu className="">
         <NavigationMenuList className="my-auto">
-          <NavigationMenuItem>
+          <NavigationMenuItem className="bg-transparent">
             <NavigationMenuTrigger className="text-sm">Company</NavigationMenuTrigger>
             <NavigationMenuContent className="absolute left-0 w-[400px] md:w-[500px] lg:w-[500px] p-4">
               <ul className="grid gap-3 md:grid-cols-2">
@@ -150,13 +148,12 @@ function DesktopMenu({ account }) {
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
-      {/* Navigation Menu */}
-      <NavigationMenu className="-ml-20">
+      <NavigationMenu className="mr-1">
         <NavigationMenuList className="my-auto">
           <NavigationMenuItem>
-            <NavigationMenuTrigger className="text-sm">Shops</NavigationMenuTrigger>
-            <NavigationMenuContent className="absolute left-0  lg:w-[500px] p-4">
-              <ul className="grid gap-3 w-[300px] lg:w-full lg:grid-cols-2 ">
+            <NavigationMenuTrigger className="text-sm">shops</NavigationMenuTrigger>
+            <NavigationMenuContent className="absolute left-0 w-[400px] md:w-[500px] lg:w-[500px] p-4">
+              <ul className="grid gap-3 md:grid-cols-2">
                 {shopLinks.map((link) => (
                   <ListItem key={link.title} title={link.title} href={link.href}>
                     {link.description}
@@ -167,6 +164,7 @@ function DesktopMenu({ account }) {
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
+
 
       {/* Main Navigation Links */}
       {[

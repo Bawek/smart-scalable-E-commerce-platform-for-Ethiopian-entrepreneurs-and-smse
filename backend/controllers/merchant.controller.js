@@ -14,8 +14,6 @@ const registerMerchant = async (req, res, next) => {
         businessType,
     } = req.body
     if (!req.file) return next(new httpError("Sorry Your Identity Card is Required."))
-
-    console.log('merchant', req.body)
     try {
         const merchant = await prisma.merchant.findFirst({
             where: {
@@ -58,36 +56,8 @@ const registerMerchant = async (req, res, next) => {
     }
 
 }
-
-const registerMyMerchant = async (req, res, next) => {
-    const {
-        id,
-        name,
-        age
-    } = req.body
-    console.log('unitl here')
-    try {
-        const newMerchant = await prisma.myMerchant.create({
-            data: {
-                id,
-                name,
-                age
-            }
-        });
-
-        // Success: Return the newly created account
-        return res.status(201).json({
-            message: 'merchant registered successfully',
-            status: "success",
-            merchant: newMerchant
-        });
-    } catch (error) {
-        console.log('Register Merchant Error', error)
-        next(new httpError(error.message, 500))
-    }
-
-}
-const getMyMerchant = async (req, res, next) => {
+// get all merchants
+const getAllMerchant = async (req, res, next) => {
     try {
         const merchant = await prisma.merchant.findMany()
 
@@ -106,6 +76,5 @@ const getMyMerchant = async (req, res, next) => {
 
 module.exports = {
     registerMerchant,
-    registerMyMerchant,
-    getMyMerchant
+    getAllMerchant
 }

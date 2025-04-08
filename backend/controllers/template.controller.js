@@ -51,6 +51,24 @@ const getAllTemplate = async (req, res, next) => {
     }
 
 }
+const deleteById = async (req, res, next) => {
+    const {templateId} = req.params
+    try {
+        const templates = await prisma.template.delete({
+            where:{
+                id:templateId
+            }
+        })
+        res.status(201).json({
+            status: 'success',
+            message:'templates are deleted'
+        })
+    } catch (error) {
+        console.log('template register error', error)
+        next(new httpError(error.message, 500))
+    }
+
+}
 const getTemplateById = async (req, res, next) => {
     const { templateId } = req.params
     try {
@@ -137,5 +155,6 @@ module.exports = {
     registerTemplate,
     getAllTemplate,
     getTemplateById,
-    updateTempalate
+    updateTempalate,
+    deleteById
 }

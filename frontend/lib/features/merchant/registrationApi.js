@@ -3,10 +3,10 @@ import { appApi } from "@/lib/appApi";
 export const MerchantRegistrationApi = appApi.injectEndpoints({
     tagTypes: ["MerchantRegistration"],
     endpoints: (builder) => ({
-        // getMerchants: builder.query({
-        //     query: () => `/merchants/`,
-        //     providesTags: ["MerchantRegistration"],
-        // }),
+        getAllMerchants: builder.query({
+            query: () => `/merchant/get-all`,
+            // providesTags: ["MerchantRegistration"],
+        }),
         // getMerchant: builder.query({
         //     query: (unique_id) => `MerchantRegistration/merchant/${unique_id}/`, // Ensure this endpoint matches your backend
         //     providesTags: ["MerchantRegistration"],
@@ -40,5 +40,6 @@ export const MerchantRegistrationApi = appApi.injectEndpoints({
 });
 
 export const {
-    useRegisterMerchantMutation
+    useRegisterMerchantMutation,
+    useGetAllMerchantsQuery
 } = MerchantRegistrationApi;

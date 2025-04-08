@@ -482,10 +482,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div>
-          <h1>hello world manner</h1>
-          <img src={'e-commerce-logo-main.png'} className="max-w-20 h-20" alt="manner" />
-        </div>
       </section>
     </main>
   )
