@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useRef } from "react"; // 🟢 useRef and useEffect added
 import { redirect, useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -34,9 +34,28 @@ export default function Register() {
   const [registerAccount, { isLoading }] = useRegisterAccountMutation();
   const router = useRouter();
 
+  // 🟢 Create a reference to the card element
+  const cardRef = useRef(null);
+
+  // 🟢 Effect to detect clicks outside the form/card
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // If clicked outside the cardRef element, redirect to home or desired path
+      if (cardRef.current && !cardRef.current.contains(event.target)) {
+        router.push("/"); // 🟢 Change this path if needed (e.g., "/home" or "/dashboard")
+      }
+    };
+
+    // Attach event listener on mount
+    document.addEventListener("mousedown", handleClickOutside);
+    // Remove on unmount
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const handleRegister = async (data) => {
-    // form.setValue('userId', '21mebrat');
-    console.log(data, 'data')
+    console.log(data, 'data');
     try {
       const response = await registerAccount(data).unwrap();
       console.log(response, 'response for the merchant');
@@ -66,7 +85,11 @@ export default function Register() {
 
   return (
     <div className="w-full flex justify-center items-center">
-      <Card className="w-full max-w-[450px] shadow-xl hover:shadow-2xl transition-shadow duration-300 rounded-2xl border-0">
+      {/* 🟢 Attach the ref to the card */}
+      <Card
+        ref={cardRef}
+        className="w-full max-w-[450px] shadow-xl hover:shadow-2xl transition-shadow duration-300 rounded-2xl border-0"
+      >
         <CardHeader className="text-center space-y-4">
           <CardTitle className="text-3xl font-bold text-blue-600">
             Join Our Marketplace 🌟
@@ -178,14 +201,14 @@ export default function Register() {
         </CardContent>
         <CardFooter className="block text-center pb-8">
           <p className="text-gray-600">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link
               className="text-blue-600 cursor-pointer hover:text-indigo-800 font-semibold no-underline underline-offset-4 transition-colors"
               href="/customers/auth/login"
             >
               Sign In
-            </Link>
-            {' '} Here.
+            </Link>{" "}
+            Here.
           </p>
         </CardFooter>
       </Card>
