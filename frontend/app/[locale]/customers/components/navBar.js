@@ -27,7 +27,7 @@ const cartItems = 7;
 const companyLinks = [
   {
     title: "Products",
-    href: "/products",
+    href: "/components/products",
     description: "Explore our product catalog and offerings",
   },
   {
