@@ -10,10 +10,6 @@ export const MerchantRegistrationApi = appApi.injectEndpoints({
         getMerchantById: builder.query({
             query: (merchantId) => `merchant/get/${merchantId}/`,
         }),
-        // getAllOrders: builder.query({
-        //     query: () => `order/all-orders/`,
-        //     providesTags: ["Shop"],
-        // }),
         // Login mutation
         registerMerchant: builder.mutation({
             query: (formData) => {
@@ -25,21 +21,30 @@ export const MerchantRegistrationApi = appApi.injectEndpoints({
             },
             // invalidatesTags: ["MerchantRegistration"],
         }),
-
-        // Registration mutation
-        //     registerMerchantRegistration: builder.mutation({
-        //         query: (formData) => ({
-        //             url: "/MerchantRegistrations/register",
-        //             method: "POST",
-        //             body: formData,
-        //         }),
-        //         invalidatesTags: ["MerchantRegistration"],
-        //     }),
+        // change merchant status
+        changeMerchantStatus: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/merchant/updateStatus/${data.id}`,
+                    method: "PUT",
+                    body: data.status,
+                };
+            },
+            // invalidatesTags: ["MerchantRegistration"],
+        }),
+        deleteMerchant: builder.mutation({
+            query: (id) => ({
+                url: `/merchant/delete/${id}`,
+                method: "DELETE",
+            }),
+        }),
     }),
 });
 
 export const {
     useRegisterMerchantMutation,
     useGetAllMerchantsQuery,
-    useGetMerchantByIdQuery
+    useGetMerchantByIdQuery,
+    useDeleteMerchantMutation,
+    useChangeMerchantStatusMutation
 } = MerchantRegistrationApi;

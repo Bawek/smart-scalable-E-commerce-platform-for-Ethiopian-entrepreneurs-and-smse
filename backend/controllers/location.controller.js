@@ -2,8 +2,6 @@ const prisma = require("../config/db")
 const httpError = require("../middlewares/httpError")
 
 const locationRegistration = async (req, res, next) => {
-    console.log('locations comes',req.body)
-
     const {
         town,
         region,
@@ -30,7 +28,7 @@ const locationRegistration = async (req, res, next) => {
         return res.status(201).json({
             message: 'merchant registered successfully',
             status: "success",
-            location: newLocation
+            location: newLocation,
         });
     } catch (error) {
         console.log('Register Merchant Error', error)

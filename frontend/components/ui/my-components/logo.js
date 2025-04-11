@@ -1,16 +1,18 @@
 import React from 'react';
 import Image from 'next/image';
 import logo from '../../../public/logos/projectlogo.png';
-
-const Logo = () => {
+import Link from 'next/link';
+const Logo = ({ hrefValue }) => {
     return (
-        <Image
-            src={logo || "/logos/projectlogo.png"}
-            alt="logo seen"
-            width={100} // Adjust width as needed
-            height={50} // Adjust height as needed
-            quality={100} // Optional: Set image quality for optimization
-        />
+        <Link href={hrefValue || "/"}>
+            <Image
+                src={logo || "/logos/projectlogo.png"}
+                alt="logo seen"
+                width={100}
+                height={50}
+                quality={100}
+            />
+        </Link>
     );
 };
 

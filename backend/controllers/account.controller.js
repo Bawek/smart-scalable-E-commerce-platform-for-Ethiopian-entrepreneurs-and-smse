@@ -51,7 +51,7 @@ const login = async (req, res, next) => {
         const accountExist = await prisma.account.findFirst({
             where: {
                 email: email
-            } 
+            }
         })
         if (!accountExist) {
             return new httpError('incorrect email. please enter corrrect one or  register Firest', 404)
@@ -100,10 +100,34 @@ const getAllAccounts = async (req, res, next) => {
     }
 
 }
+const deleteAccountById = async (req, res, next) => {
+    const { accountId } = req.params;
+    try {
+        const account = await prisma.account.findUnique({
+            where: {
+                id: accountId,
+            },
+        });
 
+        if (!account) return next(new httpError("account is Not Found", 404))
+        await prisma.account.delete({
+            where: {
+                id: accountId
+            }
+        })
+        return res.status(200).json({
+            status: 'success',
+            message: 'Successfully deleted.',
+        });
+    } catch (error) {
+        console.log('Get account Error', error);
+        next(new httpError(error.message, 500));
+    }
+};
 
 module.exports = {
     registerAccount,
     getAllAccounts,
+    deleteAccountById,
     login
 }

@@ -36,6 +36,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import Link from "next/link";
+import Logo from "./logo";
 
 // Sample data
 const data = {
@@ -166,15 +167,9 @@ export function AppSidebar(props) {
     <Sidebar collapsible="icon" {...props}>
       <SidebarGroup>
         <SidebarGroupLabel>
-          <ShoppingBag className="h-6 w-6 text-green-400" /> {/* Icon with a color */}
-          <Link
-            href="/merchant"
-            className="flex items-center justify-end flex-nowrap w-full py-3 no-underline gap-2 font-semibold"
-          >
-            <span className="bg-gradient-to-r capitalize from-green-400 via-yellow-400 to-red-400 bg-clip-text text-transparent">
-              E-Commerce plafform
-            </span>
-          </Link>
+          <Logo
+            hrefValue='/merchant'
+          />
         </SidebarGroupLabel>
         <SidebarMenu className="m-0 p-0">
         </SidebarMenu>

@@ -16,6 +16,7 @@ import currentPage from "./features/admin-my/currentPageSlice";
 import currentIdPage from "./features/admin-my/woking-page";
 import promptSlice from "./features/prompt";
 import accountSlice from "./features/auth/accountSlice";
+import notificationSlice from "./features/notification/notificationSlice";
 import AdminEditor from "./features/admin-my/admin-editor";
 import { accountApi } from "./features/auth/accountApi";
 import { templateApi } from "./features/templates/templateApi";
@@ -30,15 +31,15 @@ const persistConfig = {
 const persistedAuthReducer = persistReducer(persistConfig, accountSlice);
 
 // Logger middleware for development (optional, can be removed in production)
-const loggerMiddleware = (storeAPI) => (next) => (action) => {
-	if (process.env.NODE_ENV === 'development') {
-	//   console.log('Dispatching:', action);
-	  const result = next(action);
-	//   console.log('Next State:', storeAPI.getState());
-	  return result;
-	}
-	return next(action); // Don't log in production
-  };
+// const loggerMiddleware = (storeAPI) => (next) => (action) => {
+// 	if (process.env.NODE_ENV === 'development') {
+// 		//   console.log('Dispatching:', action);
+// 		const result = next(action);
+// 		//   console.log('Next State:', storeAPI.getState());
+// 		return result;
+// 	}
+// 	return next(action); // Don't log in production
+// };
 export const makeStore = () => {
 	const store = configureStore({
 		reducer: {
@@ -51,6 +52,7 @@ export const makeStore = () => {
 			[publicShopSlice.reducerPath]: publicShopSlice.reducer,
 			merchant: merchantSlice,
 			shopName: shopNameSlice,
+			notification: notificationSlice,
 			currentPage: currentPage,
 			currentIdPage: currentIdPage,
 			account: persistedAuthReducer, // Use persisted reducer
@@ -69,9 +71,10 @@ export const makeStore = () => {
 				.concat(shopApi.middleware)
 				.concat(templateApi.middleware)
 				.concat(accountApi.middleware)
-				.concat(loggerMiddleware) // Add logger middleware only in development
 				.concat(publicShopSlice.middleware),
 	});
+
+	// .concat(loggerMiddleware) // Add logger middleware only in development
 
 	setupListeners(store.dispatch);
 	return store;

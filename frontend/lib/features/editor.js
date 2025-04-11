@@ -1,8 +1,8 @@
 // editorSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import Grapesjs from "grapesjs";
-import dynamicConfig from "../../app/[locale]/components/sitebuilder/WithGrapesjs"; // Ensure this path is correct
-
+// import dynamicConfig from "../../app/[locale]/components/sitebuilder/WithGrapesjs"; // Ensure this path is correct
+import dynamicConfig from '../../app/components/sitebuilder/WithGrapesjs'
 // Async thunk for initializing the GrapesJS editor
 export const initEditor = createAsyncThunk(
   "editor/init",

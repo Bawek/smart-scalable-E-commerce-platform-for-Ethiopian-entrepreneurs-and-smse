@@ -1,5 +1,5 @@
 'use client'
-import { imageViewer } from '@/app/[locale]/system-admin/lib/imageViewer';
+import { imageViewer } from '@/app/system-admin/lib/imageViewer';
 import React, { useState } from 'react';
 import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';

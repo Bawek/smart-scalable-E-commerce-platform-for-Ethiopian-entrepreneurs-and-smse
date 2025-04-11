@@ -194,3 +194,8 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
 }
+
+model Notification {
+  id String @id @default(uuid())
+  message String
+}
