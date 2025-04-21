@@ -20,10 +20,11 @@ const MerchantRegistrationPrompt = () => {
     const [currentPrompt, setCurrentPrompt] = useState(1)
     const searchParams = useSearchParams();
     const accountId = searchParams.get('accountId');
+    const mode = 'register'
     return (
         <div className='w-[95%] mx-auto flex flex-col md:flex-row'>
             <div className='w-full md:w-2/3 flex flex-col items-center'>
-            <PersonalDetail currentPrompt={currentPrompt} />
+                <PersonalDetail mode={mode} buttonVisible={true} />
             </div>
             <section className="w-1/2 hidden md:block">
                 <Carousel

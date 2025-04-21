@@ -1,8 +1,6 @@
 "use client";
 import {useState} from "react";
 import html2canvas from "html2canvas";
-
-
 const captureAndUploadScreenshot = async () => {
         const [message, setMessage] = useState("");
 		try {

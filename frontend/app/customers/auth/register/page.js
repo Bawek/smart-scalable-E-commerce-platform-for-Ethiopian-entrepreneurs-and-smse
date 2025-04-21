@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useRef } from "react"; // 🟢 useRef and useEffect added
-import { redirect, useRouter } from "next/navigation";
+import React from "react";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from "@/components/ui/card";
 import {
   Form,
@@ -25,74 +25,87 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { accountRegistrationSchema } from "@/util/validationSchemas";
 import { useRegisterAccountMutation } from "@/lib/features/auth/accountApi";
+import { useDispatch } from "react-redux";
+import { setCredential } from "@/lib/features/auth/accountSlice";
 
 export default function Register() {
   const { toast } = useToast();
-  const form = useForm({
-    resolver: zodResolver(accountRegistrationSchema)
-  });
-  const [registerAccount, { isLoading }] = useRegisterAccountMutation();
+  const dispatch = useDispatch();
   const router = useRouter();
 
-  // 🟢 Create a reference to the card element
-  const cardRef = useRef(null);
+  const form = useForm({
+    resolver: zodResolver(accountRegistrationSchema),
+  });
 
-  // 🟢 Effect to detect clicks outside the form/card
-  // useEffect(() => {
-  //   const handleClickOutside = (event) => {
-  //     // If clicked outside the cardRef element, redirect to home or desired path
-  //     if (cardRef.current && !cardRef.current.contains(event.target)) {
-  //       router.push("/"); // 🟢 Change this path if needed (e.g., "/home" or "/dashboard")
-  //     }
-  //   };
-
-  //   // Attach event listener on mount
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   // Remove on unmount
-  //   return () => {
-  //     document.removeEventListener("mousedown", handleClickOutside);
-  //   };
-  // }, []);
+  const [registerAccount, { isLoading }] = useRegisterAccountMutation();
 
   const handleRegister = async (data) => {
-    console.log(data, 'data');
     try {
       const response = await registerAccount(data).unwrap();
-      console.log(response, 'response for the merchant');
-      if (response?.status !== 'success') {
+      console.log(response, 'regisration response')
+      if (response?.status !== "success") {
         return toast({
           title: "Failed",
-          description: 'Registration Failed. Please Try Again',
-          duration: 3000
+          description: "Registration Failed. Please Try Again",
+          duration: 3000,
         });
       }
+
+      dispatch(
+        setCredential({
+          accessToken: response.accessToken,
+          firestName: response.firestName,
+          email: response.email,
+          role: response?.role,
+          id: response?.id,
+        })
+      );
+
       toast({
         title: "Form Submitted Successfully!",
-        description: "please login here to preced with us.",
-        duration: 3000
+        description: "Please login here to proceed with us.",
+        duration: 3000,
       });
-      router.push(`/customers/merchant-registration?accountId=${response?.account?.id}`);
-      redirect;
+
+      router.push(`/merchant?merchant=${response.id}`);
     } catch (error) {
-      console.log('error on merchant registration', error);
       toast({
         title: "Failed",
-        description: 'Registration Failed. Please Try Again',
-        duration: 3000
+        description: "Registration Failed. Please Try Again",
+        duration: 3000,
       });
     }
   };
 
+  const renderInputField = (name, label, type = "text", placeholder = "") => (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel className="text-gray-700 font-medium">
+            {label} <span className="text-red-500">*</span>
+          </FormLabel>
+          <FormControl>
+            <Input
+              type={type}
+              placeholder={placeholder}
+              {...field}
+              className="h-12 text-base"
+            />
+          </FormControl>
+          <FormMessage className="text-red-500 text-sm" />
+        </FormItem>
+      )}
+    />
+  );
+
   return (
     <div className="w-full flex justify-center items-center">
-      {/* 🟢 Attach the ref to the card */}
-      <Card
-        ref={cardRef}
-        className="w-full max-w-[450px] shadow-xl hover:shadow-2xl transition-shadow duration-300 rounded-2xl border-0"
-      >
+      <Card className="w-full max-w-[450px] shadow-xl hover:shadow-2xl transition-shadow duration-300 rounded-2xl border-0">
         <CardHeader className="text-center space-y-4">
-          <CardTitle className="text-3xl font-bold text-blue-600">
-            Join Our Marketplace 🌟
+          <CardTitle className="text-3xl font-bold text-orange-600">
+            Join Our Marketplace
           </CardTitle>
           <CardDescription className="text-gray-600">
             Start your journey with us in just 2 minutes!
@@ -102,90 +115,11 @@ export default function Register() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleRegister)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="firestName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">
-                        First Name <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="John"
-                          {...field}
-                          className="rounded-lg focus:ring-2 focus:ring-blue-500 border-gray-300"
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-500 text-sm" />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">
-                        Last Name <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Doe"
-                          {...field}
-                          className="rounded-lg focus:ring-2 focus:ring-blue-500 border-gray-300"
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-500 text-sm" />
-                    </FormItem>
-                  )}
-                />
+                {renderInputField("firestName", "First Name", "text", "Alemu")}
+                {renderInputField("lastName", "Last Name", "text", "Mamaru")}
               </div>
-
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">
-                      Email <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="john@example.com"
-                        {...field}
-                        className="rounded-lg focus:ring-2 focus:ring-blue-500 border-gray-300"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-500 text-sm" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">
-                      Password <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="••••••••"
-                        {...field}
-                        className="rounded-lg focus:ring-2 focus:ring-blue-500 border-gray-300"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-500 text-sm" />
-                  </FormItem>
-                )}
-              />
-
+              {renderInputField("email", "Email", "email", "john@example.com")}
+              {renderInputField("password", "Password", "password", "••••••••")}
               <Button
                 className="w-full bg-gradient-to-r from-green-600 via-yellow-400 to-red-400 hover:from-green-700 hover:to-orange-700 text-white font-semibold py-4 rounded-xl transition-all hover:shadow-lg"
                 disabled={isLoading}
@@ -203,7 +137,7 @@ export default function Register() {
           <p className="text-gray-600">
             Already have an account?{" "}
             <Link
-              className="text-blue-600 cursor-pointer hover:text-indigo-800 font-semibold no-underline underline-offset-4 transition-colors"
+              className="text-orange-600 cursor-pointer hover:text-indigo-700 font-semibold no-underline underline-offset-4 transition-colors"
               href="/customers/auth/login"
             >
               Sign In

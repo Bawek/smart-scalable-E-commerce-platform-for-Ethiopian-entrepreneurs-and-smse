@@ -25,7 +25,14 @@ export const accountApi = appApi.injectEndpoints({
             },
             // invalidatesTags: ["Account"],
         }),
-
+        logout: builder.mutation({
+            query: () => {
+                return {
+                    url: "/accounts/logout",
+                    method: "POST",
+                };
+            },
+        }),
         // Registration mutation
         registerAccount: builder.mutation({
             query: (formData) => ({
@@ -33,6 +40,18 @@ export const accountApi = appApi.injectEndpoints({
                 method: "POST",
                 body: formData,
             }),
+            // invalidatesTags: ["Account"],
+        }),
+        // update Accout mutation
+        updateAccount: builder.mutation({
+            query: (formData) => {
+                console.log(formData,'form data se')
+                return {
+                    url: `/accounts/update/${formData.id}`,
+                    method: "POST",
+                    body: formData.formData,
+                }
+            },
             // invalidatesTags: ["Account"],
         }),
     }),
@@ -44,4 +63,6 @@ export const {
     useRegisterAccountMutation,
     useGetMerchantsQuery,
     useGetAllOrdersQuery,
+    useLogoutMutation,
+    useUpdateAccountMutation
 } = accountApi;

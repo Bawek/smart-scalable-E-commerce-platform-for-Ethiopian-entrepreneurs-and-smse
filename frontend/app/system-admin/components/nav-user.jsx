@@ -38,6 +38,7 @@ export function NavUser({
   const router = useRouter()
   const dispatch = useDispatch()
   const notifications = useSelector(selectNotifications)
+  console.log(user, 'user')
   return (
     <SidebarMenu className="m-0 p-0">
       <SidebarMenuItem>
@@ -47,11 +48,11 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage className='rounded-full' src={user?.photoURL} alt={user?.name} />
-                <AvatarFallback className="rounded-full">{user?.name.slice(0, 2).toUpperCase() || 'UR'}</AvatarFallback>
+                <AvatarImage className='rounded-full' src={user?.photoURL || ''} alt={user?.name} />
+                <AvatarFallback className="rounded-full">{user?.firestName.slice(0, 2).toUpperCase() || 'UR'}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user?.name}</span>
+                <span className="truncate font-semibold">{user?.firestName}</span>
                 <span className="truncate text-xs">{user?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -66,10 +67,10 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage className='rounded-full' src={user?.photoURL} alt={user?.name} />
-                  <AvatarFallback className="rounded-lg">{user?.name.slice(0, 2).toUpperCase() || 'UR'}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{user?.firestName.slice(0, 2).toUpperCase() || 'UR'}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user?.name}</span>
+                  <span className="truncate font-semibold">{user?.firestName}</span>
                   <span className="truncate text-xs">{user?.email}</span>
                 </div>
               </div>
@@ -96,7 +97,7 @@ export function NavUser({
 
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer" onClick={() => dispatch(logout())}>
+            <DropdownMenuItem className="cursor-pointer" onClick={logout}>
               <LogOut />
               Log out
             </DropdownMenuItem>

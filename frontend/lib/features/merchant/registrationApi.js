@@ -10,6 +10,9 @@ export const MerchantRegistrationApi = appApi.injectEndpoints({
         getMerchantById: builder.query({
             query: (merchantId) => `merchant/get/${merchantId}/`,
         }),
+        getMerchantByAccount: builder.query({
+            query: (accountId) => `/merchant/getby-account/${accountId}/`,
+        }),
         // Login mutation
         registerMerchant: builder.mutation({
             query: (formData) => {
@@ -24,10 +27,11 @@ export const MerchantRegistrationApi = appApi.injectEndpoints({
         // change merchant status
         changeMerchantStatus: builder.mutation({
             query: (data) => {
+                console.log('data ', data)
                 return {
                     url: `/merchant/updateStatus/${data.id}`,
                     method: "PUT",
-                    body: data.status,
+                    body: data
                 };
             },
             // invalidatesTags: ["MerchantRegistration"],
@@ -46,5 +50,6 @@ export const {
     useGetAllMerchantsQuery,
     useGetMerchantByIdQuery,
     useDeleteMerchantMutation,
-    useChangeMerchantStatusMutation
+    useChangeMerchantStatusMutation,
+    useGetMerchantByAccountQuery,
 } = MerchantRegistrationApi;

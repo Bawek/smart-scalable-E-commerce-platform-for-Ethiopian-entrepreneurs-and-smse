@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -18,13 +17,13 @@ import { useWindowSize } from "@uidotdev/usehooks";
 import ProfileMenu from "./profile";
 import { useState } from "react";
 import Logo from "@/components/ui/my-components/logo";
-
+import { useSelector } from "react-redux";
 // Platform information remains the same...
-const cartItems = 7;
+const cartItems = 0;
 const companyLinks = [
   {
     title: "Products",
-    href: "/components/products",
+    href: "/customers/templates",
     description: "Explore our product catalog and offerings",
   },
   {
@@ -87,8 +86,7 @@ export function CustomerNavigationMenu() {
   const [open, setOpen] = useState(false);
   const closeDrawer = () => setOpen(false);
   const { width } = useWindowSize();
-  const account = {
-  };
+  const account = useSelector((state) => state.account)
   const isMobile = (width || 0) < 768;
 
   const [hasScrolled, setHasScrolled] = React.useState(false);
@@ -184,27 +182,28 @@ function DesktopMenu({ account }) {
 
       {/* Right Section - User Profile / Authentication */}
       <div className="ml-auto flex items-center gap-2">
-        {account?.accessToken ? (
-          <ProfileMenu />
+        {
+          account?.accessToken ? (
+            <ProfileMenu />
 
-        ) : (
-          <>
-            <Link
-              className="no-underline text-white bg-orange-700 hover:bg-orange-800 font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
-              href="/customers/auth/login"
-            >
-              Login
-            </Link>
+          ) : (
+            <>
+              <Link
+                className="no-underline text-white bg-orange-700 hover:bg-orange-800 font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
+                href="/customers/auth/login"
+              >
+                Login
+              </Link>
 
-            <Link
-              className="no-underline text-white bg-orange-700 hover:bg-orange-800font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
-              href="/customers/auth/register"
-            >
-              Register
-            </Link>
+              <Link
+                className="no-underline text-white bg-orange-700 hover:bg-orange-800font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
+                href="/customers/auth/register"
+              >
+                Register
+              </Link>
 
-          </>
-        )}
+            </>
+          )}
       </div>
     </div>
 
@@ -213,18 +212,12 @@ function DesktopMenu({ account }) {
 
 function MobileMenu({ account, open, setOpen, closeDrawer }) {
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTitle asChild>
-        <Link
-          href="/customers"
-          onClick={closeDrawer}
-          className="w-full flex items-center gap-2 no-underline"
-        >
-          <ShoppingBag className="h-8 w-8 text-green-400" />
-          <span className="text-xl font-bold bg-gradient-to-r from-green-400 via-yellow-400 to-red-400 bg-clip-text text-transparent">
-            E-Commerce Platform
-          </span>
-        </Link>
+    <Sheet aria-describedby={'mobile menu'} open={open} onOpenChange={setOpen}>
+      <SheetTitle
+        aria-describedby={'mobile menu'}
+        className="text-sm font-bold bg-gradient-to-r from-green-400 via-yellow-400 to-red-400 bg-clip-text text-transparent"
+      >
+        Menus
       </SheetTitle>
       <SheetTrigger asChild>
         <Button
@@ -248,10 +241,7 @@ function MobileMenu({ account, open, setOpen, closeDrawer }) {
                 onClick={closeDrawer}
                 className="flex items-center gap-2 no-underline"
               >
-                <ShoppingBag className="h-8 w-8 text-green-400" />
-                <span className="text-sm font-bold bg-gradient-to-r from-green-400 via-yellow-400 to-red-400 bg-clip-text text-transparent">
-                  E-Commerce Platform
-                </span>
+                <Logo />
               </Link>
             </div>
           </div>

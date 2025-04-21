@@ -37,21 +37,22 @@ model Account {
 }
 
 model Merchant {
-  id               String          @id @default(uuid())
-  accountId        String          @unique
-  account          Account         @relation(fields: [accountId], references: [id])
+  id               String             @id @default(uuid())
+  accountId        String             @unique
+  account          Account            @relation(fields: [accountId], references: [id])
   identityCard     String
   locationId       String
   businessName     String
   ownerName        String
-  businessPhone    String          @unique
-  bussinessEmail   String          @unique
-  cbeAccountNo     String          @unique
+  businessPhone    String             @unique
+  bussinessEmail   String             @unique
+  cbeAccountNo     String             @unique
   businessType     String
-  status           StatusIndicator @default(PENDING)
-  registrationDate DateTime        @default(now())
-  location         Location        @relation(fields: [locationId], references: [id])
+  status           StatusIndicator    @default(PENDING)
+  registrationDate DateTime           @default(now())
+  location         Location           @relation(fields: [locationId], references: [id])
   shops            Shop[]
+  templates        MerchantTemplate[] // This allows one-to-many relationship (one merchant can have multiple templates)
 }
 
 model Admin {
@@ -68,35 +69,29 @@ model Customer {
 }
 
 model Shop {
-  id             String     @id @default(uuid())
-  merchantId     String
-  merchant       Merchant   @relation(fields: [merchantId], references: [id])
-  name           String
-  slug           String     @unique
-  description    String?
-  templateId     String
-  template       Template   @relation(fields: [templateId], references: [id])
-  locationId     String
-  location       Location   @relation(fields: [locationId], references: [id])
-  businessHours  Json? // ex: { "monday": { "open": "09:00", "close": "18:00" }, ... }
-  socialMedia    Json? // { facebook: "...", instagram: "...", twitter: "..." }
-  bannerImageUrl String?
-  logoImageUrl   String?
-  status         ShopStatus @default(ACTIVE)
-  approved       Boolean    @default(false)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  products       Product[]
-  orders         Order[]
-  pages          Page[]
-
-  // SEO Fields
-  metaTitle       String?
-  metaDescription String?
-
+  id                 String            @id @default(uuid())
+  merchantId         String
+  merchant           Merchant          @relation(fields: [merchantId], references: [id])
+  name               String
+  slug               String            @unique
+  description        String?
+  locationId         String
+  location           Location          @relation(fields: [locationId], references: [id])
+  businessHours      Json?
+  socialMedia        Json?
+  bannerImageUrl     String?
+  logoImageUrl       String?
+  status             ShopStatus        @default(ACTIVE)
+  approved           Boolean           @default(false)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  products           Product[]
+  orders             Order[]
+  merchantTemplate   MerchantTemplate? @relation(fields: [merchantTemplateId], references: [id])
+  merchantTemplateId String?           @unique
   // Payment/Verification
-  verified       Boolean @default(false)
-  verificationId String?
+  verified           Boolean           @default(false)
+  verificationId     String?
 
   @@index([name])
   @@index([slug])
@@ -122,27 +117,66 @@ model Location {
   orders    Order[]
 }
 
-model Page {
-  id         String   @id @default(uuid())
+model BaseTemplate {
+  id               String             @id @default(uuid())
+  name             String
+  description      String
+  basePrice        Float
+  previewUrls      String[]
+  status           StatusIndicator    @default(PENDING)
+  pages            BasePage[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  MerchantTemplate MerchantTemplate[]
+
+  @@unique([name])
+  @@index([name])
+}
+
+model BasePage {
+  id         String       @id @default(uuid())
   name       String
   html       String
   css        String
   js         String
+  template   BaseTemplate @relation(fields: [templateId], references: [id])
   templateId String
-  template   Template @relation(fields: [templateId], references: [id])
-  Shop       Shop?    @relation(fields: [shopId], references: [id])
-  shopId     String?
+
+  @@index([templateId])
 }
 
-model Template {
-  id           String          @id @default(uuid())
-  name         String
-  description  String
-  price        Float
-  previewImage String[]
-  status       StatusIndicator @default(PENDING)
-  pages        Page[]
-  shops        Shop[]
+model MerchantTemplate {
+  id             String        @id @default(uuid())
+  merchant       Merchant      @relation(fields: [merchantId], references: [id])
+  merchantId     String
+  name           String
+  description    String
+  baseTemplate   BaseTemplate  @relation(fields: [baseTemplateId], references: [id])
+  baseTemplateId String
+  customPages    CustomPage[]
+  paymentStatus  PaymentStatus @default(PENDING)
+  activatedAt    DateTime?     @default(now())
+  expiresAt      DateTime?
+  version        String        @default("1.0.0")
+  isActive       Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  shop           Shop?
+
+  @@unique([merchantId, baseTemplateId])
+  @@index([merchantId])
+}
+
+model CustomPage {
+  id                 String           @id @default(uuid())
+  name               String
+  html               String
+  css                String
+  js                 String
+  merchantTemplate   MerchantTemplate @relation(fields: [merchantTemplateId], references: [id])
+  merchantTemplateId String
+
+  @@index([merchantTemplateId])
 }
 
 model Order {
@@ -158,9 +192,6 @@ model Order {
   status     OrderStatus @default(PENDING)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
-
-  // Consider adding if you need status change history
-  // statusUpdates Json? 
 }
 
 model Product {
@@ -168,23 +199,22 @@ model Product {
   name          String
   description   String
   price         Float
-  discountPrice Float? // Optional discount price
+  discountPrice Float?
   quantity      Int
   category      String
-  tags          String[] // Array of keywords for search & filtering
-  status        StatusIndicator @default(PENDING) // available, out_of_stock, draft, hidden
-  images        String[] // Array of image URLs
+  tags          String[]
+  status        StatusIndicator @default(PENDING)
+  images        String[]
   brand         String?
-  videoUrl      String? // Optional video demonstration URL
-  slug          String          @unique // SEO-friendly URL
+  videoUrl      String?
+  slug          String          @unique
   views         Int             @default(0)
-  ratings       Float           @default(0.0) // Average rating
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  shopId    String
-  shop      Shop     @relation(fields: [shopId], references: [id])
-  orders    Order[]
+  ratings       Float           @default(0.0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  shopId        String
+  shop          Shop            @relation(fields: [shopId], references: [id])
+  orders        Order[]
 }
 
 enum OrderStatus {
@@ -196,6 +226,14 @@ enum OrderStatus {
 }
 
 model Notification {
-  id String @id @default(uuid())
+  id      String @id @default(uuid())
   message String
+}
+
+enum PaymentStatus {
+  ACTIVE
+  EXPIRED
+  PENDING
+  CANCELED
+  FAILED
 }

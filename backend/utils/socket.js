@@ -14,6 +14,7 @@ module.exports = {
 
             socket.on('join-admin-room', () => {
                 socket.join('admin-room');
+                console.log('Admin joined the room');   
             });
             // Merchant room join handler
             socket.on('join-merchant-room', (merchantId) => {

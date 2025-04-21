@@ -1,41 +1,61 @@
-'use client'
-import React from 'react'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-const MerchantFullRegistration = () => {
-    const features = ['Registration', 'shop creation']
+"use client";
+import { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import MerchantFullRegistration from "@/app/customers/components/prompts/prompt1";
+import { useGetMerchantByAccountQuery } from "@/lib/features/merchant/registrationApi";
+const MerchantRegistration = () => {
+    const accountId = useSelector((state) => state.account.id);
+    const [merchantStatus, setMerchantStatus] = useState("unRegister");
+    const {
+        data,
+        isLoading,
+        isError,
+        refetch,
+    } = useGetMerchantByAccountQuery(accountId);
+    console.log(data, 'merchant data now added ,', isError, accountId)
+    // Decide merchant registration status 
+    useEffect(() => {
+        if (data?.merchant) {
+            setMerchantStatus(data.merchant.status);
+        }
+        //  else {
+        //     setMerchantStatus("");
+        // }
+    }, [data]);
+    const memoizedMerchantData = useMemo(() => {
+        if (data) {
+            return {
+                ...data.merchant,
+                status: merchantStatus,
+            };
+        }
+    }, [data, merchantStatus]);
+
+    // if (isLoading || !accountId) return <Loader />;
+
+    if (isError) {
+        return (
+            <div className="text-red-500 p-4">
+                🚨 Error loading merchant information. Please try again later.
+            </div>
+        );
+    }
+
     return (
-        <div>
-            <Tabs defaultValue="description" className="mt-8 md:mt-12">
-                <TabsList className="flex overflow-x-auto">
-                    <TabsTrigger value="description" className="text-sm md:text-base px-3 md:px-4">
-                        Business Registration
-                    </TabsTrigger>
-                    <TabsTrigger value="features" className="text-sm md:text-base px-3 md:px-4">
-                        shop creation
-                    </TabsTrigger>
-                    <TabsTrigger value="reviews" className="text-sm md:text-base px-3 md:px-4">
-                        Reviews (128)
-                    </TabsTrigger>
-                    <TabsTrigger value="shipping" className="text-sm md:text-base px-3 md:px-4">
-                        Shipping & Returns
-                    </TabsTrigger>
-                </TabsList>
+        <main className="container mx-auto p-4">
+            {merchantStatus === "unRegister" ? (
+                //  First-time registration
+                <MerchantFullRegistration onSuccess={refetch} />
+            ) : (
+                // Already registered merchant — show update/after-registration screen
+                <MerchantFullRegistration
+                    existingData={memoizedMerchantData}
+                    onSuccess={refetch}
+                    mStatus={merchantStatus}
+                />
+            )}
+        </main>
+    );
+};
 
-                {/* Tabs content remains same with responsive spacing */}
-                <TabsContent value="description">
-                    <p>The Bailey Poly Jacket combines urban style with outdoor functionality. Designed for transitional weather, featuring water-resistant fabric and modern minimalist design.</p>
-                </TabsContent>
-                <TabsContent value="features">
-                    <ul>
-                        {features.map((feature, index) => (
-                            <li key={index}>{feature}</li>
-                        ))}
-                    </ul>
-                </TabsContent>
-                <TabsContent value="reviews">Reviews will be displayed here.</TabsContent>
-                <TabsContent value="shipping">Shipping & Return details will be displayed here.</TabsContent>
-            </Tabs>    </div>
-    )
-}
-
-export default MerchantFullRegistration
+export default MerchantRegistration;

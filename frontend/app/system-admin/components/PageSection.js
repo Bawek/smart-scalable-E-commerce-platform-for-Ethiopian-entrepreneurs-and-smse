@@ -6,11 +6,10 @@ import { setCurrentPage } from "@/lib/features/admin-my/currentPageSlice";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { useToast } from "@/hooks/use-toast";
+import { Pencil, Trash } from "lucide-react";
 
 export default function PageSection({ templateId }) {
   const [show, setShow] = useReducer((show) => !show, false);
-  const { toast } = useToast()
   const [pages, setPages] = useState([]);
   const [name, setName] = useState("");
   const [isValid, setIsValid] = useState(true);
@@ -212,13 +211,15 @@ export default function PageSection({ templateId }) {
                     }))}
                     className="p-1 text-blue-500 hover:text-blue-900"
                   >
-                    <i className="fa fa-pencil"></i>
+                    <Pencil />
+                    {/* <i className="fa fa-pencil"></i> */}
                   </button>
                   <button
                     onClick={() => handleDeletePage(page.id)}
                     className="p-1 text-red-500 hover:text-red-900 rounded"
                   >
-                    <i className="fa fa-trash"></i>
+                    <Trash />
+                    {/* <i className="fa fa-trash"></i> */}
                   </button>
                 </div>
               </li>

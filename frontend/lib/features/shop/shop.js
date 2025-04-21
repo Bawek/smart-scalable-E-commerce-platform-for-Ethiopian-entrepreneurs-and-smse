@@ -7,6 +7,10 @@ export const shopApi = appApi.injectEndpoints({
       query: (shopId) => `getshop/${shopId}/`,
       // providesTags: ["customisedPage"],
     }),
+    getShopByAccount: builder.query({
+      query: (accountId) => `/shops/getby-account/${accountId}`,
+      // providesTags: ["customisedPage"],
+    }),
     getShopWithId: builder.query({
       query: (shopId) => `getshop-id/${shopId}/`,
       // providesTags: ["Shop"],
@@ -22,6 +26,7 @@ export const shopApi = appApi.injectEndpoints({
   }),
 });
 export const {
-  useCreateShopMutation
+  useCreateShopMutation,
+  useGetShopByAccountQuery,
 } = shopApi;
 

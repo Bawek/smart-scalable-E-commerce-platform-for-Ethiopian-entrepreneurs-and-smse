@@ -51,7 +51,6 @@ app.post('/iopost',testIo)
 
 // handling errors
 app.use((err, req, res) => {
-    console.log(err.isOperational, 'isoperational')
     if (err.isOperational) {
         err.statusCode = err.statusCode || 500
         err.status = err.status || 'error'

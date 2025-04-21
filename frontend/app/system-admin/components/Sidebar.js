@@ -1,3 +1,6 @@
+import { Task } from "@mui/icons-material";
+import { Cog, Cuboid, Paintbrush } from "lucide-react";
+
 function Sidebar() {
     return (
         <>
@@ -13,7 +16,7 @@ function Sidebar() {
                         aria-controls="block"
                         aria-selected="true"
                     >
-                        <i className="fa fa-cubes"></i>
+                       <Cuboid />
                     </button>
                 </li>
                 <li className="nav-item" role="presentation">
@@ -27,7 +30,7 @@ function Sidebar() {
                         aria-controls="layer"
                         aria-selected="false"
                     >
-                        <i className="fa fa-tasks"></i>
+                        <Task />
                     </button>
                 </li>
                 <li className="nav-item" role="presentation">
@@ -41,7 +44,8 @@ function Sidebar() {
                         aria-controls="style"
                         aria-selected="false"
                     >
-                        <i className="fa fa-paint-brush"></i>
+                        <Paintbrush />
+                        {/* <i className="fa fa-paint-brush"></i> */}
                     </button>
                 </li>
                 <li className="nav-item" role="presentation">
@@ -55,7 +59,8 @@ function Sidebar() {
                         aria-controls="trait"
                         aria-selected="false"
                     >
-                        <i className="fa fa-cog"></i>
+                        <Cog />
+                        {/* <i className="fa fa-cog"></i> */}
                     </button>
                 </li>
             </ul>

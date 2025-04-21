@@ -18,26 +18,23 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useGetAllMerchantsQuery } from "@/lib/features/merchant/registrationApi";
-import { all } from "axios";
 import { imageViewer } from "../lib/imageViewer";
-
 const ManageShops = () => {
     const [merchants, setMerchants] = useState([
         { id: "1", name: "Shop 1", owner: "Owner 1", status: "Active" },]);
     const [selectedShop, setSelectedShop] = useState(null);
     const { data: allMerchants, isLoading, isError } = useGetAllMerchantsQuery();
-    // prepare table data
     const data = allMerchants?.merchant?.map(merchant => ({
         name: `${merchant.account?.firestName} ${merchant.account?.lastName}`, // Corrected field names (firestName -> firstName)
         email: merchant.account?.email,
         status: merchant.status,
         identityCard: merchant.identityCard
     }));
+
     const [isEditing, setIsEditing] = useState(false);
     const { toast } = useToast()
     const router = useRouter()
     const handleDeleteMerchant = (id) => {
-
     }
     // columns
     const columns = [
@@ -134,7 +131,7 @@ const ManageShops = () => {
                                         title: "Copied",
                                         description: <p className="text-black">{currentMerchant?.id}</p>,
                                         variant: "default",
-                                        duration:2000
+                                        duration: 2000
                                     });
                                 }}
                             >

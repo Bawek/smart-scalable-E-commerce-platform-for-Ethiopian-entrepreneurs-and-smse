@@ -1,11 +1,9 @@
 'use client'
 import { Button } from "@/components/ui/button";
 import { useChangeMerchantStatusMutation, useGetMerchantByIdQuery } from "@/lib/features/merchant/registrationApi";
-import { CheckCircle, Trash, Edit, PhoneMissed } from "lucide-react"
+import { Edit, PhoneMissed } from "lucide-react"
 import { useParams } from "next/navigation";
 import MerchantCard from "@/components/ui/my-components/imageMagnifier";
-import CustomSelect from "@/components/ui/my-components/my-select";
-import { Select } from "@mui/material";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 const MerchantDetailPage = () => {
@@ -23,14 +21,15 @@ const MerchantDetailPage = () => {
                 id: merchant?.id,
                 status: status
             }).unwrap()
+            // window.location.reload()
             console.log(response, 'current status')
             if (statusError) {
                 throw Error('something went wrong please try again')
             }
             setCurrentStatus(status)
             toast({
-                title: `<h1> ${response?.status} </h1>`,
-                description: `<h1> ${response?.message} </h1>`,
+                title: ` ${response?.status} `,
+                description: `${response?.message} `,
                 variant: 'secondary',
                 duration: 2000
 

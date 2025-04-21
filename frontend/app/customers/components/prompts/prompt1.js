@@ -1,305 +1,459 @@
-'use client';
-import React, { useState } from 'react';
-import { useRouter, useSearchParams } from "next/navigation";
-import { useToast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import * as z from 'zod';
+"use client";
+
+import React, { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { useRegisterLocationMutation } from '@/lib/features/location/locationapi';
-import { useRegisterMerchantMutation } from '@/lib/features/merchant/registrationApi';
-import { useDispatch } from 'react-redux';
-import { setCredential } from '@/lib/features/auth/accountSlice';
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectItem } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import ShopRegistration from "./prompt2";
+import { useRegisterMerchantMutation } from "@/lib/features/merchant/registrationApi";
+import { useRegisterLocationMutation } from "@/lib/features/location/locationapi";
+import { useSelector } from "react-redux";
+
+const formSchema = z.object({
+    id: z.string().optional(),
+    businessName: z.string().min(2, "Business name is required"),
+    businessPhone: z.string().min(10, "Valid phone number required"),
+    bussinessEmail: z.string().email("Valid email required"),
+    businessType: z.string().min(1, "Business category required"),
+    ownerName: z.string().min(2, "Owner name required"),
+    identityCard: z.instanceof(File).refine(file => file.size <= 5_000_000, "File size must be less than 5MB"),
+    town: z.string().min(2, "Town required"),
+    woreda: z.string().min(1, "Woreda required"),
+    region: z.string().min(2, "Region required"),
+    kebele: z.string().min(1, "Kebele required"),
+    cbeAccountNo: z.string().min(10, "Valid account number required"),
+});
+const updateSchema = z.object({
+    id: z.string().optional(),
+    businessName: z.string().min(2, "Business name is required"),
+    businessPhone: z.string().min(10, "Valid phone number required"),
+    bussinessEmail: z.string().email("Valid email required"),
+    businessType: z.string().min(1, "Business category required"),
+    ownerName: z.string().min(2, "Owner name required"),
+    cbeAccountNo: z.string().min(10, "Valid account number required"),
+});
 
 const businessCategories = [
-    "Electrical", "Clothing & Fashion", "Electronics & Gadgets", "Furniture & Home Decor", "Automobile & Spare Parts",
-    "Beauty & Cosmetics", "Construction & Building Materials", "Stationery & Books"
+    "Retail & Wholesale",
+    "Food & Beverage",
+    "Technology",
+    "Healthcare",
+    "Construction",
+    "Transportation",
+    "Education",
+    "Entertainment",
 ];
 
-const schema = z.object({
-    businessName: z.string().min(1, "Business name is required"),
-    businessPhone: z.string().min(1, "Phone number is required").regex(/^\+?[0-9]*$/, "Phone number is not valid"),
-    bussinessEmail: z.string().email("Invalid email address"),
-    businessType: z.string().min(1, "Business category is required"),
-    ownerName: z.string().min(1, "Owner name is required"),
-    identityCard: z
-        .instanceof(File)
-        .refine(file => file.size > 0, "Identity card is required")
-        .refine(file => ['image/jpeg', 'image/png', 'image/gif'].includes(file.type), "File must be an image (JPEG, PNG, or GIF)"),
-    town: z.string().min(1, "Town is required"),
-    region: z.string().min(1, "Region is required"),
-    woreda: z.string().min(1, "Region is required"),
-    kebele: z.string().min(1, "Kebele is required"),
-    cbeAccountNo: z.string().min(1, "CBE account number is required"),
-});
-const PersonalDetail = ({ currentPrompt }) => {
-    const [registerLocation, { isLoading, isError, isSuccess }] = useRegisterLocationMutation();
-    const [registerMerchant, { isLoading: mIsLoading, isError: mIsError, isSuccess: mIsSuccess }] = useRegisterMerchantMutation();
+const MerchantFullRegistration = ({ existingData, onSuccess, mStatus }) => {
     const { toast } = useToast();
-    const dispatch = useDispatch()
-    const searchParams = useSearchParams();
-    const accountId = searchParams.get('accountId');
-    const router = useRouter()
+    const [editMode, setEditMode] = React.useState(false);
+    const accountId = useSelector((state) => state.account.id)
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [registerMerchant, { isLoading, isError }] = useRegisterMerchantMutation()
+    const [registerLocation, { isLoading: locationLoading, isError: locationError }] = useRegisterLocationMutation()
+    const mode = existingData ? 'update' : 'register'
+    console.log(existingData)
     const form = useForm({
-        resolver: zodResolver(schema)
+        resolver: zodResolver(existingData ? updateSchema : formSchema),
+        defaultValues: existingData ? existingData : {
+            businessName: "",
+            businessPhone: "",
+            bussinessEmail: "",
+            businessType: "",
+            ownerName: "",
+            town: "",
+            woreda: "",
+            region: "",
+            kebele: "",
+            cbeAccountNo: "",
+        }
     });
-    const handleSubmit = async (data) => {
-        console.log(accountId, 'accountid is here')
-        const formData = new FormData();
-        // Prepare location data
-        const locationData = {
-            town: data.town,
-            region: data.region,
-            kebele: data.kebele,
-            woreda: data.woreda,
-        };
-
-        // Add all form fields to FormData
-        Object.entries(data).forEach(([key, value]) => {
-            formData.append(key, value);
-        });
-
+    useEffect(() => {
+        if (existingData) {
+            form.reset(existingData)
+        }
+    }, [])
+    const handleSubmit = async (values) => {
+        console.log(existingData, values, 'response reg')
+        setIsSubmitting(true);
         try {
-            // Step 1: Register Location
-            const locationResponse = await registerLocation(locationData).unwrap();
-            console.log(locationResponse, 'location nnew hwhh')
-            if (!locationResponse || locationResponse.status !== "success") {
-                return toast({
-                    title: "Error",
-                    description: "Failed to register location. Please try again.",
-                    duration: 2000,
-                    variant: "destructive",
-                });
+            const formData = new FormData();
+            if (!existingData) {
+                const locationResponse = await registerLocation(values).unwrap()
+                if (locationResponse.status !== 'success') {
+                    return toast({
+                        title: "Error",
+                        description: "Submission failed",
+                        variant: "destructive",
+                    });
+                }
+                formData.append('locationId', locationResponse?.location?.id)
             }
-
-            // Step 2: Register Merchant
-            formData.append("locationId", locationResponse.location.id);
-            formData.append("accountId", accountId);
-
-            const merchantResponse = await registerMerchant(formData).unwrap();
-            const { merchant } = merchantResponse
-            console.log(merchantResponse, 'marchant')
-            if (!merchantResponse || merchantResponse.status !== "success") {
-                return toast({
-                    title: "Error",
-                    description: "Failed to register merchant. Please try again.",
-                    duration: 2000,
-                    variant: "destructive",
-                });
-            }
-            dispatch(setCredential({
-                email: merchant.account.email,
-                firestName: merchant.account.firestName,
-                accessToken: merchant.account.accessToken,
-                role: merchant.account.role,
-                id: merchant.id
-            }))
-            // Success
-            toast({
-                title: "Success",
-                description: "Congratulations! Your Account has been created successfully.",
-                duration: 2000,
+            Object.entries(values).forEach(([key, value]) => {
+                if (value instanceof File) formData.append(key, value);
+                else if (value) formData.append(key, value);
             });
-            router.push(`/merchant`)
+            formData.append('mode', mode)
+            formData.append('accountId', accountId)
+            const response = await registerMerchant(formData).unwrap()
+            console.log(response, 'update')
+            if (response.status !== 'success') throw new Error("Submission failed");
+            toast({
+                title: "Success!",
+                description: existingData ? "Merchant updated" : "Merchant registered",
+            });
+
+            if (!existingData) form.reset();
+            setEditMode(false);
+            onSuccess?.();
         } catch (error) {
-            console.error("Merchant registration error:", error);
+            console.log(error, 'response reg')
             toast({
                 title: "Error",
-                description: "Something went wrong. Please try again.",
-                duration: 2000,
+                description: error.message || "Submission failed",
                 variant: "destructive",
             });
+        } finally {
+            setIsSubmitting(false);
         }
     };
+
     return (
-        <div className="max-w-[400px] flex flex-col shadow-none items-center mx-auto bg-white p-6 rounded-lg overflow-y-auto">
-            <div className='text-center mb-4'>
-                <h2 className="text-xl font-semibold">Merchant Informations.</h2>
-                <p className="text-gray-600">Business Details</p>
-            </div>
-            <div className='w-full'>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <div className="w-full min-h-screen p-4 max-w-4xl mx-auto">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-gray-800">
+                    {existingData ? "Edit Merchant" : "New Merchant Registration"}
+                </h1>
 
-                        {/* Business Name */}
-                        <FormField control={form.control} name="businessName" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Business Name <span className="text-red-500">*</span></FormLabel>
-                                <FormControl>
-                                    <Input value={field.value || ""} type="text" placeholder="Enter your Business Name" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-
-                        {/* Phone Number */}
-                        <FormField control={form.control} name="businessPhone" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Phone Number <span className="text-red-500">*</span></FormLabel>
-                                <FormControl>
-                                    <Input value={field.value || ""} type="tel" placeholder="Enter your business phone number" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-
-                        {/* Business Email */}
-                        <FormField control={form.control} name="bussinessEmail" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Business Email <span className="text-red-500">*</span></FormLabel>
-                                <FormControl>
-                                    <Input value={field.value || ""} type="email" placeholder="Enter your Business email" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-
-                        {/* Business Category */}
-                        <FormField control={form.control} name="businessType" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Business Category <span className="text-red-500">*</span></FormLabel>
-                                <FormControl>
-                                    <Select onValueChange={field.onChange} value={field.value || ""}>
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select a business category" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                <SelectLabel>Categories</SelectLabel>
-                                                {businessCategories.map((category, index) => (
-                                                    <SelectItem key={index} value={category.toLowerCase().replace(/ & /g, "-")}>{category}</SelectItem>
-                                                ))}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-
-                        {/* Owner Information */}
-                        <div className="mt-6">
-                            <hr className='w-full' />
-                            <h5 className="font-semibold mb-4">Owner Information</h5>
-                            <hr className='w-full' />
-                            {/* Owner Name */}
-                            <FormField control={form.control} name="ownerName" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Owner Name <span className="text-red-500">*</span></FormLabel>
-                                    <FormControl>
-                                        <Input value={field.value || ""} type="text" placeholder="Enter your Name" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
-                            {/* identity card */}
-                            <FormField
-                                control={form.control}
-                                name="identityCard"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Identity Card <span className="text-red-500">*</span></FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="file"
-                                                accept="image/*" // This ensures only image files are allowed
-                                                onChange={(e) => {
-                                                    // Handle the file change manually to update the form value
-                                                    field.onChange(e.target.files[0]); // Set the first file selected
-                                                }}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
+                {existingData && (
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center space-x-2">
+                            <label>Edit Mode</label>
+                            <Switch
+                                checked={editMode}
+                                onCheckedChange={(checked) => {
+                                    if (mStatus !== 'PENDING') {
+                                        setEditMode(checked);
+                                        if (!checked) form.reset(existingData);
+                                    }
+                                }}
                             />
-
-
-                            {/* Location Fields */}
-                            <div className="flex gap-4">
-                                <FormField control={form.control} name="town" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Town <span className="text-red-500">*</span></FormLabel>
-                                        <FormControl>
-                                            <Input value={field.value || ""} type="text" placeholder="Enter your Town" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-
-                                <FormField control={form.control} name="woreda" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Woreda <span className="text-red-500">*</span></FormLabel>
-                                        <FormControl>
-                                            <Input value={field.value || ""} type="text" placeholder="Enter your woreda" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                            </div>
-
-                            <div className="flex gap-4">
-                                <FormField control={form.control} name="region" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Region <span className="text-red-500">*</span></FormLabel>
-                                        <FormControl>
-                                            <Input value={field.value || ""} type="text" placeholder="Enter your Region" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-
-                                <FormField control={form.control} name="kebele" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Kebele <span className="text-red-500">*</span></FormLabel>
-                                        <FormControl>
-                                            <Input value={field.value || ""} type="text" placeholder="Enter your Kebele" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                            </div>
-
-                            {/* Additional Fields */}
-                            <FormField control={form.control} name="cbeAccountNo" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>CBE Account Number <span className="text-red-500">*</span></FormLabel>
-                                    <FormControl>
-                                        <Input value={field.value || ""} type="tel" placeholder="Enter your CBE Account number" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
                         </div>
-
-                        <div className="mt-6 w-full">
-                            <Button type="submit" className="bg-orange-700 w-full">
-                                {isLoading || mIsLoading ? "Submitting..." : "Submit"}
-                            </Button>
-                        </div>
-                    </form>
-                </Form>
+                    </div>
+                )}
             </div>
+
+            <Tabs defaultValue="general">
+                <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="general">Business Info</TabsTrigger>
+                    <TabsTrigger
+                        value="security"
+                        disabled={mStatus === 'ACTIVE' ? false : true}
+                    >
+                        Shop Info
+                    </TabsTrigger>
+                    <TabsTrigger value="api" disabled>Previews</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="general">
+                    {
+                        mStatus === 'PENDING' ? (
+                            <div className="text-orange-500 p-4">
+                                🚨 Thankyou for your registration. You will inform you in 12 hours.
+                            </div>
+                        )
+                            :
+                            <Card className="mt-6 p-6">
+                                <Form {...form}>
+                                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                                        <div className="space-y-4">
+                                            <h2 className="text-xl font-semibold mb-4">
+                                                {existingData ? "Business Details" : "Business Information"}
+                                            </h2>
+
+                                            {/* Business Information Fields */}
+                                            <FormField
+                                                control={form.control}
+                                                name="businessName"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Business Name <span className="text-red-500">*</span></FormLabel>
+                                                        <FormControl>
+                                                            <Input
+                                                                {...field}
+                                                                disabled={!!existingData && !editMode}
+                                                                placeholder="Business Name"
+
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="businessPhone"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Phone <span className="text-red-500">*</span></FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    {...field}
+                                                                    disabled={!!existingData && !editMode}
+                                                                    placeholder="+251 900 000 000"
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+
+                                                <FormField
+                                                    control={form.control}
+                                                    name="bussinessEmail"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    {...field}
+                                                                    disabled={!!existingData && !editMode}
+                                                                    placeholder="business@example.com"
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+
+                                            <FormField
+                                                control={form.control}
+                                                name="businessType"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
+                                                        <Select
+                                                            onValueChange={field.onChange}
+                                                            value={field.value}
+                                                            disabled={!!existingData && !editMode}
+                                                        >
+                                                            <FormControl>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Select category" />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                <SelectGroup>
+                                                                    {businessCategories.map((category) => (
+                                                                        <SelectItem
+                                                                            key={category}
+                                                                            value={category.toLowerCase().replace(/ & /g, "-")}
+                                                                        >
+                                                                            {category}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectGroup>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            {/* Owner Information Section */}
+                                            <div className="pt-6 space-y-4">
+                                                <h3 className="text-lg font-semibold">Owner Details</h3>
+
+                                                <FormField
+                                                    control={form.control}
+                                                    name="ownerName"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Name <span className="text-red-500">*</span></FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    {...field}
+                                                                    disabled={!!existingData && !editMode}
+                                                                    placeholder="Owner Name"
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+
+                                                <FormField
+                                                    control={form.control}
+                                                    name="identityCard"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>ID Document {!existingData && <span className="text-red-500">*</span>}</FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    type="file"
+                                                                    accept="image/*,application/pdf"
+                                                                    onChange={(e) => field.onChange(e.target.files[0])}
+                                                                    disabled={!!existingData && editMode || !editMode}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+
+                                                {/* Location Fields */}
+                                                {
+                                                    !existingData &&
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="region"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>Region <span className="text-red-500">*</span></FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            {...field}
+                                                                            disabled={!!existingData && !editMode}
+                                                                            placeholder="Region"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="town"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>Town <span className="text-red-500">*</span></FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            {...field}
+                                                                            disabled={!!existingData && !editMode}
+                                                                            placeholder="Town"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="woreda"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>Woreda <span className="text-red-500">*</span></FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            {...field}
+                                                                            disabled={!!existingData && !editMode}
+                                                                            placeholder="Woreda"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="kebele"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>Kebele <span className="text-red-500">*</span></FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            {...field}
+                                                                            disabled={!!existingData && !editMode}
+                                                                            placeholder="Kebele"
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                }
+
+                                                <FormField
+                                                    control={form.control}
+                                                    name="cbeAccountNo"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>CBE Account <span className="text-red-500">*</span></FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    {...field}
+                                                                    disabled={!!existingData && !editMode}
+                                                                    placeholder="Account Number"
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Form Actions */}
+                                        {(editMode || !existingData) && (
+                                            <div className="flex justify-end gap-4">
+                                                {existingData && (
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            form.reset(existingData);
+                                                            setEditMode(false);
+                                                        }}
+                                                        disabled={isSubmitting}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    type="submit"
+                                                    className="bg-blue-600 hover:bg-blue-700"
+                                                    disabled={isSubmitting}
+                                                >
+                                                    {isSubmitting
+                                                        ? "Processing..."
+                                                        : existingData
+                                                            ? "Save Changes"
+                                                            : "Register Merchant"}
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </form>
+                                </Form>
+                            </Card>
+                    }
+                </TabsContent>
+                <TabsContent value='security'>
+                    <ShopRegistration
+                        accountId={accountId}
+                        editMode={editMode}
+                        setEditMode={setEditMode}
+                    />
+                </TabsContent>
+            </Tabs>
         </div>
     );
 };
 
-export default PersonalDetail;
+export default MerchantFullRegistration;

@@ -23,17 +23,14 @@ import {
   SidebarGroup,
   SidebarTrigger
 } from "@/components/ui/sidebar"
-
 import { NavUser } from "./nav-user"
 import { NavMain } from "./nav-main"
+import { toast } from "react-toastify";
 import Logo from "@/components/ui/my-components/logo"
 import { logOut, selectLogInUser } from "@/lib/features/auth/accountSlice"
-import { useSelector } from "react-redux"
-const user = {
-  name: 'mebrat',
-  email: 'maytotmat@gmail.com',
-  photoURL: './electronics.jpg'
-}
+import { useDispatch, useSelector } from "react-redux"
+import { useLogoutMutation } from "@/lib/features/auth/accountApi"
+import { redirect, useRouter } from "next/navigation"
 const data = {
   navMain: [
     {
@@ -55,11 +52,22 @@ const data = {
     },
   ],
 };
-
 export function AppSidebar({
   ...props
 }) {
-  // const user = useSelector(selectLogInUser)
+  const user = useSelector((state) => state.account)
+  const [logout] = useLogoutMutation()
+  const router = useRouter()
+  const dispatch = useDispatch()
+  const userLogout = async () => {
+    // router.push('/customers')
+    const response = await logout().unwrap()
+    if (response.status !== 'success') {
+      return toast.error("sorry something went wrong.");
+    }
+    window.location.href = '/customers'
+    dispatch(logOut())
+  }  
   return (
     (<Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -85,7 +93,7 @@ export function AppSidebar({
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} logout={logOut} />
+        <NavUser user={user} logout={userLogout} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>)

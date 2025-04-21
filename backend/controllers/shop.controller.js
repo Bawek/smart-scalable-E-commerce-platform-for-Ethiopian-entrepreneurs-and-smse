@@ -7,10 +7,8 @@ const registerShop = async (req, res, next) => {
         name,
         slug,
         description,
-        businessHours,
     } = req.body
     if (!req.file) return next(new httpError("Sorry Your logo is Required."))
-
     try {
         const merchant = await prisma.merchant.findFirst({
             where: {
@@ -32,16 +30,12 @@ const registerShop = async (req, res, next) => {
         }
         const newShop = await prisma.shop.create({
             data: {
-                name,
-                slug,
+                name: merchant.businessName,
+                slug, 
                 description,
-                businessHours,
                 logoImageUrl: req.file.filename,
                 merchant: {
                     connect: { id: merchantId }
-                },
-                template: {
-                    connect: { id: "799bcba8-d595-4b4f-94b4-ed93464235b4" }
                 },
                 location: {
                     connect: {
@@ -50,8 +44,6 @@ const registerShop = async (req, res, next) => {
                 }
             }
         });
-
-        // Success: Return the newly created account
         return res.status(201).json({
             message: 'merchant registered successfully',
             status: "success",
@@ -86,9 +78,35 @@ const getById = async (req, res, next) => {
         next(new httpError(error.message, 500))
     }
 }
+const getShopByAccount = async (req, res, next) => {
+    const { accountId } = req.params
+    console.log(accountId, 'shopId')
+    try {
+        const merchant = await prisma.merchant.findFirst()
+        if (!merchant) {
+            return res.status(404).json({
+                status: 'Success',
+                merchant: {}
+            })
+        }
+        const shop = await prisma.shop.findFirst({
+            where: {
+                merchantId: merchant.id
+            },
+        })
+
+        res.status(200).json({
+            status: 'success',
+            shop: shop ? shop : {}
+        })
+    } catch (error) {
+        next(new httpError(error.message, 500))
+    }
+}
 
 module.exports = {
     registerShop,
     getAllShop,
-    getById
+    getById,
+    getShopByAccount
 }

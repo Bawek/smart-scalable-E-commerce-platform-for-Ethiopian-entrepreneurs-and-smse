@@ -1,3 +1,5 @@
+import axios from "axios";
+import { Save } from "lucide-react";
 import { toast } from "react-toastify";
 
 export const API_HOST = "http://localhost:8000/api";
@@ -431,8 +433,9 @@ export const panels = {
             buttons: [
                 {
                     id: "saveDb",
-                    className: "fa fa-trash",
+                    className: "fa fa-save",
                     command: "saveDb",
+                    attributes: { title: "Save Page" },
                 },
                 {
                     id: "undo",
@@ -531,14 +534,17 @@ export const addEditorCommand = (editor, currentPage) => {
     editor.Commands.add("saveDb", {
         run: async (editor, sender) => {
             sender && sender.set("active");
-
-            // Extract content
+            console.log(currentPage, 'current page')
+            if (!currentPage || !currentPage.id || !currentPage.templateId) {
+                toast.error("Page data is incomplete. Cannot save.");
+                return;
+            }
             const html = editor.getHtml();
             const css = editor.getCss();
-            // Send data to backend
+            axios.defaults.withCredentials = true
             try {
                 const response = await fetch(`http://localhost:8000/api/pages/update/${currentPage.id}`, {
-                    method: "PATCH",
+                    method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -548,17 +554,21 @@ export const addEditorCommand = (editor, currentPage) => {
                         name: currentPage.name,
                         html,
                         css,
-                        js: ''
+                        js: '',
                     }),
                 });
+                console.log('Saving page:', currentPage.id);
+
                 if (response.ok) {
-                    toast.success("Page saved successfully!");  // Show success toast when saving
+                    toast.success("Page saved successfully!");
                 } else {
-                    toast.success("Error saving page!");
+                    const errorMsg = await response.text();
+                    toast.error("Error saving page!");
+                    console.error("Save error:", errorMsg);
                 }
             } catch (error) {
-                console.error("Error:", error);
-                toast.success("Failed to save page.")
+                console.error("Request failed:", error);
+                toast.error("Failed to save page. Please check your connection.");
             }
         },
     });

@@ -55,12 +55,12 @@ const Templates = () => {
             enableHiding: false,
         },
         {
-            accessorKey: "previewImage",
+            accessorKey: "previewUrls",
             header: "Preview",
             cell: ({ row }) => (
                 <div className="flex items-center justify-center w-12 h-12 rounded-md overflow-hidden">
                     <img
-                        src={imageViewer(row.getValue("previewImage")[0])}  // Access the first item in the array
+                        src={imageViewer(row.getValue("previewUrls")[0])}  // Access the first item in the array
                         alt="Preview"
                         className="object-cover w-full h-full"
                     />
@@ -84,10 +84,10 @@ const Templates = () => {
             cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
         },
         {
-            accessorKey: "price",
+            accessorKey: "basePrice",
             header: () => <div className="text-right">Price</div>,
             cell: ({ row }) => {
-                const price = parseFloat(row.getValue("price"))
+                const price = parseFloat(row.getValue("basePrice"))
 
                 // Format the price as a dollar price
                 const formatted = new Intl.NumberFormat("en-US", {

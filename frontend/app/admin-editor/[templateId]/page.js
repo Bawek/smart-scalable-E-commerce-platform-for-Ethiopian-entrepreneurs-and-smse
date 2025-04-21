@@ -1,13 +1,13 @@
 'use client'
 import React, { useEffect, useState } from "react";
+import "bootstrap";
+import '../../../styles/bootstrap.scss'
+import '../../../styles/mystyle.css'
 import axios from "axios";
 import geditorConfig from "../../system-admin/api_urls/geditor_config";
 import PageSection from "../../system-admin/components/PageSection";
 import Sidebar from "../../system-admin/components/Sidebar";
 import TopNav from "../../system-admin/components/TopNav";
-import '../../../../styles/mystyle.css'
-import 'bootstrap'
-// import { useSelector } from "react-redux";
 import { API_HOST } from "../../system-admin/api_urls/geditor_utils";
 import { useParams } from "next/navigation";
 import { useSelector } from "react-redux";
@@ -43,9 +43,8 @@ const Editor = () => {
                 setAssets(error.message);
             }
         }
-        getAllAssets();
+        // getAllAssets();
     }, []);
-
     useEffect(() => {
         const editor = geditorConfig(assets, currentPage);
         setEditor(editor);
@@ -76,7 +75,7 @@ const Editor = () => {
                         <span className="navbar-brand mb-0 h3 logo">Admin Builder</span>
                     </div>
                 </nav>
-                <PageSection templateId={templateId}/>
+                <PageSection templateId={templateId} />
                 <Sidebar />
             </div>
             <div

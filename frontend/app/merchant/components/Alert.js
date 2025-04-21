@@ -1,52 +1,74 @@
 'use client'
-import { useToast } from '@/hooks/use-toast';
-import { selectAll } from '@/lib/features/auth/accountSlice';
+
+import { Button } from '@/components/ui/button';
 import { useGetMerchantByIdQuery } from '@/lib/features/merchant/registrationApi';
 import Link from 'next/link';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 const Alert = () => {
-    const merchant = useSelector(selectAll)
-    const { toast } = useToast()
-    const { data, isError } = useGetMerchantByIdQuery(merchant.id)
-    console.log(data, 'selector why selected')
+    const [visible, setVisible] = useState(false);
+    const [hasSeenCongrats, setHasSeenCongrats] = useState(false);
 
-    if (isError) {
-        return <h1>something go wrong</h1>
-    }
-    if (data?.merchant?.status === 'ACTIVE') return (
-        <div className="fixed top-4 z-50 p-2 right-4 bg-amber-50 text-amber-800 rounded-lg shadow-md flex items-center space-x-3 border border-amber-100">
+    const account = useSelector((state) => state.account);
+    const { data, isError } = useGetMerchantByIdQuery('1864f72d-4dc1-4512-94e3-07f7f236ba52');
+
+    useEffect(() => {
+        const seen = localStorage.getItem('seenCongrats');
+        setHasSeenCongrats(seen === 'true');
+    }, []);
+
+    useEffect(() => {
+        if (data?.merchant?.status === 'ACTIVE' && !hasSeenCongrats) {
+            setVisible(true);
+        } else if (data?.merchant?.status !== 'ACTIVE') {
+            setVisible(true);
+        }
+    }, [data, hasSeenCongrats]);
+
+    const handleClose = () => {
+        if (data?.merchant?.status === 'ACTIVE') {
+            localStorage.setItem('seenCongrats', 'true');
+        }
+        setVisible(false);
+    };
+
+    if (isError || !visible) return null;
+
+    const merchantStatus = data?.merchant?.status;
+
+    let message = null;
+
+    if (merchantStatus === 'ACTIVE') {
+        message = (
             <p>
-                Congragulation your Registrations is Approved.so You can Create your shop in this link in the shop Tap{" "}
+                🎉 <strong>Congratulations!</strong> Your registration has been approved! <br />
+                Go ahead and build your empire in{" "}
                 <Link href="/merchant/business-setting" className="font-medium text-blue-900 underline">
                     Business Settings
-                </Link>
-                {" "}
-                to access all features.
+                </Link>. 🏪🚀
             </p>
+        );
+    } else {
+        message = (
+            <p>
+                ⚠️ Looks like your registration isn’t complete. <br />
+                Don’t leave your shop dreams hanging—finish it up in{" "}
+                <Link href="/merchant/business-setting" className="font-medium text-blue-900 underline">
+                    Business Settings
+                </Link>. 🛍️
+            </p>
+        );
+    }
+
+    return (
+        <div className="fixed top-4 z-50 p-4 right-4 bg-amber-50 text-amber-800 rounded-lg shadow-lg flex justify-between items-start space-x-4 border border-amber-100 max-w-md">
+            <div className="flex-1">{message}</div>
+            <Button variant="ghost" size="sm" onClick={handleClose} className="text-amber-800 hover:text-red-500">
+                ✖
+            </Button>
         </div>
     );
-    // if (data?.merchant?.status === 'PENDING') return (
-    //     <div className="fixed top-4 z-50 p-2 right-4 bg-amber-50 text-amber-800 rounded-lg shadow-md flex items-center space-x-3 border border-amber-100">
-    //         <p>
-    //           please wait while we will see and send notification 
-    //         </p>
-    //     </div>
-    // );
-    return (
-        <div className="fixed top-4 z-50 p-2 right-4 bg-amber-50 text-amber-800 rounded-lg shadow-md flex items-center space-x-3 border border-amber-100">
-            <p>
-                We noticed your registration isn't complete. Please take a moment to
-                finish setting up your account in {" "}
-                <Link href="/merchant/business-setting" className="font-medium text-blue-900 underline">
-                    Business Settings
-                </Link>
-                {" "}
-                to access all features.
-            </p>
-        </div>
-    )
-}
+};
 
-export default Alert
+export default Alert;

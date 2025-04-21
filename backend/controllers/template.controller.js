@@ -7,24 +7,23 @@ const registerTemplate = async (req, res, next) => {
         name,
         price,
         description,
-        status
     } = req.body
     if (!req.file) return res.status(400).json({ message: 'File is required', success: false })
 
     try {
-        const template = await prisma.template.findFirst({
+        const template = await prisma.baseTemplate.findFirst({
             where: {
                 name: name
             }
         })
-        if (!template) return res.status(409).json({ message: 'The is Registered please change the name', success: false })
+        if (template) return res.status(409).json({ message: 'The is Registered please change the name', success: false })
 
-        const newTemplate = await prisma.template.create({
+        const newTemplate = await prisma.baseTemplate.create({
             data: {
                 name,
-                price: parseFloat(price),
+                basePrice: parseFloat(price),
                 description,
-                previewImage: [req.file.filename]
+                previewUrls: [req.file.filename]
             }
         })
         res.status(201).json({
@@ -40,7 +39,7 @@ const registerTemplate = async (req, res, next) => {
 }
 const getAllTemplate = async (req, res, next) => {
     try {
-        const templates = await prisma.template.findMany()
+        const templates = await prisma.baseTemplate.findMany()
         res.status(201).json({
             status: 'success',
             templates
@@ -52,16 +51,16 @@ const getAllTemplate = async (req, res, next) => {
 
 }
 const deleteById = async (req, res, next) => {
-    const {templateId} = req.params
+    const { templateId } = req.params
     try {
         const templates = await prisma.template.delete({
-            where:{
-                id:templateId
+            where: {
+                id: templateId
             }
         })
         res.status(201).json({
             status: 'success',
-            message:'templates are deleted'
+            message: 'templates are deleted'
         })
     } catch (error) {
         console.log('template register error', error)
@@ -72,15 +71,15 @@ const deleteById = async (req, res, next) => {
 const getTemplateById = async (req, res, next) => {
     const { templateId } = req.params
     try {
-        const template = await prisma.template.findUnique({
+        const template = await prisma.baseTemplate.findFirst({
             where: {
                 id: templateId
             }
         })
-        const pages = await prisma.page.findMany({
+        const pages = await prisma.basePage.findMany({
             where: {
                 templateId: templateId
-            } 
+            }
         })
         res.status(201).json({
             status: 'success',
@@ -151,10 +150,89 @@ const updateTempalate = async (req, res, next) => {
         next(new httpError(error.message || 'Failed to update the template.', 500));
     }
 };
+const buyTemplate = async (req, res, next) => {
+    const { accountId } = req.params;
+    const { templateId } = req.body
+    try {
+        const merchant = await prisma.merchant.findFirst({
+            where: {
+                accountId: accountId
+            }
+        })
+
+        //  Update the template with the provided templateId
+        const template = await prisma.baseTemplate.findFirst({
+            where: {
+                id: templateId
+            },
+        });
+
+        //  Handle the case where no template is found
+        if (!template) {
+            return next(new httpError('There is no template with this Id', 404));
+        }
+        const customTemplate = await prisma.merchantTemplate.create({
+            data: {
+                merchantId: merchant.id,
+                baseTemplateId: template.id,
+                name: template.name,
+                description: template.description
+            }
+        })
+        const basePage = await prisma.basePage.findFirst({
+            where: {
+                templateId: templateId
+            }
+        })
+        await prisma.customPage.create({
+            data: {
+                js: basePage.js,
+                html: basePage.html,
+                css: basePage.css,
+                name: basePage.name,
+                merchantTemplateId: customTemplate.id
+
+            }
+        })
+        //  Respond with a success message after the update
+        res.status(200).json({
+            status: 'success',
+            customTemplateId: customTemplate.id,
+        });
+    } catch (error) {
+        console.log('Template update error:', error);
+        //  Handle errors gracefully
+        next(new httpError(error.message || 'Failed to update the template.', 500));
+    }
+};
+const getCustomeTemplateById = async (req, res, next) => {
+    const { templateId } = req.params
+    try {
+        const template = await prisma.merchantTemplate.findFirst({
+            where: {
+                id: templateId
+            },
+            include: {
+                customPages: true
+            }
+        })
+        res.status(201).json({
+            status: 'success',
+            template
+        })
+    } catch (error) {
+        console.log('template register error', error)
+        next(new httpError(error.message, 500))
+    }
+
+}
+
 module.exports = {
     registerTemplate,
     getAllTemplate,
     getTemplateById,
     updateTempalate,
-    deleteById
+    deleteById,
+    buyTemplate,
+    getCustomeTemplateById
 }

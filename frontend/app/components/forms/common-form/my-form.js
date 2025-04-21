@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { imageViewer } from "@/app/[locale]/system-admin/lib/imageViewer";
+import { imageViewer } from "@/app/system-admin/lib/imageViewer";
 
 // Reusable Form Component
 export function CustomForm({ fields, schema, onSubmit, file, setFile, data }) {
