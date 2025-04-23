@@ -61,10 +61,10 @@ app.use((err, req, res) => {
         })
     }
     else {
-        res.status(500).json({
-            status: 'error',
-            message: err.message || 'Something went seriously wrong'
-        })
+        // res.status(500).json({
+        //     status: 'error',
+        //     message: err.message || 'Something went seriously wrong'
+        // })
     }
 })
 //start the server

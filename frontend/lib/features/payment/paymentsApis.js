@@ -1,16 +1,16 @@
 import { appApi } from "@/lib/appApi";
-// i will generate on the backend
-// const generateTransactionRef = () => {
-//     const timestamp = Date.now().toString(36);
-//     const random = Math.random().toString(36).substr(2, 5);
-//     return `tx_${timestamp}_${random}`;
-// };
-
 export const paymentApi = appApi.injectEndpoints({
+    overrideExisting: true, 
     endpoints: (builder) => ({
+        verifyPayment: builder.mutation({
+            query: (tx_ref) => ({
+                url: `/verify/${tx_ref}`,
+                method: "GET",
+            }),
+        }),
         initiatePayment: builder.mutation({
             query: (paymentData) => ({
-                url: "/payment/pay",
+                url: "/pay",
                 method: "POST",
                 body: paymentData
             }),
@@ -18,4 +18,4 @@ export const paymentApi = appApi.injectEndpoints({
     }),
 });
 
-export const { useInitiatePaymentMutation } = paymentApi;
+export const { useInitiatePaymentMutation, useVerifyPaymentMutation } = paymentApi;

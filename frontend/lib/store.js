@@ -19,6 +19,7 @@ import promptSlice from "./features/prompt";
 import accountSlice from "./features/auth/accountSlice";
 import notificationSlice from "./features/notification/notificationSlice";
 import currentMerchantSlice from "./features/merchant/merchantSlice";
+import selectedTemplateSlice from "./features/templates/templateSlice";
 import AdminEditor from "./features/admin-my/admin-editor";
 import { accountApi } from "./features/auth/accountApi";
 import { templateApi } from "./features/templates/templateApi";
@@ -28,7 +29,7 @@ import storage from "./storage";
 const persistConfig = {
 	key: "account",
 	storage,
-	whitelist: ["firestName", "email", "accessToken", "role", "id","profileUrl"], // Make sure these exist in accountSlice state
+	whitelist: ["firestName", "email", "accessToken", "role", "id", "profileUrl"], // Make sure these exist in accountSlice state
 };
 
 const persistedAccountReducer = persistReducer(persistConfig, accountSlice);
@@ -46,6 +47,7 @@ const rootReducer = combineReducers({
 	merchant: merchantSlice,
 	shopName: shopNameSlice,
 	currentMerchant: currentMerchantSlice,
+	selectedTemplate: selectedTemplateSlice,
 	notification: notificationSlice,
 	currentPage,
 	currentIdPage,

@@ -15,6 +15,10 @@ export const templateApi = appApi.injectEndpoints({
             query: (id) => `/templates/get-merchant-template/${id}`,
             // providesTags: (result, error, id) => [{ type: 'Location', id }], // Provides the location data tag with the ID
         }),
+        getMerchantTemplateByAccount: builder.query({
+            query: (id) => `/templates/get-merchant-by-account/${id}`,
+            // providesTags: (result, error, id) => [{ type: 'Location', id }], // Provides the location data tag with the ID
+        }),
         deleteTempleteById: builder.mutation({
             query: (id) => {
                 return {
@@ -41,5 +45,6 @@ export const {
     useGetTemplateByIdQuery,
     useDeleteTempleteByIdMutation,
     useBuyTemplateMutation,
-    useGetMerchantTemplateByIdQuery
+    useGetMerchantTemplateByIdQuery,
+    useGetMerchantTemplateByAccountQuery
 } = templateApi;

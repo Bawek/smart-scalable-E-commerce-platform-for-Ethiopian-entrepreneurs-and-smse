@@ -3,16 +3,18 @@ const httpError = require("../middlewares/httpError")
 
 const registerShop = async (req, res, next) => {
     const {
-        merchantId,
+        accountId,
         name,
         slug,
         description,
     } = req.body
+    console.log(req.body, 'shop body')
     if (!req.file) return next(new httpError("Sorry Your logo is Required."))
     try {
+
         const merchant = await prisma.merchant.findFirst({
             where: {
-                id: merchantId
+                accountId: accountId
             }
         })
         if (!merchant) {
@@ -31,17 +33,11 @@ const registerShop = async (req, res, next) => {
         const newShop = await prisma.shop.create({
             data: {
                 name: merchant.businessName,
-                slug, 
+                slug,
                 description,
+                merchantId: merchant.id,
                 logoImageUrl: req.file.filename,
-                merchant: {
-                    connect: { id: merchantId }
-                },
-                location: {
-                    connect: {
-                        id: merchant.locationId
-                    }
-                }
+                locationId:merchant.locationId
             }
         });
         return res.status(201).json({

@@ -18,15 +18,10 @@ export const useProcessPayment = () => {
                         description: "You will be redirected to the payment gateway...",
                     });
 
-                    // Save tx_ref in localStorage
-                    if (response.tx_ref) {
-                        localStorage.setItem("chapa_tx_ref", response.tx_ref);
-                    }
-
                     // Redirect to payment page
                     window.location.href = response.checkout_url;
                 } else {
-                    toast({
+                     toast({
                         title: "Payment Failed",
                         description: "Could not retrieve payment link.",
                         variant: "destructive",

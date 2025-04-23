@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { useCreateShopMutation, useGetShopByAccountQuery } from "@/lib/features/shop/shop";
 import Link from "next/link";
-import { useBuyTemplateMutation } from "@/lib/features/templates/templateApi";
+import { useGetMerchantTemplateByAccountQuery } from "@/lib/features/templates/templateApi";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 // Enhanced validation schema
@@ -39,44 +39,28 @@ const ShopRegistration = ({ accountId, editMode, setEditMode }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { data, isLoading, isError, error } = useGetShopByAccountQuery(accountId);
+  const { data: customTemplate } = useGetMerchantTemplateByAccountQuery(accountId)
   const [imagePreview, setImagePreview] = React.useState("");
   const [createShop] = useCreateShopMutation();
-  const [buyTemplate, { isLoading: isBuying }] = useBuyTemplateMutation();
   const mode = data?.merchantTemplateId ? 'update' : 'create';
   const router = useRouter()
+  console.log(data, 'exact isSubmitting')
   // Initialize form with proper default values
   const form = useForm({
     resolver: zodResolver(shopSchema),
     defaultValues: {
-      slug: data?.slug || "",
-      description: data?.description || "",
-      businessHours: data?.businessHours ? JSON.stringify(data.businessHours, null, 2) : "",
+      slug: data?.shop?.slug || "",
+      description: data?.shop?.description || "",
+      businessHours: data?.shop?.businessHours ? JSON.stringify(data?.shop?.businessHours, null, 2) : "",
       logoImageUrl: undefined
     }
   });
 
   React.useEffect(() => {
-    if (data?.logoImageUrl) {
-      setImagePreview(data.logoImageUrl);
+    if (data?.shop) {
+      form.reset(data?.shop)
     }
   }, [data]);
-
-  const handleBuy = async () => {
-    try {
-      const templateId = '0adf3a07-80de-433c-97ed-e6a29d69fcd8';
-      await buyTemplate({ accountId, templateId }).unwrap();
-      toast({
-        title: "Template Purchased",
-        description: "Template purchased successfully! You can now set up your shop.",
-      });
-    } catch (error) {
-      toast({
-        title: "Purchase Failed",
-        variant: "destructive",
-        description: error.data?.message || "Failed to purchase template",
-      });
-    }
-  };
 
   const handleFileChange = (e, field) => {
     try {
@@ -119,11 +103,11 @@ const ShopRegistration = ({ accountId, editMode, setEditMode }) => {
           formPayload.append(key, value);
         }
       });
-
-      formPayload.append('merchantTemplateId', 'cc52f716-3f85-40d9-842d-b2c81ff51eac');
+      formPayload.append('merchantTemplateId', customTemplate?.merchantTemplate?.id);
+      formPayload.append('accountId', accountId);
 
       const response = await createShop(formPayload).unwrap();
-
+      console.log(response, 'shop response')
       toast({
         title: "Success",
         description: `Shop ${mode === "create" ? 'created' : 'updated'} successfully`,
@@ -145,10 +129,9 @@ const ShopRegistration = ({ accountId, editMode, setEditMode }) => {
 
   if (isLoading) return <div className="w-full flex justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   if (isError) return <div>Error loading shop data: {error?.message}</div>;
-
   return (
     <div className="w-full max-w-2xl mx-auto p-4 space-y-6">
-      {!data?.merchantTemplateId && (
+      {!customTemplate?.merchantTemplate?.id && (
         <div className="bg-blue-50 p-4 rounded-lg">
           <p className="text-blue-800">
             🎉 <strong>Congratulations!</strong> Your registration has been approved! Ready to take the next step and start building your shop?
@@ -163,19 +146,19 @@ const ShopRegistration = ({ accountId, editMode, setEditMode }) => {
           <Button
             onClick={() => router.push('/customers/templates')}
             className="mt-4"
-            disabled={isBuying}
+            disabled={isSubmitting}
           >
-            {isBuying ? (
+            {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "Purchase Starter Template for Only $29"
+              "Purchase Starter Template"
             )}
           </Button>
         </div>
 
       )}
       {
-        data?.merchantTemplateId && (
+        customTemplate?.merchantTemplate?.id && (
           <Card className="p-6">
             <div className="mb-6">
               <h1 className="text-2xl font-bold text-gray-800">
@@ -195,6 +178,7 @@ const ShopRegistration = ({ accountId, editMode, setEditMode }) => {
                         <FormControl>
                           <Input
                             {...field}
+                            disabled={!!data?.shop && !editMode}
                             placeholder="my-shop-slug"
                             pattern="[a-z0-9-]+"
                             title="Lowercase letters, numbers, and hyphens only"
@@ -216,6 +200,7 @@ const ShopRegistration = ({ accountId, editMode, setEditMode }) => {
                             as="textarea"
                             rows={3}
                             {...field}
+                            disabled={!!data?.shop && !editMode}
                             placeholder="Describe your shop..."
                             className="resize-none"
                           />
@@ -227,7 +212,6 @@ const ShopRegistration = ({ accountId, editMode, setEditMode }) => {
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="businessHours"
@@ -237,6 +221,7 @@ const ShopRegistration = ({ accountId, editMode, setEditMode }) => {
                         <FormControl>
                           <Input
                             {...field}
+                            disabled={!!data?.shop && !editMode}
                             placeholder='{"monday": {"open": "09:00", "close": "18:00"}}'
                             className="font-mono text-sm"
                           />
@@ -265,6 +250,7 @@ const ShopRegistration = ({ accountId, editMode, setEditMode }) => {
                                 type="file"
                                 accept="image/*"
                                 onChange={(e) => handleFileChange(e, field)}
+                                disabled={!!data?.shop && !editMode}
                                 className="w-fit cursor-pointer"
                                 aria-label="Upload shop logo"
                               />

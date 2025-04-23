@@ -6,23 +6,37 @@ import { profileLinks } from '../data/nav-links';
 import { useDispatch, useSelector } from 'react-redux';
 import { imageViewer } from '@/app/system-admin/lib/imageViewer';
 import { useLogout } from '@/util/userLogout';
-import { logOut } from '@/lib/features/auth/accountSlice';
 
 const ProfileMenu = () => {
   const [openDialog, setOpenDialog] = useState(null);
   const account = useSelector((state) => state.account)
   const dispatch = useDispatch()
   const logout = useLogout()
-  console.log(account?.profileUrl,'url')
+  console.log(account?.profileUrl, 'url')
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <img
-            alt="User Profile"
-            className="w-10 h-10 rounded-full border-none shadow-lg"
-            src={imageViewer(account?.profileUrl) || '/img/team-1-800x800.jpg'}
-          />
+          {
+            account?.profileUrl ? (
+              <img
+                alt="User Profile"
+                className="w-10 h-10 rounded-full border-none shadow-lg"
+                src={imageViewer(account?.profileUrl) || '/img/team-1-800x800.jpg'}
+              />
+            )
+              :
+              (
+                <div
+                  className="w-10 h-10 rounded-full border-none shadow-lg"
+                >
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-green-500 via-red-500 to-yellow-500 bg-clip-text text-transparent">
+                    {
+                      account?.firestName.slice(0, 2)
+                    }</h1>
+                </div>
+              )
+          }
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
@@ -39,9 +53,7 @@ const ProfileMenu = () => {
           ))}
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={() => {
-              return dispatch(logOut())
-            }}>
+            onClick={logout}>
             logout
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -294,25 +294,27 @@ const MerchantFullRegistration = ({ existingData, onSuccess, mStatus }) => {
                                                     )}
                                                 />
 
-                                                <FormField
-                                                    control={form.control}
-                                                    name="identityCard"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>ID Document {!existingData && <span className="text-red-500">*</span>}</FormLabel>
-                                                            <FormControl>
-                                                                <Input
-                                                                    type="file"
-                                                                    accept="image/*,application/pdf"
-                                                                    onChange={(e) => field.onChange(e.target.files[0])}
-                                                                    disabled={!!existingData && editMode || !editMode}
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-
+                                                {
+                                                    !existingData &&
+                                                    <FormField
+                                                        control={form.control}
+                                                        name="identityCard"   
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormLabel>ID Document {!existingData && <span className="text-red-500">*</span>}</FormLabel>
+                                                                <FormControl>
+                                                                    <Input
+                                                                        type="file"
+                                                                        accept="image/*,application/pdf"
+                                                                        onChange={(e) => field.onChange(e.target.files[0])}
+                                                                        disabled={!!existingData }
+                                                                    />
+                                                                </FormControl>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                }
                                                 {/* Location Fields */}
                                                 {
                                                     !existingData &&

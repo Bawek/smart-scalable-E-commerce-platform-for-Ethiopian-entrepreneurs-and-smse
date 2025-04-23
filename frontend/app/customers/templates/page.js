@@ -8,44 +8,51 @@ import { Badge } from "@/components/ui/badge";
 import { useGetAllTemplatesQuery } from "@/lib/features/templates/templateApi";
 import { Card } from "@/components/ui/card";
 import { imageViewer } from "../../system-admin/lib/imageViewer";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { ShoppingBag } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useProcessPayment } from "@/service/payment.service";
+import { useToast } from "@/hooks/use-toast";
+import { setSelectedTemplate } from "@/lib/features/templates/templateSlice";
 const SelectTheme = () => {
   const { data, error, isLoading } = useGetAllTemplatesQuery();
   const account = useSelector((state) => state.account)
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   useCheckUnauthorized(error);
+  const { toast } = useToast()
+  const { processPayment, isLoading: paymentLoading } = useProcessPayment();
+
   const handlePayment = async (theme) => {
-    const data = {
-      amount: theme.Price,
-      email: account?.email,
-      first_name: account?.firestName,
-      last_name: account?.lastName,
-      phone_number: '0943597310',
-    }
-    try {
-      const res = await axios.post('http://localhost:8000/api/pay', data, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    if (!account?.email || !account?.firestName) {
+      toast({
+        title: "Missing Information",
+        description: "Please ensure your profile information is complete before proceeding with payment.",
+        variant: "destructive",
       });
-
-      const data = res.data;
-
-      if (data.checkout_url) {
-        localStorage.setItem('chapa_tx_ref', data.tx_ref);
-        window.location.href = data.checkout_url;
-      } else {
-        throw new Error(data.error || 'Payment failed');
-      }
-    } catch (err) {
-      console.error(err);
-      alert(err.message);
-    } finally {
-      setLoading(false);
+      return;
     }
-  }
+    localStorage.setItem("ccc_tem", theme?.id);
+    const data = {
+      amount: 50,
+      email: account.email,
+      first_name: account.firestName,
+      last_name: 'matebie',
+      phone_number: "+251943597310",
+    };
+
+    try {
+      const res = await processPayment(data);
+    } catch (err) {
+      console.error("Payment Error:", err);
+      toast({
+        title: "Payment Failed",
+        description: err.message || "Something went wrong while processing your payment.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const themes = data?.templates || [];
   const filteredThemes = useMemo(() => {
     return themes.filter(theme => {
@@ -61,46 +68,40 @@ const SelectTheme = () => {
     debounce((value) => setSearchQuery(value), 300),
     []
   );
+  const categories = ["all", "free", "premium", "new", "popular"];
+
   return (
-    <div className="min-h-screen  max-w-[90%] mx-auto flex flex-col">
+    <div className="min-h-screen  max-w-[95%] mx-auto flex flex-col">
       <div className="flex-grow">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full mx-auto">
           {/* Search and Filter Section */}
           <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-green-600 via-yellow-600 to-red-600 bg-clip-text text-transparent">
             Find Your Perfect Theme
           </h1>
-          <div className="w-full mb-12 space-y-6 flex gap-1 items-center">
-            <div className="w-full flex flex-col md:flex-row gap-4 items-center justify-center py-6">
-              <Input
-                placeholder="Search themes..."
-                className="w-full max-w-xl rounded-full px-6 py-4 shadow-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
-                onChange={(e) => debouncedSearch(e.target.value)}
-                aria-label="Search themes"
-              />
-              <div>
-                <select name="" id="">
-                  <option value="100">100</option>
-                  <option value="100">100</option>
-                  <option value="100">100</option>
-                </select>
-              </div>
-              {/* {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  onClick={() => setSelectedCategory(category)}
-                  className="rounded-full capitalize"
-                >
-                  {category}
-                  {category !== "all" && (
-                    <Badge className="ml-2" variant="secondary">
-                      {themes.filter(t =>
-                        category === "free" ? !t.premium : t.premium
-                      ).length}
-                    </Badge>
-                  )}
-                </Button>
-              ))} */}
+          <div className="w-full flex flex-col md:flex-row gap-4 items-center justify-center py-6">
+            <Input
+              placeholder="Search themes..."
+              className="w-full max-w-xl rounded-full px-6 py-4 shadow-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+              onChange={(e) => debouncedSearch(e.target.value)}
+              aria-label="Search themes"
+            />
+
+            <div className="w-full max-w-xs">
+              {/* ShadCN Select component for filtering */}
+              <Select onValueChange={setSelectedCategory} value={selectedCategory}>
+                <SelectTrigger className="w-full rounded-full px-4 py-2 shadow-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300">
+                  <SelectValue placeholder="Filter by Category" />
+                </SelectTrigger>
+                <SelectContent className="w-full">
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category === "all"
+                        ? "All Themes"
+                        : category.charAt(0).toUpperCase() + category.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

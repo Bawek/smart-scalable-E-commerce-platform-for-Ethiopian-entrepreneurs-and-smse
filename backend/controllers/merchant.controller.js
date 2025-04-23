@@ -31,8 +31,6 @@ const registerMerchant = async (req, res, next) => {
         cbeAccountNo,
         businessType,
     } = req.body;
-    console.log(req.body)
-
     if (!req.file && mode === "register") {
         return next(new httpError("Sorry, Your Identity Card is Required."));
     }

@@ -48,6 +48,50 @@ const getAllTemplate = async (req, res, next) => {
         console.log('template register error', error)
         next(new httpError(error.message, 500))
     }
+}
+const getAllMerchantTemplate = async (req, res, next) => {
+    try {
+        const templates = await prisma.merchantTemplate.findMany({
+            include: {
+                customPages: true
+            }
+        })
+        res.status(201).json({
+            status: 'success',
+            templates
+        })
+    } catch (error) {
+        console.log('template register error', error)
+        next(new httpError(error.message, 500))
+    }
+
+}
+const getMerchantTemplateByAccount = async (req, res, next) => {
+    const { accountId } = req.params
+    console.log(accountId)
+    try {
+        const merchant = await prisma.merchant.findFirst({
+            where: {
+                accountId: accountId
+            }
+        })
+        const merchantTemplate = await prisma.merchantTemplate.findFirst({
+            where: {
+                merchantId: merchant.id
+            },
+            include:{
+            customPages:true
+            }
+        })
+
+        res.status(201).json({
+            status: 'success',
+            merchantTemplate
+        })
+    } catch (error) {
+        console.log('template register error', error)
+        next(new httpError(error.message, 500))
+    }
 
 }
 const deleteById = async (req, res, next) => {
@@ -159,15 +203,11 @@ const buyTemplate = async (req, res, next) => {
                 accountId: accountId
             }
         })
-
-        //  Update the template with the provided templateId
         const template = await prisma.baseTemplate.findFirst({
             where: {
                 id: templateId
             },
         });
-
-        //  Handle the case where no template is found
         if (!template) {
             return next(new httpError('There is no template with this Id', 404));
         }
@@ -176,7 +216,8 @@ const buyTemplate = async (req, res, next) => {
                 merchantId: merchant.id,
                 baseTemplateId: template.id,
                 name: template.name,
-                description: template.description
+                description: template.description,
+                paymentStatus: 'ACTIVE'
             }
         })
         const basePage = await prisma.basePage.findFirst({
@@ -234,5 +275,7 @@ module.exports = {
     updateTempalate,
     deleteById,
     buyTemplate,
-    getCustomeTemplateById
+    getCustomeTemplateById,
+    getAllMerchantTemplate,
+    getMerchantTemplateByAccount
 }
