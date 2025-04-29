@@ -15,6 +15,10 @@ require('dotenv').config
 const http = require('http');
 const { initialize } = require('./utils/socket')
 const { testIo } = require('./controllers/merchant.controller')
+const { OpenAI } = require('openai');
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+  });
 // constants  
 const PORT = process.env.PORT || 8000
 //start the server 
@@ -47,8 +51,30 @@ app.use('/api/shops', shopRouter)
 app.use('/api/image', imageRouter)
 app.use('/api/pages', pagesRouter)
 app.use('/api/templates', templateRouter)
-app.post('/iopost',testIo)
+app.post('/iopost', testIo)
+// chat
+app.post('/api/chat', async (req, res) => {
+    const { message } = req.body;
 
+    if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+    }
+
+    try {
+        const completion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                { role: 'user', content: message }
+            ]
+        });
+
+        const aiReply = completion.choices[0].message;
+        res.json({ reply: aiReply });
+    } catch (error) {
+        console.error('OpenAI Error:', error);
+        res.status(500).json({ error: 'Failed to get AI response' });
+    }
+});
 // handling errors
 app.use((err, req, res) => {
     if (err.isOperational) {
