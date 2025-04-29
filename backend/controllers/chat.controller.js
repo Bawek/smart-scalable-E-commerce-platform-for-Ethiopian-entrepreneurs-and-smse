@@ -1,7 +1,8 @@
 const OpenAI = require('openai')
+require('dotenv').config()
 
 const openai = new OpenAI({
-    apiKey: "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",
+    apiKey: process.env.OPENAI_API_KEY,
 });
 
 const completion = openai.chat.completions.create({
