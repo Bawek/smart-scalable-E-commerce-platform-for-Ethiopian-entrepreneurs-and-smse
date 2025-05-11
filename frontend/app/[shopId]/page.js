@@ -1,9 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Loading from "../loading";
+// import Loading from "../loading";
 import { useParams, useRouter } from "next/navigation";
 import { useGetshopQuery } from "@/lib/features/shop/publicShopSlice";
 import MenuBar from "../components/MenuBar/MenuBar";
+import Loading from "../customers/loading";
 
 export default function Shop() {
   const params = useParams()

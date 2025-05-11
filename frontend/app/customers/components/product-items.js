@@ -3,9 +3,10 @@ import Link from 'next/link'
 import React from 'react'
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from '@/util/currency';
 
 const ProductItem = ({ product }) => {
-    console.log(product,'product')
+    console.log(product, 'product')
     return (
         <Link className="no-underline" href={`/customers/products/detail/${product?.id}`}>
             <Card key={product.id} className="group relative overflow-hidden transition-shadow hover:shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-[500px] flex flex-col justify-between">
@@ -53,8 +54,13 @@ const ProductItem = ({ product }) => {
                             {product.description}
                         </p>
                         <div className="flex items-center gap-3 mb-4">
-                            <span className="text-2xl font-bold text-red-600">${product.price}</span>
-                            <span className="text-gray-400 line-through">$2,281</span>
+                            <span className="text-sm font-bold text-orange-600" aria-label="Current price">
+                                {formatCurrency(product.price)}
+                            </span>
+                            <s className="text-gray-400 text-sm font-bold" aria-label="Original price">
+                                {formatCurrency(product.price + 100)}
+                            </s>
+
                         </div>
                         <Button className="w-full bg-gray-500 hover:bg-gray-700 text-white transition-colors duration-300">
                             Add to Cart

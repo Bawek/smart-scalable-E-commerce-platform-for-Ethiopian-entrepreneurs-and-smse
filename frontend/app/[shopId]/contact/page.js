@@ -1,9 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useGetshopQuery } from "@/lib/features/shop/publicShopSlice";
-import Loading from "@/app/[locale]/loading";
+// import Loading from "@/app/[locale]/loading";
 import { useRouter } from "next/navigation";
 import MenuBar from "../../components/MenuBar/MenuBar";
+import Loading from "@/app/customers/loading";
 
 export default function ContactPage({ params }) {
   const shopId = params.shopId;

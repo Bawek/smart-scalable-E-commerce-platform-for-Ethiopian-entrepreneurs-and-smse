@@ -37,45 +37,45 @@ const companyLinks = [
     description: "Learn more about our company and mission",
   },
   {
-    title: "Solutions",
-    href: "/solutions",
-    description: "Industry-specific solutions and packages",
+    title: "Contact Us",
+    href: "/customers/company/contact",
+    description: "Contact us By using this address list here.",
   },
 ];
 const shopLinks = [
   {
     title: "Electronics",
-    href: "/customers/shop/electronics",
+    href: "/customers/shop/electronics?category=electronics",
     description: "Browse our selection of electronics including phones, laptops, and accessories",
   },
   {
     title: "Clothing",
-    href: "/customers/shop/clothing",
+    href: "/customers/shop/clothing?category=clothing",
     description: "Explore our clothing collection for men, women, and children",
   },
   {
     title: "Books",
-    href: "/customers/shop/books",
+    href: "/customers/shop/books?category=books",
     description: "Find a variety of books from different genres and authors",
   },
   {
     title: "Furniture",
-    href: "/customers/shop/furniture",
+    href: "/customers/shop/furniture?category= furniture",
     description: "Discover stylish and modern furniture for your home or office",
   },
   {
     title: "Groceries",
-    href: "/customers/shop/groceries",
+    href: "/customers/shop/groceries?category=groceries",
     description: "Shop for fresh groceries and daily essentials",
   },
   {
     title: "Sports & Fitness",
-    href: "/customers/shop/sports-fitness",
+    href: "/customers/shop/sports-fitness?category=sports-fitness",
     description: "Get the latest sports gear and fitness equipment",
   },
   {
     title: "Beauty & Personal Care",
-    href: "/customers/shop/beauty-care",
+    href: "/customers/shop/beauty-care?category=beauty-care",
     description: "Explore beauty products and personal care essentials",
   },
 ];
@@ -171,14 +171,14 @@ function DesktopMenu({ account }) {
       ))}
 
       {/* Cart Button */}
-      <Link href="/customers/cart" className="relative flex items-center text-sm no-underline text-black dark:text-white">
+      {/* <Link href="/customers/cart" className="relative flex items-center text-sm no-underline text-black dark:text-white">
         <ShoppingCart className="h-8 w-8 mr-2" />
         {cartItems > 0 && (
           <span className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center bg-red-600 text-white text-xs font-bold rounded-full">
             {cartItems}
           </span>
         )}
-      </Link>
+      </Link> */}
 
       {/* Right Section - User Profile / Authentication */}
       <div className="ml-auto flex items-center gap-2">

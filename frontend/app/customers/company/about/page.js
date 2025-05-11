@@ -8,6 +8,7 @@ import Link from "next/link";
 import { FaBoxes, FaChartLine, FaCreditCard, FaStore } from "react-icons/fa";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import TeamSection from "../../components/leadership";
 export default function AboutPage() {
     const team = [
         {
@@ -15,7 +16,7 @@ export default function AboutPage() {
             role: 'CEO & Founder',
             bio: 'Visionary leader driving digital transformation',
             initials: 'AZ',
-            image:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr7-KnN6YFT_m8dHeRsqR1YZvf2BV1PZTtJw&s'
+            image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr7-KnN6YFT_m8dHeRsqR1YZvf2BV1PZTtJw&s'
         },
         {
             name: 'Mebrat Matebie',
@@ -23,21 +24,21 @@ export default function AboutPage() {
             bio: 'Tech architect behind our platform',
             initials: 'MM'
             ,
-            image:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr7-KnN6YFT_m8dHeRsqR1YZvf2BV1PZTtJw&s'
+            image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr7-KnN6YFT_m8dHeRsqR1YZvf2BV1PZTtJw&s'
         },
         {
             name: 'Baweke Mekonnen',
             role: 'COO',
             bio: 'Operations excellence strategist',
             initials: 'BM',
-            image:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr7-KnN6YFT_m8dHeRsqR1YZvf2BV1PZTtJw&s'
+            image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr7-KnN6YFT_m8dHeRsqR1YZvf2BV1PZTtJw&s'
         },
         {
             name: 'Birihanu Tadele',
             role: 'CFO',
             bio: 'Financial stewardship expert',
             initials: 'BT',
-            image:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr7-KnN6YFT_m8dHeRsqR1YZvf2BV1PZTtJw&s'
+            image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr7-KnN6YFT_m8dHeRsqR1YZvf2BV1PZTtJw&s'
         }
     ];
 
@@ -56,16 +57,20 @@ export default function AboutPage() {
                             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                                 Join hundreds of entrepreneurs in our journey to digital transformation
                             </p>
-                            <Button size="lg" className="rounded-full bg-orange-700 px-8 gap-2">
+                            <Link
+                                href="/customers/auth/register"
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3 text-white bg-orange-700 hover:bg-orange-800 rounded-full text-sm font-medium shadow-lg transition duration-300"
+                            >
                                 <RocketIcon className="h-4 w-4" />
                                 Start Your Journey
-                            </Button>
+                            </Link>
+
                         </div>
                     </div>
                 </div>
                 <img
-                    className="absolute top-0 b-auto right-0 pt-16 sm:w-6/12 -mt-48 sm:mt-0 w-10/12 max-h-860-px"
-                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsVo5Ilmuy0_5TOWLIdmkTobRB8CxAqaicbg&s"
+                    className="absolute top-0 b-auto right-3 pt-16 sm:w-6/12 -mt-48 sm:mt-0 w-10/12 max-h-860-px"
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrQkQ6ol2ONe_dGhI2H54uiC6760mzcnCCIA&s"
                     alt="..."
                 />
             </section>
@@ -84,7 +89,7 @@ export default function AboutPage() {
                             <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg">
                                 <img
                                     alt="..."
-                                    src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=700&q=80"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsmEXD7LNqpjA6idjw5U6qf8AF6zA4P8-jPA&s"
                                     className="w-full align-middle rounded-t-lg"
                                 />
                                 <blockquote className="relative p-8 mb-4">
@@ -247,251 +252,12 @@ export default function AboutPage() {
                             </div>
                         </div>
                     </div>
-
-                    {/* <div className="flex flex-wrap items-center pt-32">
-                        <div className="w-full md:w-6/12 px-4 mr-auto ml-auto mt-32">
-                            <div className="justify-center flex flex-wrap relative">
-                                <div className="my-4 w-full lg:w-6/12 px-4">
-                                    <Link
-                                        href="https://www.creative-tim.com/learning-lab/tailwind/svelte/alerts/notus?ref=vtw-index"
-                                        target="_blank"
-                                    >
-                                        <div className="bg-red-600 shadow-lg rounded-lg text-center p-8">
-                                            <img
-                                                alt="..."
-                                                className="shadow-md rounded-full max-w-full w-16 mx-auto p-2 bg-white"
-                                                src="https://raw.githubusercontent.com/creativetimofficial/public-assets/master/logos/svelte.jpg"
-                                            />
-                                            <p className="text-lg text-white mt-4 font-semibold">
-                                                Svelte
-                                            </p>
-                                        </div>
-                                    </Link>
-                                    <Link
-                                        href="https://www.creative-tim.com/learning-lab/tailwind/react/alerts/notus?ref=vtw-index"
-                                        target="_blank"
-                                    >
-                                        <div className="bg-lightBlue-500 shadow-lg rounded-lg text-center p-8 mt-8">
-                                            <img
-                                                alt="..."
-                                                className="shadow-md rounded-full max-w-full w-16 mx-auto p-2 bg-white"
-                                                src="https://raw.githubusercontent.com/creativetimofficial/public-assets/master/logos/react.jpg"
-                                            />
-                                            <p className="text-lg text-white mt-4 font-semibold">
-                                                ReactJS
-                                            </p>
-                                        </div>
-                                    </Link>
-                                    <Link
-                                        href="https://www.creative-tim.com/learning-lab/tailwind/nextjs/alerts/notus?ref=vtw-index"
-                                        target="_blank"
-                                    >
-                                        <div className="bg-blueGray-700 shadow-lg rounded-lg text-center p-8 mt-8">
-                                            <img
-                                                alt="..."
-                                                className="shadow-md rounded-full max-w-full w-16 mx-auto p-2 bg-white"
-                                                src="https://raw.githubusercontent.com/creativetimofficial/public-assets/master/logos/nextjs.jpg"
-                                            />
-                                            <p className="text-lg text-white mt-4 font-semibold">
-                                                NextJS
-                                            </p>
-                                        </div>
-                                    </Link>
-                                </div>
-                                <div className="my-4 w-full lg:w-6/12 px-4 lg:mt-16">
-                                    <Link
-                                        href="https://www.creative-tim.com/learning-lab/tailwind/js/alerts/notus?ref=vtw-index"
-                                        target="_blank"
-                                    >
-                                        <div className="bg-yellow-500 shadow-lg rounded-lg text-center p-8">
-                                            <img
-                                                alt="..."
-                                                className="shadow-md rounded-full max-w-full w-16 mx-auto p-2 bg-white"
-                                                src="https://raw.githubusercontent.com/creativetimofficial/public-assets/master/logos/js.png"
-                                            />
-                                            <p className="text-lg text-white mt-4 font-semibold">
-                                                JavaScript
-                                            </p>
-                                        </div>
-                                    </Link>
-                                    <Link
-                                        href="https://www.creative-tim.com/learning-lab/tailwind/angular/alerts/notus?ref=vtw-index"
-                                        target="_blank"
-                                    >
-                                        <div className="bg-red-700 shadow-lg rounded-lg text-center p-8 mt-8">
-                                            <img
-                                                alt="..."
-                                                className="shadow-md rounded-full max-w-full w-16 mx-auto p-2 bg-white"
-                                                src="https://raw.githubusercontent.com/creativetimofficial/public-assets/master/logos/angular.jpg"
-                                            />
-                                            <p className="text-lg text-white mt-4 font-semibold">
-                                                Angular
-                                            </p>
-                                        </div>
-                                    </Link>
-                                    <Link
-                                        href="https://www.creative-tim.com/learning-lab/tailwind/vue/alerts/notus?ref=vtw-index"
-                                        target="_blank"
-                                    >
-                                        <div className="bg-emerald-500 shadow-lg rounded-lg text-center p-8 mt-8">
-                                            <img
-                                                alt="..."
-                                                className="shadow-md rounded-full max-w-full w-16 mx-auto p-2 bg-white"
-                                                src="https://raw.githubusercontent.com/creativetimofficial/public-assets/master/logos/vue.jpg"
-                                            />
-                                            <p className="text-lg text-white mt-4 font-semibold">
-                                                Vue.js
-                                            </p>
-                                        </div>
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="w-full md:w-4/12 px-12 md:px-4 ml-auto mr-auto mt-48">
-                            <div className="text-blueGray-500 p-3 text-center inline-flex items-center justify-center w-16 h-16 mb-6 shadow-lg rounded-full bg-white">
-                                <i className="fas fa-drafting-compass text-xl"></i>
-                            </div>
-                            <h3 className="text-3xl mb-2 font-semibold leading-normal">
-                                Javascript Components
-                            </h3>
-                            <p className="text-lg font-light leading-relaxed mt-4 mb-4 text-blueGray-600">
-                                In order to create a great User Experience some components
-                                require JavaScript. In this way you can manipulate the elements
-                                on the page and give more options to your users.
-                            </p>
-                            <p className="text-lg font-light leading-relaxed mt-4 mb-4 text-blueGray-600">
-                                We created a set of Components that are dynamic and come to help
-                                you.
-                            </p>
-                            <div className="block pb-6">
-                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
-                                    Alerts
-                                </span>
-                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
-                                    Dropdowns
-                                </span>
-                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
-                                    Menus
-                                </span>
-                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
-                                    Modals
-                                </span>
-                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
-                                    Navbars
-                                </span>
-                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
-                                    Popovers
-                                </span>
-                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
-                                    Tabs
-                                </span>
-                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
-                                    Tooltips
-                                </span>
-                            </div>
-                            <Link
-                                href="https://www.creative-tim.com/learning-lab/tailwind/nextjs/alerts/notus?ref=nnjs-index"
-                                target="_blank"
-                                className="font-bold text-blueGray-700 hover:text-blueGray-500 ease-linear transition-all duration-150"
-                            >
-                                View all{" "}
-                                <i className="fa fa-angle-double-right ml-1 leading-relaxed"></i>
-                            </Link>
-                        </div>
-                    </div> */}
                 </div>
 
 
                 {/* Leadership Section */}
-                <section className="bg-accent/50">
-                    <div className="container px-4 mx-auto space-y-16">
-                        <div className="text-center space-y-4">
-                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-                                Visionary Leadership
-                            </h2>
-                            <p className="text-muted-foreground max-w-2xl mx-auto">
-                                Meet the team driving Ethiopia's digital commerce revolution
-                            </p>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {team.map((member) => (
-                                <Card key={member.name} className="group hover:shadow-lg transition-shadow">
-                                    <CardContent className="p-6 flex flex-col items-center text-center">
-                                        <Avatar className="h-24 w-24 mb-6">
-                                            <AvatarImage src={member.image} />
-                                            <AvatarFallback className="bg-primary text-primary-foreground">
-                                                {member.initials}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <CardTitle className="text-xl font-semibold">{member.name}</CardTitle>
-                                        <Badge variant="outline" className="mt-2 mb-3">
-                                            {member.role}
-                                        </Badge>
-                                        <p className="text-sm text-muted-foreground">{member.bio}</p>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    </div>
-                </section>
+                <TeamSection />
             </section>
-
-            {/* <section className="block relative z-1 bg-blueGray-600">
-                <div className="container mx-auto">
-                    <div className="justify-center flex flex-wrap">
-                        <div className="w-full lg:w-12/12 px-4  -mt-24">
-                            <div className="flex flex-wrap">
-                                <div className="w-full lg:w-4/12 px-4">
-                                    <h5 className="text-xl font-semibold pb-4 text-center">
-                                        Login Page
-                                    </h5>
-                                    <Link href="/auth/login">
-                                        <div className="hover:-mt-4 relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded-lg ease-linear transition-all duration-150">
-                                            <img
-                                                alt="..."
-                                                className="align-middle border-none max-w-full h-auto rounded-lg"
-                                                src="/img/login.jpg"
-                                            />
-                                        </div>
-                                    </Link>
-                                </div>
-
-                                <div className="w-full lg:w-4/12 px-4">
-                                    <h5 className="text-xl font-semibold pb-4 text-center">
-                                        Profile Page
-                                    </h5>
-                                    <Link href="/profile">
-                                        <div className="hover:-mt-4 relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded-lg ease-linear transition-all duration-150">
-                                            <img
-                                                alt="..."
-                                                className="align-middle border-none max-w-full h-auto rounded-lg"
-                                                src="/img/profile.jpg"
-                                            />
-                                        </div>
-                                    </Link>
-                                </div>
-
-                                <div className="w-full lg:w-4/12 px-4">
-                                    <h5 className="text-xl font-semibold pb-4 text-center">
-                                        Landing Page
-                                    </h5>
-                                    <Link href="/landing">
-                                        <div className="hover:-mt-4 relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded-lg ease-linear transition-all duration-150">
-                                            <img
-                                                alt="..."
-                                                className="align-middle border-none max-w-full h-auto rounded-lg"
-                                                src="/img/landing.jpg"
-                                            />
-                                        </div>
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section> */}
         </>
     );
 }

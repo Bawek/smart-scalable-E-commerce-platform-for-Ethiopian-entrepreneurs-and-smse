@@ -20,9 +20,32 @@ enum StatusIndicator {
   PENDING
 }
 
+enum ShopStatus {
+  ACTIVE
+  INACTIVE
+  UNDER_REVIEW
+  SUSPENDED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  ACTIVE
+  EXPIRED
+  PENDING
+  CANCELED
+  FAILED
+}
+
 model Account {
   id           String    @id @default(uuid())
-  firestName   String
+  firstName    String
   lastName     String
   role         Role      @default(CUSTOMER)
   email        String    @unique
@@ -34,6 +57,8 @@ model Account {
   merchant     Merchant?
   admin        Admin?
   customer     Customer?
+
+  @@map("accounts")
 }
 
 model Merchant {
@@ -45,33 +70,42 @@ model Merchant {
   businessName     String
   ownerName        String
   businessPhone    String             @unique
-  bussinessEmail   String             @unique
+  businessEmail    String             @unique
   cbeAccountNo     String             @unique
   businessType     String
   status           StatusIndicator    @default(PENDING)
   registrationDate DateTime           @default(now())
   location         Location           @relation(fields: [locationId], references: [id])
   shops            Shop[]
-  templates        MerchantTemplate[] // This allows one-to-many relationship (one merchant can have multiple templates)
+  templates        MerchantTemplate[]
+  Payment          Payment[]
+
+  @@map("merchants")
 }
 
 model Admin {
   id        String  @id @default(uuid())
   accountId String  @unique
-  account   Account @relation(fields: [accountId], references: [id])
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("admins")
 }
 
 model Customer {
-  id        String  @id @default(uuid())
-  accountId String  @unique
-  account   Account @relation(fields: [accountId], references: [id])
-  orders    Order[]
+  id         String    @id @default(uuid())
+  accountId  String    @unique
+  account    Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  orders     Order[]
+  locationId String?
+  location   Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
+  @@map("customers")
 }
 
 model Shop {
   id                 String            @id @default(uuid())
   merchantId         String
-  merchant           Merchant          @relation(fields: [merchantId], references: [id])
+  merchant           Merchant          @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   name               String
   slug               String            @unique
   description        String?
@@ -83,26 +117,20 @@ model Shop {
   logoImageUrl       String?
   status             ShopStatus        @default(ACTIVE)
   approved           Boolean           @default(false)
+  verified           Boolean           @default(false)
+  verificationId     String?
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
   products           Product[]
   orders             Order[]
-  merchantTemplate   MerchantTemplate? @relation(fields: [merchantTemplateId], references: [id])
   merchantTemplateId String?           @unique
-  // Payment/Verification
-  verified           Boolean           @default(false)
-  verificationId     String?
+  merchantTemplate   MerchantTemplate? @relation(fields: [merchantTemplateId], references: [id], onDelete: SetNull)
+  Payment            Payment[]
 
   @@index([name])
   @@index([slug])
   @@index([createdAt])
-}
-
-enum ShopStatus {
-  ACTIVE
-  INACTIVE
-  UNDER_REVIEW
-  SUSPENDED
+  @@map("shops")
 }
 
 model Location {
@@ -115,22 +143,26 @@ model Location {
   merchants Merchant[]
   shops     Shop[]
   orders    Order[]
+  Customer  Customer[]
+
+  @@map("locations")
 }
 
 model BaseTemplate {
-  id               String             @id @default(uuid())
-  name             String
-  description      String
-  basePrice        Float
-  previewUrls      String[]
-  status           StatusIndicator    @default(PENDING)
-  pages            BasePage[]
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  MerchantTemplate MerchantTemplate[]
+  id                String             @id @default(uuid())
+  name              String
+  description       String
+  basePrice         Float
+  previewUrls       String[]
+  status            StatusIndicator    @default(PENDING)
+  pages             BasePage[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  merchantTemplates MerchantTemplate[]
 
   @@unique([name])
   @@index([name])
+  @@map("base_templates")
 }
 
 model BasePage {
@@ -139,32 +171,34 @@ model BasePage {
   html       String
   css        String
   js         String
-  template   BaseTemplate @relation(fields: [templateId], references: [id])
   templateId String
+  template   BaseTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
   @@index([templateId])
+  @@map("base_pages")
 }
 
 model MerchantTemplate {
   id             String        @id @default(uuid())
-  merchant       Merchant      @relation(fields: [merchantId], references: [id])
   merchantId     String
   name           String
   description    String
-  baseTemplate   BaseTemplate  @relation(fields: [baseTemplateId], references: [id])
   baseTemplateId String
+  baseTemplate   BaseTemplate  @relation(fields: [baseTemplateId], references: [id])
   customPages    CustomPage[]
   paymentStatus  PaymentStatus @default(PENDING)
+  isInUse        Boolean       @default(true)
+  isActive       Boolean       @default(false)
+  version        String        @default("1.0.0")
   activatedAt    DateTime?     @default(now())
   expiresAt      DateTime?
-  version        String        @default("1.0.0")
-  isActive       Boolean       @default(false)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  merchant       Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   shop           Shop?
 
-  @@unique([merchantId, baseTemplateId])
   @@index([merchantId])
+  @@map("merchant_templates")
 }
 
 model CustomPage {
@@ -173,25 +207,29 @@ model CustomPage {
   html               String
   css                String
   js                 String
-  merchantTemplate   MerchantTemplate @relation(fields: [merchantTemplateId], references: [id])
   merchantTemplateId String
+  merchantTemplate   MerchantTemplate @relation(fields: [merchantTemplateId], references: [id], onDelete: Cascade)
 
   @@index([merchantTemplateId])
+  @@map("custom_pages")
 }
 
 model Order {
   id         String      @id @default(uuid())
   customerId String
-  customer   Customer    @relation(fields: [customerId], references: [id])
+  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
   shopId     String
-  shop       Shop        @relation(fields: [shopId], references: [id])
+  shop       Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
   productId  String
-  product    Product     @relation(fields: [productId], references: [id])
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   locationId String
   location   Location    @relation(fields: [locationId], references: [id])
   status     OrderStatus @default(PENDING)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
+  Payment    Payment[]
+
+  @@map("orders")
 }
 
 model Product {
@@ -213,27 +251,34 @@ model Product {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   shopId        String
-  shop          Shop            @relation(fields: [shopId], references: [id])
+  shop          Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
   orders        Order[]
-}
 
-enum OrderStatus {
-  PENDING
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
+  @@map("products")
 }
 
 model Notification {
   id      String @id @default(uuid())
   message String
+
+  @@map("notifications")
 }
 
-enum PaymentStatus {
-  ACTIVE
-  EXPIRED
-  PENDING
-  CANCELED
-  FAILED
+model Payment {
+  id      String  @id @default(uuid())
+  orderId String? // Payment for an order (if applicable)
+  order   Order?  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  merchantId String? // Payment by a merchant (e.g. for template)
+  merchant   Merchant? @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  shopId         String? // Payment related to a shop
+  shop           Shop?         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  amount         Float
+  status         PaymentStatus @default(PENDING)
+  paymentMethod  String // e.g., 'CBE', 'Telebirr', 'Card'
+  transactionRef String        @unique
+  paidAt         DateTime? // null until paid
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }

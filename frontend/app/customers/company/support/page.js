@@ -15,7 +15,8 @@ import {
   MessageList,
   Message,
   MessageInput,
-  Avatar
+  Avatar,
+  MainContainer
 } from '@chatscope/chat-ui-kit-react';
 import {
   Accordion,
@@ -24,6 +25,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import axios from 'axios';
+import { supportChatService } from './chatPost';
 
 export default function BuilderSupport() {
   const [showChat, setShowChat] = useState(false);
@@ -33,7 +35,11 @@ export default function BuilderSupport() {
   const [error, setError] = useState('');
 
   const handleSend = async (messageText) => {
+
     try {
+      setIsLoading(true)
+      const response = await supportChatService(messageText)
+      console.log(response, 'this is the post message response')
       // Add user message
       const userMessage = {
         message: messageText,
@@ -43,21 +49,15 @@ export default function BuilderSupport() {
 
       setMessages(prev => [...prev, userMessage]);
       setNewMessage('');
-      setIsLoading(true);
-
-      // Send to ChatGPT API
-      const response = await axios.post('/api/chat', {
-        message: messageText
-      });
-
-      // Add AI response
+      // // Add AI response
       const aiMessage = {
-        message: response.data.choices[0].message.content,
+        message: response,
         sentTime: new Date().toISOString(),
-        sender: 'ChatGPT'
+        sender: 'Gemini'
       };
 
       setMessages(prev => [...prev, aiMessage]);
+      setIsLoading(false);
     } catch (err) {
       setError('Sorry, there was an error connecting to the chat service');
     } finally {
@@ -115,40 +115,56 @@ Step 4: Complete the payment and apply it to your shop.`,
             </button>
           </div>
 
-          <ChatContainer className="h-96">
-            <MessageList
-              scrollBehavior="smooth"
-              loading={isLoading}
-              loadingMore={false}
-            >
-              {messages.map((msg, index) => (
-                <Message
-                  key={index}
-                  model={{
-                    message: msg.message,
-                    sentTime: msg.sentTime,
-                    sender: msg.sender,
-                    direction: msg.sender === 'user' ? 'outgoing' : 'incoming',
-                    position: 'single'
-                  }}
-                >
-                  {msg.sender === 'ChatGPT' && (
-                    <Avatar src="/chatbot-avatar.png" name="AI Assistant" />
-                  )}
-                </Message>
-              ))}
-            </MessageList>
-            <MessageInput
-              placeholder="Type your builder questions here..."
-              value={newMessage}
-              onChange={setNewMessage}
-              onSend={handleSend}
-              disabled={isLoading}
-              attachButton={false}
-              sendButton={true}
-              className="border-t border-gray-200"
-            />
-          </ChatContainer>
+          <MainContainer className="flex flex-col max-h-[calc(100vh-14rem)] overflow-y-auto">
+            <ChatContainer className="flex-1 flex flex-col min-h-0"> {/* Key change here */}
+              {/* Processing Indicator */}
+              {isLoading && (
+                <div className="sticky top-0 z-10 bg-white/90 p-2 text-sm text-gray-500 flex items-center justify-center">
+                  <svg className="animate-spin h-4 w-4 mr-2 text-blue-500" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Processing...
+                </div>
+              )}
+
+              <MessageList
+                className="flex-1 overflow-y-auto"  // Added overflow here
+                scrollBehavior="smooth"
+                loading={false}
+                loadingMore={false}
+              >
+                {messages.map((msg, index) => (
+                  <Message
+                    key={index}
+                    className='w-full'
+                    model={{
+                      message: msg.message,
+                      sentTime: msg.sentTime,
+                      sender: msg.sender,
+                      direction: msg.sender === 'user' ? 'outgoing' : 'incoming',
+                      position: 'single'
+                    }}
+                  >
+                    {msg.sender === 'Gemini' && (
+                      <Avatar src="/chatbot-avatar.png" name="AI Assistant" />
+                    )}
+                  </Message>
+                ))}
+              </MessageList>
+
+              <MessageInput
+                placeholder="Type your builder questions here..."
+                value={newMessage}
+                onChange={setNewMessage}
+                onSend={handleSend}
+                disabled={isLoading}
+                attachButton={false}
+                sendButton={true}
+                className="border-t border-gray-200 sticky bottom-0 bg-white"
+              />
+            </ChatContainer>
+          </MainContainer>
 
           {error && (
             <div className="text-red-500 p-2 text-sm bg-red-50">{error}</div>
@@ -290,7 +306,7 @@ Step 4: Complete the payment and apply it to your shop.`,
         </div>
       </section>
       <div className="fixed bottom-6 right-6">
-  
+
         <button
           onClick={() => setShowChat(!showChat)}
           className="bg-orange-600 text-white rounded-full p-2 shadow-lg hover:bg-blue-700 transition duration-300"
