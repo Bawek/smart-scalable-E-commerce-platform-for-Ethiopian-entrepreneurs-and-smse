@@ -25,7 +25,7 @@ const ManageShops = () => {
     const [selectedShop, setSelectedShop] = useState(null);
     const { data: allMerchants, isLoading, isError } = useGetAllMerchantsQuery();
     const data = allMerchants?.merchant?.map(merchant => ({
-        name: `${merchant.account?.firestName} ${merchant.account?.lastName}`, // Corrected field names (firestName -> firstName)
+        name: `${merchant.account?.firstName} ${merchant.account?.lastName}`, // Corrected field names (firstName -> firstName)
         email: merchant.account?.email,
         status: merchant.status,
         identityCard: merchant.identityCard

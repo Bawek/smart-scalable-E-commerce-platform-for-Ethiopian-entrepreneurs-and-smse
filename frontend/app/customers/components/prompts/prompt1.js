@@ -1,131 +1,128 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectItem } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import ShopRegistration from "./prompt2";
 import { useRegisterMerchantMutation } from "@/lib/features/merchant/registrationApi";
 import { useRegisterLocationMutation } from "@/lib/features/location/locationapi";
 import { useSelector } from "react-redux";
+import ShopRegistration from "./prompt2";
 
-const formSchema = z.object({
-    id: z.string().optional(),
-    businessName: z.string().min(2, "Business name is required"),
-    businessPhone: z.string().min(10, "Valid phone number required"),
-    bussinessEmail: z.string().email("Valid email required"),
-    businessType: z.string().min(1, "Business category required"),
-    ownerName: z.string().min(2, "Owner name required"),
-    identityCard: z.instanceof(File).refine(file => file.size <= 5_000_000, "File size must be less than 5MB"),
-    town: z.string().min(2, "Town required"),
-    woreda: z.string().min(1, "Woreda required"),
-    region: z.string().min(2, "Region required"),
-    kebele: z.string().min(1, "Kebele required"),
-    cbeAccountNo: z.string().min(10, "Valid account number required"),
-});
-const updateSchema = z.object({
-    id: z.string().optional(),
-    businessName: z.string().min(2, "Business name is required"),
-    businessPhone: z.string().min(10, "Valid phone number required"),
-    bussinessEmail: z.string().email("Valid email required"),
-    businessType: z.string().min(1, "Business category required"),
-    ownerName: z.string().min(2, "Owner name required"),
-    cbeAccountNo: z.string().min(10, "Valid account number required"),
-});
-
-const businessCategories = [
-    "Retail & Wholesale",
-    "Food & Beverage",
-    "Technology",
-    "Healthcare",
-    "Construction",
-    "Transportation",
-    "Education",
-    "Entertainment",
+const REGIONS = [
+    "Addis Ababa", "Afar", "Amhara", "Benishangul-Gumuz", "Dire Dawa",
+    "Gambela", "Harari", "Oromia", "Sidama", "Somali", "South West Ethiopia",
+    "Southern Nations, Nationalities, and Peoples' Region (SNNPR)", "Tigray"
 ];
 
-const MerchantFullRegistration = ({ existingData, onSuccess, mStatus }) => {
+const BUSINESS_CATEGORIES = [
+    "Retail & Wholesale", "Food & Beverage", "Technology", "Healthcare",
+    "Construction", "Transportation", "Education", "Entertainment"
+];
+
+const phoneSchema = z.string().regex(/\+2519\d{8}/, "Invalid Ethiopian phone number");
+const cbeAccountSchema = z.string().regex(/^1000\d{9}$/, "CBE account must start with 1000");
+
+const baseSchema = z.object({
+    id: z.string().optional(),
+    businessName: z.string().min(2),
+    businessPhone: phoneSchema,
+    businessEmail: z.string().email(),
+    businessType: z.string().min(1),
+    ownerName: z.string().min(2),
+    cbeAccountNo: cbeAccountSchema,
+});
+
+const createSchema = baseSchema.extend({
+    identityCard: z.instanceof(File, { message: "ID required" })
+        .refine(file => file.size <= 5_000_000, "File must be under 5MB"),
+    town: z.string().min(2),
+    woreda: z.string().min(1),
+    region: z.enum(REGIONS),
+    kebele: z.string().min(1),
+});
+
+export default function MerchantFullRegistration({ existingData, onSuccess, mStatus }) {
     const { toast } = useToast();
-    const [editMode, setEditMode] = React.useState(false);
-    const accountId = useSelector((state) => state.account.id)
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [registerMerchant, { isLoading, isError }] = useRegisterMerchantMutation()
-    const [registerLocation, { isLoading: locationLoading, isError: locationError }] = useRegisterLocationMutation()
-    const mode = existingData ? 'update' : 'register'
-    console.log(existingData)
+    const [editMode, setEditMode] = useState(false);
+    const accountId = useSelector(state => state.account.id);
+    const [registerMerchant] = useRegisterMerchantMutation();
+    const [registerLocation] = useRegisterLocationMutation();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const formSchema = useMemo(() => existingData ? baseSchema : createSchema, [existingData]);
+
     const form = useForm({
-        resolver: zodResolver(existingData ? updateSchema : formSchema),
-        defaultValues: existingData ? existingData : {
-            businessName: "",
-            businessPhone: "",
-            bussinessEmail: "",
-            businessType: "",
-            ownerName: "",
-            town: "",
-            woreda: "",
-            region: "",
-            kebele: "",
-            cbeAccountNo: "",
+        resolver: zodResolver(formSchema),
+        defaultValues: existingData || {
+            businessName: "", businessPhone: "", businessEmail: "", businessType: "",
+            ownerName: "", town: "", woreda: "", region: undefined, kebele: "", cbeAccountNo: ""
         }
     });
+
     useEffect(() => {
-        if (existingData) {
-            form.reset(existingData)
-        }
-    }, [])
-    const handleSubmit = async (values) => {
-        console.log(existingData, values, 'response reg')
-        setIsSubmitting(true);
+        if (existingData) form.reset(existingData);
+    }, [existingData]);
+
+    const handleSubmit = async values => {
         try {
             const formData = new FormData();
+            let locationId = "";
+
             if (!existingData) {
-                const locationResponse = await registerLocation(values).unwrap()
-                if (locationResponse.status !== 'success') {
-                    return toast({
-                        title: "Error",
-                        description: "Submission failed",
-                        variant: "destructive",
-                    });
-                }
-                formData.append('locationId', locationResponse?.location?.id)
+                const locationRes = await registerLocation(values).unwrap();
+                if (locationRes.status !== "success") throw new Error("Location failed");
+                locationId = locationRes.location?.id;
+                formData.append("locationId", locationId);
             }
-            Object.entries(values).forEach(([key, value]) => {
-                if (value instanceof File) formData.append(key, value);
-                else if (value) formData.append(key, value);
-            });
-            formData.append('mode', mode)
-            formData.append('accountId', accountId)
-            const response = await registerMerchant(formData).unwrap()
-            console.log(response, 'update')
-            if (response.status !== 'success') throw new Error("Submission failed");
-            toast({
-                title: "Success!",
-                description: existingData ? "Merchant updated" : "Merchant registered",
+
+            Object.entries(values).forEach(([k, v]) => {
+                if (v instanceof File) formData.append(k, v);
+                else if (v) formData.append(k, String(v));
             });
 
-            if (!existingData) form.reset();
-            setEditMode(false);
-            onSuccess?.();
-        } catch (error) {
-            console.log(error, 'response reg')
+            formData.append("mode", existingData ? "update" : "register");
+            formData.append("accountId", accountId);
+
+            const response = await registerMerchant(formData).unwrap();
+            if (response.status !== "success") throw new Error("Merchant failed");
+
             toast({
-                title: "Error",
-                description: error.message || "Submission failed",
-                variant: "destructive",
+                title: existingData ? "Update Successful" : "Registration Successful",
+                description: existingData
+                    ? "The information has been successfully updated."
+                    : "You have been successfully registered.",
+                variant: "success",
+                duration: 5000,
             });
-        } finally {
-            setIsSubmitting(false);
+            if (!existingData) form.reset();
+            onSuccess?.();
+
+        } catch (err) {
+            toast({ title: "Error", description: err.message || "Failed", variant: "destructive" });
         }
     };
+
+    const renderField = (name, label, renderControl, required = true) => (
+        <FormField
+            control={form.control}
+            name={name}
+            render={({ field }) => (
+                <FormItem>
+                    <FormLabel>{label}{required && <span className="text-red-500">*</span>}</FormLabel>
+                    <FormControl>{renderControl(field)}</FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}
+        />
+    );
 
     return (
         <div className="w-full min-h-screen p-4 max-w-4xl mx-auto">
@@ -135,19 +132,17 @@ const MerchantFullRegistration = ({ existingData, onSuccess, mStatus }) => {
                 </h1>
 
                 {existingData && (
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center space-x-2">
-                            <label>Edit Mode</label>
-                            <Switch
-                                checked={editMode}
-                                onCheckedChange={(checked) => {
-                                    if (mStatus !== 'PENDING') {
-                                        setEditMode(checked);
-                                        if (!checked) form.reset(existingData);
-                                    }
-                                }}
-                            />
-                        </div>
+                    <div className="flex items-center space-x-2">
+                        <label>Edit Mode</label>
+                        <Switch
+                            checked={editMode}
+                            onCheckedChange={checked => {
+                                if (mStatus !== "PENDING") {
+                                    setEditMode(checked);
+                                    if (!checked) form.reset(existingData);
+                                }
+                            }}
+                        />
                     </div>
                 )}
             </div>
@@ -155,296 +150,128 @@ const MerchantFullRegistration = ({ existingData, onSuccess, mStatus }) => {
             <Tabs defaultValue="general">
                 <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="general">Business Info</TabsTrigger>
-                    <TabsTrigger
-                        value="security"
-                        disabled={mStatus === 'ACTIVE' ? false : true}
-                    >
-                        Shop Info
-                    </TabsTrigger>
+                    <TabsTrigger value="security" disabled={mStatus !== "ACTIVE"}>Shop Info</TabsTrigger>
                     <TabsTrigger value="api" disabled>Previews</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="general">
-                    {
-                        mStatus === 'PENDING' ? (
-                            <div className="text-orange-500 p-4">
-                                🚨 Thankyou for your registration. You will inform you in 12 hours.
-                            </div>
-                        )
-                            :
-                            <Card className="mt-6 p-6">
-                                <Form {...form}>
-                                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                                        <div className="space-y-4">
-                                            <h2 className="text-xl font-semibold mb-4">
-                                                {existingData ? "Business Details" : "Business Information"}
-                                            </h2>
+                    {mStatus === "PENDING" ? (
+                        <div className="bg-orange-100 border-b border-orange-400 text-orange-700 text-center p-4">
+                            🚨 Thank you for your registration. We will inform you within 12 hours.
+                        </div>
+                    ) : (
+                        <Card className="mt-6 p-6">
+                            <Form {...form}>
+                                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                                    {renderField("businessName", "Business Name", field => (
+                                        <Input {...field} disabled={!!existingData && !editMode} />
+                                    ))}
 
-                                            {/* Business Information Fields */}
-                                            <FormField
-                                                control={form.control}
-                                                name="businessName"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Business Name <span className="text-red-500">*</span></FormLabel>
-                                                        <FormControl>
-                                                            <Input
-                                                                {...field}
-                                                                disabled={!!existingData && !editMode}
-                                                                placeholder="Business Name"
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {renderField("businessPhone", "Phone", field => (
+                                            <Input {...field} disabled={!!existingData && !editMode} placeholder="+251900000000" />
+                                        ))}
+                                        {renderField("businessEmail", "Email", field => (
+                                            <Input {...field} disabled={!!existingData && !editMode} type="email" />
+                                        ))}
+                                    </div>
 
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <FormField
-                                                    control={form.control}
-                                                    name="businessPhone"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>Phone <span className="text-red-500">*</span></FormLabel>
-                                                            <FormControl>
-                                                                <Input
-                                                                    {...field}
-                                                                    disabled={!!existingData && !editMode}
-                                                                    placeholder="+251 900 000 000"
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-
-                                                <FormField
-                                                    control={form.control}
-                                                    name="bussinessEmail"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
-                                                            <FormControl>
-                                                                <Input
-                                                                    {...field}
-                                                                    disabled={!!existingData && !editMode}
-                                                                    placeholder="business@example.com"
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                            </div>
-
-                                            <FormField
-                                                control={form.control}
-                                                name="businessType"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
-                                                        <Select
-                                                            onValueChange={field.onChange}
-                                                            value={field.value}
-                                                            disabled={!!existingData && !editMode}
+                                    {renderField("businessType", "Category", field => (
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                            disabled={!!existingData && !editMode}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    {BUSINESS_CATEGORIES.map(category => (
+                                                        <SelectItem
+                                                            key={category}
+                                                            value={category.toLowerCase().replace(/ & /g, "-")}
                                                         >
-                                                            <FormControl>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Select category" />
-                                                                </SelectTrigger>
-                                                            </FormControl>
-                                                            <SelectContent>
-                                                                <SelectGroup>
-                                                                    {businessCategories.map((category) => (
-                                                                        <SelectItem
-                                                                            key={category}
-                                                                            value={category.toLowerCase().replace(/ & /g, "-")}
-                                                                        >
-                                                                            {category}
-                                                                        </SelectItem>
-                                                                    ))}
-                                                                </SelectGroup>
-                                                            </SelectContent>
-                                                        </Select>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
+                                                            {category}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    ))}
+
+                                    <div className="pt-6 space-y-4">
+                                        <h3 className="text-lg font-semibold">Owner Details</h3>
+                                        {renderField("ownerName", "Owner Name", field => (
+                                            <Input {...field} disabled={!!existingData && !editMode} />
+                                        ))}
+
+                                        {!existingData && renderField("identityCard", "ID Document", ({ onChange }) => (
+                                            <Input
+                                                type="file"
+                                                accept="image/*,application/pdf"
+                                                onChange={e => onChange(e.target.files?.[0])}
                                             />
+                                        ))}
+                                    </div>
 
-                                            {/* Owner Information Section */}
-                                            <div className="pt-6 space-y-4">
-                                                <h3 className="text-lg font-semibold">Owner Details</h3>
-
-                                                <FormField
-                                                    control={form.control}
-                                                    name="ownerName"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>Name <span className="text-red-500">*</span></FormLabel>
-                                                            <FormControl>
-                                                                <Input
-                                                                    {...field}
-                                                                    disabled={!!existingData && !editMode}
-                                                                    placeholder="Owner Name"
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-
-                                                {
-                                                    !existingData &&
-                                                    <FormField
-                                                        control={form.control}
-                                                        name="identityCard"   
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormLabel>ID Document {!existingData && <span className="text-red-500">*</span>}</FormLabel>
-                                                                <FormControl>
-                                                                    <Input
-                                                                        type="file"
-                                                                        accept="image/*,application/pdf"
-                                                                        onChange={(e) => field.onChange(e.target.files[0])}
-                                                                        disabled={!!existingData }
-                                                                    />
-                                                                </FormControl>
-                                                                <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                }
-                                                {/* Location Fields */}
-                                                {
-                                                    !existingData &&
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        <FormField
-                                                            control={form.control}
-                                                            name="region"
-                                                            render={({ field }) => (
-                                                                <FormItem>
-                                                                    <FormLabel>Region <span className="text-red-500">*</span></FormLabel>
-                                                                    <FormControl>
-                                                                        <Input
-                                                                            {...field}
-                                                                            disabled={!!existingData && !editMode}
-                                                                            placeholder="Region"
-                                                                        />
-                                                                    </FormControl>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
-                                                        />
-
-                                                        <FormField
-                                                            control={form.control}
-                                                            name="town"
-                                                            render={({ field }) => (
-                                                                <FormItem>
-                                                                    <FormLabel>Town <span className="text-red-500">*</span></FormLabel>
-                                                                    <FormControl>
-                                                                        <Input
-                                                                            {...field}
-                                                                            disabled={!!existingData && !editMode}
-                                                                            placeholder="Town"
-                                                                        />
-                                                                    </FormControl>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
-                                                        />
-                                                        <FormField
-                                                            control={form.control}
-                                                            name="woreda"
-                                                            render={({ field }) => (
-                                                                <FormItem>
-                                                                    <FormLabel>Woreda <span className="text-red-500">*</span></FormLabel>
-                                                                    <FormControl>
-                                                                        <Input
-                                                                            {...field}
-                                                                            disabled={!!existingData && !editMode}
-                                                                            placeholder="Woreda"
-                                                                        />
-                                                                    </FormControl>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
-                                                        />
-
-                                                        <FormField
-                                                            control={form.control}
-                                                            name="kebele"
-                                                            render={({ field }) => (
-                                                                <FormItem>
-                                                                    <FormLabel>Kebele <span className="text-red-500">*</span></FormLabel>
-                                                                    <FormControl>
-                                                                        <Input
-                                                                            {...field}
-                                                                            disabled={!!existingData && !editMode}
-                                                                            placeholder="Kebele"
-                                                                        />
-                                                                    </FormControl>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
-                                                        />
-                                                    </div>
-                                                }
-
-                                                <FormField
-                                                    control={form.control}
-                                                    name="cbeAccountNo"
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>CBE Account <span className="text-red-500">*</span></FormLabel>
-                                                            <FormControl>
-                                                                <Input
-                                                                    {...field}
-                                                                    disabled={!!existingData && !editMode}
-                                                                    placeholder="Account Number"
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                            </div>
+                                    {!existingData && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {renderField("region", "Region", field => (
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select region" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {REGIONS.map(region => (
+                                                            <SelectItem key={region} value={region}>{region}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            ))}
+                                            {renderField("town", "Town", field => <Input {...field} />)}
+                                            {renderField("woreda", "Woreda", field => <Input {...field} />)}
+                                            {renderField("kebele", "Kebele", field => <Input {...field} />)}
                                         </div>
+                                    )}
 
-                                        {/* Form Actions */}
-                                        {(editMode || !existingData) && (
-                                            <div className="flex justify-end gap-4">
-                                                {existingData && (
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            form.reset(existingData);
-                                                            setEditMode(false);
-                                                        }}
-                                                        disabled={isSubmitting}
-                                                    >
-                                                        Cancel
-                                                    </Button>
-                                                )}
+                                    {renderField("cbeAccountNo", "CBE Account Number", field => (
+                                        <Input {...field} disabled={!!existingData && !editMode} placeholder="1000xxxxxxxxx" />
+                                    ))}
+
+                                    {/* Form Actions */}
+                                    {(editMode || !existingData) && (
+                                        <div className="flex justify-end gap-4">
+                                            {existingData && (
                                                 <Button
-                                                    type="submit"
-                                                    className="bg-blue-600 hover:bg-blue-700"
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                        form.reset(existingData);
+                                                        setEditMode(false);
+                                                    }}
                                                     disabled={isSubmitting}
                                                 >
-                                                    {isSubmitting
-                                                        ? "Processing..."
-                                                        : existingData
-                                                            ? "Save Changes"
-                                                            : "Register Merchant"}
+                                                    Cancel
                                                 </Button>
-                                            </div>
-                                        )}
-                                    </form>
-                                </Form>
-                            </Card>
-                    }
+                                            )}
+                                            <Button
+                                                type="submit"
+                                                className="bg-blue-600 hover:bg-blue-700"
+                                                disabled={isSubmitting}
+                                            >
+                                                {isSubmitting
+                                                    ? "Processing..."
+                                                    : existingData
+                                                        ? "Save Changes"
+                                                        : "Register Merchant"}
+                                            </Button>
+                                        </div>
+                                    )}
+                                </form>
+                            </Form>
+                        </Card>
+                    )}
                 </TabsContent>
                 <TabsContent value='security'>
                     <ShopRegistration
@@ -456,6 +283,4 @@ const MerchantFullRegistration = ({ existingData, onSuccess, mStatus }) => {
             </Tabs>
         </div>
     );
-};
-
-export default MerchantFullRegistration;
+}

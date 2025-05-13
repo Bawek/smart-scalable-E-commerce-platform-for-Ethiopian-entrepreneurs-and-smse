@@ -55,7 +55,7 @@ const MerchantDetailPage = () => {
             <div className="max-w-6xl mx-auto">
                 {/* Header Section */}
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold">{`${merchant?.account?.firestName} ${merchant?.account?.lastName}`}</h1>
+                    <h1 className="text-3xl font-bold">{`${merchant?.account?.firstName} ${merchant?.account?.lastName}`}</h1>
                     <div className="flex gap-2">
                         {/* <Button className="">
                             Edit Merchant

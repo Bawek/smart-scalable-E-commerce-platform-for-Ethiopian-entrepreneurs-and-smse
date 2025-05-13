@@ -1,5 +1,4 @@
 'use client'
-import { CustomForm } from '@/app/[locale]/components/forms/common-form/my-form'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
 import { fields } from '../../lib/template-uload-form-controls'
@@ -7,6 +6,7 @@ import { pageSchema } from '../../lib/templateValidation'
 import { useState } from 'react'
 import axios from 'axios'
 import { useToast } from '@/hooks/use-toast'
+import { CustomForm } from '@/app/components/forms/common-form/my-form'
 
 const EditTemplate = () => {
     const params = useParams()

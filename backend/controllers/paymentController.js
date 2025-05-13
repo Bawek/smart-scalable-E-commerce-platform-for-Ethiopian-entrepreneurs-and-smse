@@ -52,7 +52,6 @@ const verifyPaymentProcess = async (req, res) => {
     // Check if payment is successful
     const isSuccess = chapaRes.status === 'success' && chapaRes.data.status === 'success';
 
-    // Return JSON response instead of redirecting
     if (isSuccess) {
       res.status(200).json({
         success: true,
@@ -73,7 +72,6 @@ const verifyPaymentProcess = async (req, res) => {
       });
     }
   } catch (err) {
-    // Handle verification failure
     res.status(500).json({
       success: false,
       status: 'error',

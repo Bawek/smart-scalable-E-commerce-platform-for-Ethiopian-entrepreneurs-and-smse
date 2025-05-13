@@ -7,18 +7,18 @@ const registerShop = async (req, res, next) => {
         name,
         slug,
         description,
+        merchantTemplateId
     } = req.body
     console.log(req.body, 'shop body')
     if (!req.file) return next(new httpError("Sorry Your logo is Required."))
     try {
-
         const merchant = await prisma.merchant.findFirst({
             where: {
                 accountId: accountId
             }
         })
         if (!merchant) {
-            // If an shop exists with the name, return error
+            // If an merchant not exists with the name, return error
             return next(new httpError('Please First Register as merchant to do so. Please try again.', 409));
         }
         const shop = await prisma.shop.findFirst({
@@ -37,7 +37,8 @@ const registerShop = async (req, res, next) => {
                 description,
                 merchantId: merchant.id,
                 logoImageUrl: req.file.filename,
-                locationId:merchant.locationId
+                locationId: merchant.locationId,
+                merchantTemplateId
             }
         });
         return res.status(201).json({
@@ -52,8 +53,10 @@ const registerShop = async (req, res, next) => {
 
 }
 const getAllShop = async (req, res, next) => {
+
     try {
-        const shops = await prisma.myshop.findMany()
+        // await prisma.shop.deleteMany()
+        const shops = await prisma.shop.findMany()
         res.status(200).json(shops)
     } catch (error) {
         next(new httpError(error.message, 500))

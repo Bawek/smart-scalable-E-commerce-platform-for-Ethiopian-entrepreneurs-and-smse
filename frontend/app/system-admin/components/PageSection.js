@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { Pencil, Trash } from "lucide-react";
 
 export default function PageSection({ templateId }) {
-  const [show, setShow] = useReducer((show) => !show, false);
+  const [show, setShow] = useState(false);
   const [pages, setPages] = useState([]);
   const [name, setName] = useState("");
   const [isValid, setIsValid] = useState(true);
@@ -150,8 +150,9 @@ export default function PageSection({ templateId }) {
   const closeModal = () => {
     setName("");
     setIsValid(true);
-    setShow();
+    setShow(false); // explicitly close the dialog
   };
+
 
   return (
     <div className="my-2 d-flex flex-column">

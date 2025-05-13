@@ -28,7 +28,7 @@ const registerAccount = async (req, res, next) => {
             data: {
                 email,
                 password: hashedPassword,
-                firestName,
+                firstName:firestName,
                 lastName,
             }
         });
@@ -53,7 +53,7 @@ const registerAccount = async (req, res, next) => {
             status: "success",
             accessToken,
             email: updatedAccount.email,
-            firestName: updatedAccount.firestName,
+            firestName: updatedAccount.firstName,
             lastName: updatedAccount.lastName,
             id: updatedAccount.id,
             status: 'success',
@@ -99,7 +99,7 @@ const login = async (req, res, next) => {
         res.status(200).json({
             accessToken,
             email: accountExist.email,
-            firestName: accountExist.firestName,
+            firestName: accountExist.firstName,
             lastName: accountExist.lastName,
             id: accountExist.id,
             status: 'success',
@@ -170,7 +170,7 @@ const updateAccount = async (req, res, next) => {
         }
         // Prepare update data
         const updateData = {
-            firestName: req.body.firstName,
+            firstName: req.body.firstName,
             lastName: req.body.lastName,
             ...(profileUrl && { profileUrl }), // Only add if exists
             ...(ispasswordAsked && {
@@ -183,7 +183,7 @@ const updateAccount = async (req, res, next) => {
             data: updateData,
             select: {
                 id: true,
-                firestName: true,
+                firstName: true,
                 lastName: true,
                 email: true,
                 profileUrl: true,

@@ -159,10 +159,10 @@ export function AppSidebar(props) {
         <NavProjects projects={data.templates} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser
+        {/* <NavUser
          user={user}
          logout={userLogout}
-         />
+         /> */}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

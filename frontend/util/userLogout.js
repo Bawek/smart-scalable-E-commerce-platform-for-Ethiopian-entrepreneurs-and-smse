@@ -5,11 +5,12 @@ import { logOut } from "@/lib/features/auth/accountSlice"
 import { useDispatch } from "react-redux"
 import { toast } from "react-toastify"
 import { useCallback } from "react"
+import { useRouter } from "next/navigation"
 
 export const useLogout = () => {
     const dispatch = useDispatch()
     const [logout] = useLogoutMutation()
-
+    const router = useRouter()
     const handleLogout = useCallback(async () => {
         const toastId = toast.loading("Logging out...")
         try {
@@ -22,6 +23,7 @@ export const useLogout = () => {
                 isLoading: false,
                 autoClose: 3000
             })
+            router.push('/customers/auth/login')
         } catch (error) {
             const errorMessage = getErrorMessage(error)
 
