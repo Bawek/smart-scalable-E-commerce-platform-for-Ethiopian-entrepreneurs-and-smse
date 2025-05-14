@@ -172,7 +172,7 @@ export default function MerchantFullRegistration({ existingData, onSuccess, mSta
                                             <Input {...field} disabled={!!existingData && !editMode} placeholder="+251900000000" />
                                         ))}
                                         {renderField("businessEmail", "Email", field => (
-                                            <Input {...field} disabled={!!existingData && !editMode} type="email" />
+                                            <Input {...field} disabled={!!existingData && !editMode} type="email" className="dark:text-white dark:bg-gray-950" />
                                         ))}
                                     </div>
 

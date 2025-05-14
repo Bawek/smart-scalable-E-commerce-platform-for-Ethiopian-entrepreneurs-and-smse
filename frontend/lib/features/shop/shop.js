@@ -3,6 +3,9 @@ import { appApi } from "@/lib/appApi";
 export const shopApi = appApi.injectEndpoints({
   tagTypes: ["Shop"],
   endpoints: (builder) => ({
+    getAllShops: builder.query({
+      query: () => '/shops/get-all'
+    }),
     getShop: builder.query({
       query: (shopId) => `getshop/${shopId}/`,
       // providesTags: ["customisedPage"],
@@ -28,5 +31,6 @@ export const shopApi = appApi.injectEndpoints({
 export const {
   useCreateShopMutation,
   useGetShopByAccountQuery,
+  useGetAllShopsQuery
 } = shopApi;
 

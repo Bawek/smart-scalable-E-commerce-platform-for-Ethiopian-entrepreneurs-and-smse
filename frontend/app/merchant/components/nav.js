@@ -48,7 +48,7 @@ export default function MerchantNavBar() {
                     <ModeToggle />
                     {/* Notifications */}
                     <button
-                        className={`p-2 rounded-full relative hover:bg-opacity-20 hover:bg-gray-400`}
+                        className={`p-2 rounded-full relative hover:bg-opacity-20 hover:bg-gray-500`}
                     >
                         <BellIcon className="h-6 w-6 dark:text-white" />
                         <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>

@@ -217,7 +217,7 @@ const buyTemplate = async (req, res, next) => {
                 baseTemplateId: template.id,
                 name: template.name,
                 description: template.description,
-                paymentStatus: 'ACTIVE'
+                paymentStatus: 'ACTIVE',
             }
         })
         const basePage = await prisma.basePage.findFirst({

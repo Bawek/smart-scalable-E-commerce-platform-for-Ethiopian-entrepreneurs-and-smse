@@ -57,7 +57,16 @@ const getAllShop = async (req, res, next) => {
     try {
         // await prisma.shop.deleteMany()
         const shops = await prisma.shop.findMany()
-        res.status(200).json(shops)
+        if (shops.length === 0) {
+            return res.status(200).json({
+                status: 'success',
+                shops: []
+            })
+        }
+        res.status(200).json({
+            status: 'success',
+            shops
+        })
     } catch (error) {
         next(new httpError(error.message, 500))
     }

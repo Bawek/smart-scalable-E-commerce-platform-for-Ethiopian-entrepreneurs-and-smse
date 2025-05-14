@@ -56,7 +56,10 @@ export function NavUser({
               </div>
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={imageViewer(user?.profileUrl)} alt={user.firestName} />
-                <AvatarFallback className="rounded-lg">{user.firestName ? user?.firestName.slice(0, 2).toUpperCase() || 'UR' : 'UR'}</AvatarFallback>
+                <AvatarFallback className="rounded-lg !text-black dark:!text-white">
+                  {user.firestName ? user.firestName.slice(0, 2).toUpperCase() : 'UR'}
+                </AvatarFallback>
+
               </Avatar>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>

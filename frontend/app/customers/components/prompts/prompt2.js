@@ -247,7 +247,7 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
                           rows={3}
                           disabled={!!shop.description && !editMode}
                           placeholder="Describe your shop..."
-                          className="w-full p-2 rounded-md resize-none"
+                          className="w-full p-2 rounded-md resize-none dark:text-white dark:bg-gray-950"
                         /> 
                       </FormControl>
                       <div className="text-sm border-none text-gray-500 text-right">

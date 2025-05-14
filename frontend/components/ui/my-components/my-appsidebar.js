@@ -3,12 +3,11 @@
 import * as React from "react"
 import {
   ShoppingCart, Package, User, Settings, CreditCard,
-  Truck, Lock, Store, FileText, LayoutDashboard,
+  Truck, Lock, LayoutDashboard,
   ShieldCheck, CheckCircle, XCircle
 } from "lucide-react";
 import { NavMain } from "./nav-main"
 import { NavProjects } from "./nav-projects"
-import { NavUser } from "./nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -19,11 +18,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import Logo from "./logo";
-import { useDispatch, useSelector } from "react-redux";
-import { useLogoutMutation } from "@/lib/features/auth/accountApi";
-import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
-import { logOut } from "@/lib/features/auth/accountSlice";
 
 // Sample data
 const data = {
@@ -130,19 +124,6 @@ const data = {
 };
 
 export function AppSidebar(props) {
-  const user = useSelector((state) => state.account)
-  const [logout] = useLogoutMutation()
-  const router = useRouter()
-  const dispatch = useDispatch()
-  const userLogout = async () => {
-    // router.push('/customers')
-    const response = await logout().unwrap()
-    if (response.status !== 'success') {
-      return toast.error("sorry something went wrong.");
-    }
-    window.location.href = '/customers'
-    dispatch(logOut())
-  }
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarGroup>
@@ -159,10 +140,6 @@ export function AppSidebar(props) {
         <NavProjects projects={data.templates} />
       </SidebarContent>
       <SidebarFooter>
-        {/* <NavUser
-         user={user}
-         logout={userLogout}
-         /> */}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
