@@ -26,14 +26,14 @@ const registerMerchant = async (req, res, next) => {
         businessName,
         ownerName,
         businessPhone,
-        bussinessEmail,
+        businessEmail,
         cbeAccountNo,
         businessType,
     } = req.body;
 
     const normalizedBusinessName = businessName?.trim();
     const normalizedPhone = businessPhone?.trim();
-    const normalizedEmail = bussinessEmail?.trim().toLowerCase();
+    const normalizedEmail = businessEmail?.trim().toLowerCase();
     const normalizedCBE = cbeAccountNo?.trim();
 
     if (!mode || !['register', 'update'].includes(mode)) {

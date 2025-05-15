@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button"
 import { ArrowUpDown, MoreHorizontal } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -11,21 +11,36 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import CustomDataTable from "@/components/ui/my-components/my-table";
-import { imageViewer } from "@/app/system-admin/lib/imageViewer";
-import { useGetAllShopsQuery } from "@/lib/features/shop/shop";
 import Loader from "@/app/components/Prompt/Loader";
+import { Badge } from "@/components/ui/badge";
+import { useChangeMerchantTemplateMutation, useGetAllMerchantTemplatesQuery } from "@/lib/features/merchantTemplates/buyedTemplateApi";
+import { toast } from "react-toastify";
 const MerchantTemplates = () => {
     const router = useRouter()
-    const { data, isLoading, isError } = useGetAllShopsQuery()
-    console.log(data, isError, 'see data value')
+    const { data, isLoading, isError, refetch } = useGetAllMerchantTemplatesQuery()
+    const [changeMerchantTemplate, { isError: changeError, isSuccess: changeSuccess }] = useChangeMerchantTemplateMutation()
+    const handleUseIt = async (id) => {
+        try {
+            await changeMerchantTemplate(id).unwrap()
+            console.log(changeError,changeSuccess)
+            if (changeError) {
+                return toast.error("Sorry, something went wrong. Please try again.")
+            }
+            if (changeSuccess) {
+                toast.success("Template changed Successfully. Starting from now Your shop use this template.")
+                // after this make the useGetAllmerchanttempaltequery to refetch
+                refetch()
 
-    const handleUseIt = (id) => {
+            }
 
+        } catch (error) {
+            console.log(error)
+            return toast.error("Sorry, something went wrong on the server. Please try again.")
+
+        }
     }
-    console.log(data?.shops, 'see shops data')
     const columns = [
         {
             id: "select",
@@ -50,15 +65,14 @@ const MerchantTemplates = () => {
             enableHiding: false,
         },
         {
-            accessorKey: "logoImageUrl",
-            header: "Shop Logo",
+            accessorKey: "id",
+            header: "Template Id",
             cell: ({ row }) => (
-                <div className="flex items-center justify-center w-12 h-12 rounded-md overflow-hidden">
-                    <img
-                        src={imageViewer(row.getValue("logoImageUrl"))}  // Access the first item in the array
-                        alt="Preview"
-                        className="object-cover w-full h-full"
-                    />
+                <div className="text-sm" >
+                    {
+                        row.getValue("id")
+
+                    }
                 </div>
             ),
             enableSorting: true,
@@ -78,19 +92,28 @@ const MerchantTemplates = () => {
             },
             cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
         },
+        // {
+        //     accessorKey: "description",
+        //     header: () => <div className="text-right">Description</div>,
+        //     cell: ({ row }) => {
+        //         // make only first 20 characters visible by using tail wind css on the div
+        //         return <div className="text-right font-medium truncate">{row.getValue("description")}</div>
+        //     },
+        // },
         {
-            accessorKey: "slug",
-            header: () => <div className="text-right">Slug</div>,
+            accessorKey: "expiresAt",
+            header: () => <div className="text-right">Expires At</div>,
             cell: ({ row }) => {
-                return <div className="text-right font-medium">{row.getValue("slug")}</div>
+                return <div className="text-right font-medium">{row.getValue("expiresAt")}</div>
             },
         },
         {
-            accessorKey: "status",
-            header: "Status",
-            cell: ({ row }) => (
-                <div className="capitalize">{row.getValue("status")}</div>
-            ),
+            accessorKey: "isInUse",
+            header: "isInUse",
+            cell: ({ row }) => {
+                const status = row.getValue("isInUse") ? 'Yes' : "NO"
+                return <Badge className={`capitalize ${row.getValue("isInUse") ? 'bg-green-700' : 'bg-orange-500'} `}>{status}</Badge>
+            }
         },
         {
             id: "actions",
@@ -129,7 +152,7 @@ const MerchantTemplates = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="cursor-pointer"
-                                onClick={() => router.push(`/admin-editor/${template.id}`)}
+                                onClick={() => router.push(`/site-builder/${template.id}`)}
                             >
                                 Edit By tool
                             </DropdownMenuItem>
@@ -140,19 +163,18 @@ const MerchantTemplates = () => {
         }
 
     ]
-    const { toast } = useToast()
     if (isLoading) {
-      return <div className="flex items-center justify-center">
-          <Loader />
-      </div>
+        return <div className="flex items-center justify-center">
+            <Loader />
+        </div>
     }
     return (
         <div>
             <div className="flex flex-col md:flex-row items-center justify-between">
-                <h1 className="text-2xl font-semibold text-gray-800">Manage Template</h1>
+                <h1 className="text-2xl font-semibold dark:text-white">Manage Your Template</h1>
             </div>
             <CustomDataTable
-                data={data?.shops}
+                data={data?.templates}
                 columns={columns}
                 searchColumen="name"
             />

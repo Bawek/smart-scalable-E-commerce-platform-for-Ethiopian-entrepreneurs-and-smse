@@ -114,6 +114,7 @@ model Shop {
   businessHours      Json?
   socialMedia        Json?
   bannerImageUrl     String?
+  domain             String?
   logoImageUrl       String?
   status             ShopStatus        @default(ACTIVE)
   approved           Boolean           @default(false)

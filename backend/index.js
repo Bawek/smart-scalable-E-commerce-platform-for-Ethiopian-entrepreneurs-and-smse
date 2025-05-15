@@ -15,6 +15,7 @@ require('dotenv').config
 const http = require('http');
 const { initialize } = require('./utils/socket')
 const { testIo } = require('./controllers/merchant.controller')
+const merchantTemplatesRouter = require('./routes/merchantTemplates.route')
 // constants  
 const PORT = process.env.PORT || 8000
 //start the server 
@@ -47,6 +48,7 @@ app.use('/api/shops', shopRouter)
 app.use('/api/image', imageRouter)
 app.use('/api/pages', pagesRouter)
 app.use('/api/templates', templateRouter)
+app.use('/api/merchantTemplates',merchantTemplatesRouter)
 app.post('/iopost', testIo) 
 // handling errors
 app.use((err, req, res) => {

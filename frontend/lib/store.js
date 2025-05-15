@@ -24,6 +24,7 @@ import AdminEditor from "./features/admin-my/admin-editor";
 import { accountApi } from "./features/auth/accountApi";
 import { templateApi } from "./features/templates/templateApi";
 import storage from "./storage";
+import { merchantTemplateApi } from "./features/merchantTemplates/buyedTemplateApi";
 
 // 🔐 Persist Configuration
 const persistConfig = {
@@ -42,6 +43,7 @@ const rootReducer = combineReducers({
 	[authSlice.reducerPath]: authSlice.reducer,
 	[shopApi.reducerPath]: shopApi.reducer,
 	[templateApi.reducerPath]: templateApi.reducer,
+	[merchantTemplateApi.reducerPath]: merchantTemplateApi.reducer,
 	[publicShopSlice.reducerPath]: publicShopSlice.reducer,
 
 	merchant: merchantSlice,
@@ -71,6 +73,7 @@ export const makeStore = () =>
 				authSlice.middleware,
 				shopApi.middleware,
 				templateApi.middleware,
+				merchantTemplateApi.middleware,
 				accountApi.middleware,
 				publicShopSlice.middleware
 			),

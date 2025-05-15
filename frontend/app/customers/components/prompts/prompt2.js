@@ -6,7 +6,6 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { useCreateShopMutation, useGetShopByAccountQuery } from "@/lib/features/shop/shop";
 import Link from "next/link";
@@ -14,13 +13,13 @@ import { useGetMerchantTemplateByAccountQuery } from "@/lib/features/templates/t
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { imageViewer } from "@/app/system-admin/lib/imageViewer";
+import { toast } from "react-toastify";
 
 // Validation schema
 const shopSchema = z.object({
   slug: z.string()
     .min(3, "Shop slug must be at least 3 characters")
-    .max(30, "Shop slug must be less than 30 characters")
-    .regex(/^[a-z0-9-]+$/, "Shop slug can only contain lowercase letters, numbers, and hyphens"),
+    .max(30, "Shop slug must be less than 30 characters"),
   description: z.string().max(500, "Description must be less than 500 characters").optional(),
   businessHours: z.string()
     .refine(val => {
@@ -31,6 +30,9 @@ const shopSchema = z.object({
         return false;
       }
     }, "Invalid business hours format. Please use valid JSON object format"),
+  domain: z.string()
+    .min(3, "shop domain must be at least 3 characters")
+    .max(15, "shop domain must be less than 15 characters"),
   logoImageUrl: z.instanceof(File, "Shop logo is required")
     .refine(file => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type),
       "Only JPEG, PNG & WEBP files are allowed")
@@ -38,7 +40,6 @@ const shopSchema = z.object({
 });
 
 export default function ShopRegistration({ accountId, editMode, setEditMode }) {
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [imagePreview, setImagePreview] = React.useState("");
   const router = useRouter();
@@ -50,6 +51,7 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
 
   const mode = shopData?.shop?.id ? 'update' : 'create';
   const hasTemplate = !!customTemplate?.merchantTemplate?.id;
+  
   const shop = shopData?.shop || {};
   console.log(shopData, customTemplate, 'shop data')
   // Initialize form
@@ -90,11 +92,7 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      toast({
-        title: "File Too Large",
-        variant: "destructive",
-        description: "Image must be less than 2MB",
-      });
+      toast.error("Image must be less than 2MB");
       return;
     }
 
@@ -125,35 +123,29 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
 
     formData.append('merchantTemplateId', customTemplate?.merchantTemplate?.id);
     formData.append('accountId', accountId);
+    formData.append('mode', mode)
 
     return formData;
   };
 
   const handleSubmit = async (formData) => {
     setIsSubmitting(true);
-
     try {
       const validatedData = shopSchema.parse(formData);
       const formPayload = prepareFormData(validatedData);
-
-      await createShop(formPayload).unwrap(); 
-
-      toast({
-        title: "Success",
-        description: `Shop ${mode === "create" ? 'created' : 'updated'} successfully`,
-      });
-
+      
+      console.log(formPayload, 'mode')
+      await createShop(formPayload).unwrap();
+        toast.success( `Shop ${mode === "create" ? 'created' : 'updated'} successfully`)
+     
       if (mode === "create") {
         form.reset();
         setImagePreview("");
       }
     } catch (error) {
       console.error("Submission error:", error);
-      toast({
-        title: "Error",
-        variant: "destructive",
-        description: error.data?.message || error.message || "An error occurred",
-      });
+      toast.error('Sorry something went wrong. please try again.')
+
     } finally {
       setIsSubmitting(false);
     }
@@ -234,7 +226,24 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
                     </FormItem>
                   )}
                 />
-
+                <FormField
+                  control={form.control}
+                  name="domain"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Shop Domain <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          disabled={!!shop.domain && !editMode}
+                          placeholder="my-shop-domain"
+                          pattern="[a-z0-9-]+"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="description"
@@ -248,7 +257,7 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
                           disabled={!!shop.description && !editMode}
                           placeholder="Describe your shop..."
                           className="w-full p-2 rounded-md resize-none dark:text-white dark:bg-gray-950"
-                        /> 
+                        />
                       </FormControl>
                       <div className="text-sm border-none text-gray-500 text-right">
                         {field.value?.length || 0}/500
@@ -270,7 +279,7 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
                           disabled={!!shop.businessHours && !editMode}
                           placeholder='{"monday": {"open": "09:00", "close": "18:00"}}'
                           className="font-mono text-sm"
-                        /> 
+                        />
                       </FormControl>
                       <FormMessage />
                       <div className="text-sm text-gray-500 mt-1">
