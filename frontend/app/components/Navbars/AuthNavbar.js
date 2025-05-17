@@ -49,6 +49,7 @@ export default function Navbar() {
           : []),
       ]
       : [
+        {name: "Cart", href: "/shopping-cart", icon: <ShoppingCart className="w-4 h-4 mr-2 text-black" /> },
         { name: "Login", href: "/auth/login", icon: <User className="w-4 h-4 mr-2" /> },
         { name: "Register", href: "/auth/register", icon: <span>🎁</span> },
       ]),
