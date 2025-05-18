@@ -50,10 +50,10 @@ const NotificationWidget = () => {
 
     return (
         <div className="w-80">
-            <div className="bg-white rounded-lg border-gray-200">
+            <div className="rounded-lg border">
                 {/* Notifications List */}
                 <div className="max-h-[70vh] overflow-y-auto">
-                    {(notifications || notifications.length > 0) &&
+                    {(notifications &&  notifications.length > 0) ?
                         notifications.map((notif) => (
                             <div
                                 key={notif.id}
@@ -83,11 +83,14 @@ const NotificationWidget = () => {
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                        ))
+                        :
+                        <h1> No Notifications Recorded.</h1>
+                    }
                 </div>
 
                 {/* Footer */}
-                <div className="p-2 border-t border-gray-200 flex justify-between">
+                <div className="p-2 border-t flex justify-between">
                     <div className="space-x-2">
                         <button
                             onClick={handleMarkAllRead}

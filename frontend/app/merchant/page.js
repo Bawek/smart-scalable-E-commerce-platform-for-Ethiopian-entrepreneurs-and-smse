@@ -1,33 +1,37 @@
 'use client'
+
 import React from 'react'
 import CardLineChart from '../components/Cards/CardLineChart'
 import CardBarChart from '../components/Cards/CardBarChart'
-import CardPageVisits from '../components/Cards/CardPageVisits'
-import CardSocialTraffic from '../components/Cards/CardSocialTraffic'
+import { SectionCards } from './components/merchantDaBoxs'
+import { useGetMerchantDashboardInfoQuery } from '@/lib/features/merchant/registrationApi'
+import { useSelector } from 'react-redux'
 
-const MerchantDashbord = () => {
+const MerchantDashboard = () => {
+  const accountId = useSelector((state) => state.account.id)
+  const { data: DashboardStatus } = useGetMerchantDashboardInfoQuery(accountId)
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
-      {/* <Admin> */}
-      <div className="flex flex-wrap">
-        <div className="w-full xl:w-8/12 mb-12 xl:mb-0 px-4">
+    <div className="min-h-screen w-full bg-background text-foreground flex flex-col">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8  space-y-6">
+
+        {/* Dashboard Title */}
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-center text-primary">
+          Merchant Dashboard Overview
+        </h1>
+      </div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        {/* Section: Summary Cards */}
+        <SectionCards statData={DashboardStatus} />
+
+        {/* Section: Charts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <CardLineChart />
-        </div>
-        <div className="w-full xl:w-4/12 px-4">
           <CardBarChart />
         </div>
       </div>
-      <div className="flex flex-wrap mt-4">
-        <div className="w-full xl:w-8/12 mb-12 xl:mb-0 px-4">
-          <CardPageVisits />
-        </div>
-        <div className="w-full xl:w-4/12 px-4">
-          <CardSocialTraffic />
-        </div>
-      </div>
-      {/* </Admin> */}
     </div>
   )
 }
 
-export default MerchantDashbord
+export default MerchantDashboard
