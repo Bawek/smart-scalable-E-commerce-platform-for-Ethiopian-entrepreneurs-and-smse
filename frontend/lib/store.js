@@ -25,6 +25,8 @@ import { accountApi } from "./features/auth/accountApi";
 import { templateApi } from "./features/templates/templateApi";
 import storage from "./storage";
 import { merchantTemplateApi } from "./features/merchantTemplates/buyedTemplateApi";
+import cartReducer from './features/cart/cartSlice';
+
 
 // 🔐 Persist Configuration
 const persistConfig = {
@@ -58,6 +60,9 @@ const rootReducer = combineReducers({
 	status,
 	editor: editorReducer,
 	prompt: promptSlice,
+	cart:cartReducer,
+	    cart: cartReducer,
+
 });
 
 // 🏭 Store Factory
