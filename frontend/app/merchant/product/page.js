@@ -27,6 +27,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useDelete } from '@/hooks/use-delete';
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 // Sample data 
 const sampleInventory = [
   {
@@ -101,10 +104,29 @@ export default function Inventory() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  const handleDelete = () => {
-
-  }
+  const { deleteItem } = useDelete()
+  const router = useRouter()
+  const handleDelete = async (id) => {
+    try {
+      deleteItem({
+        endpoint: `/api/inventory/${id}`, // Adjust the endpoint as needed
+        itemId: id,
+        onSuccess: () => {
+          setDeleteDialogOpen(false);
+          setInventory((prev) => prev.filter((item) => item.id !== id));
+          toast.success('Order deleted successfully!'); // Show success message
+        },
+        onError: (error) => {
+          console.error('Error deleting order:', error);
+          toast.error('Error deleting the order.'); // Show error message
+        },
+      })
+      // Update the inventory state after deletion
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      toast.error('Error deleting the order.'); // Show error message
+    }
+  };
   const columns = [
     {
       id: "select",
@@ -225,72 +247,76 @@ export default function Inventory() {
         return value.includes(row.getValue(id));
       },
     },
-{
-  id: "actions",
-  enableHiding: false,
-  cell: ({ row }) => {
-    const product = row.original;
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false); // Add state here
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const product = row.original;
+        const [deleteDialogOpen, setDeleteDialogOpen] = useState(false); // Add state here
 
-    return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-40">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem
-            className='cursor-pointer'
-            onClick={() => navigator.clipboard.writeText(product.id)}
-          >
-            Copy ID
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link
-              className='cursor-pointer'
-              href={`/inventory/edit/${product.id}`}>
-              Edit
-            </Link>
-          </DropdownMenuItem>
-          
-          <DropdownMenuItem
-            className="text-red-600 cursor-pointer focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-            onClick={(e) => {
-              e.preventDefault(); // Prevent dropdown close
-              setDeleteDialogOpen(true); // Open dialog
-            }}
-          >
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                className='cursor-pointer'
+                onClick={() => {
+                  const text = navigator.clipboard.writeText(product.id)
+                  // toast must have right ticket 
+                  toast.success('Product ID copied to clipboard!');
+                }}
+              >
+                Copy ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link
+                  className='cursor-pointer'
+                  href={`/merchant/product/add-product?rtx=${product.id}`}>
+                  Edit
+                </Link>
+              </DropdownMenuItem>
 
-        {/* Move AlertDialog outside DropdownMenuContent */}
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Product?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete {product.name}? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => handleDelete(product.id)}
-                className="bg-red-600 hover:bg-red-700 text-white"
+              <DropdownMenuItem
+                className="text-red-600 cursor-pointer focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent dropdown close
+                  setDeleteDialogOpen(true); // Open dialog
+                }}
               >
                 Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </DropdownMenu>
-    );
-  },
-}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+
+            {/* Move AlertDialog outside DropdownMenuContent */}
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Product?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {product.name}? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleDelete(product.id)}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </DropdownMenu>
+        );
+      },
+    }
   ];
 
   // Fetch inventory data
@@ -324,16 +350,25 @@ export default function Inventory() {
         <InventoryStats inventory={inventory} />
 
         {/* Inventory Table */}
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-600"></div>
+        <div className="relative">
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => router.push('/merchant/product/add-product')}
+              className="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded">
+              Add Product
+            </button>
           </div>
-        ) : (
-          <InventoryTable
-            data={inventory}
-            columns={columns}
-          />
-        )}
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-600"></div>
+            </div>
+          ) : (
+            <InventoryTable
+              data={inventory}
+              columns={columns}
+            />
+          )}
+        </div>
       </main>
     </div>
   );

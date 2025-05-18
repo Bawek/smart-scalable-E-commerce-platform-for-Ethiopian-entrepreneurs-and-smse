@@ -3,11 +3,15 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 // Define a service using a base URL and expected endpoints
 export const productsApi = createApi({
   reducerPath: "products",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:8000/store/" }),
+  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:8000/api" }),
   tagTypes: ["product"],
   endpoints: (builder) => ({
     getProducts: builder.query({
       query: (merchant_id) => `product/${merchant_id}/`,
+      providesTags: ["product"],
+    }),
+    getProductsById: builder.query({
+      query: (id) => `/product-get-by-id/${id}/`,
       providesTags: ["product"],
     }),
     getOutOfStockProducts: builder.query({
@@ -20,19 +24,17 @@ export const productsApi = createApi({
     // }),
     createProduct: builder.mutation({
       query: (formData) => ({
-        url: `product/`,
+        url: `/product/create`,
         method: "POST",
         body: formData,
       }),
       invalidatesTags: ["product"],
     }),
     updateProduct: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `product/${id}/`,
+      query: ({ data }) => ({
+        url: `/product/update/${data.id}/`,
         method: "PATCH",
-        body: {
-          products: data,
-        }, // Accepting an array of new products
+        body: data // Accepting an array of new products
       }),
       invalidatesTags: ["product"],
     }),
@@ -46,4 +48,5 @@ export const {
   useUpdateProductMutation,
   useCreateProductMutation,
   useGetOutOfStockProductsQuery,
+  useGetProductsByIdQuery
 } = productsApi;

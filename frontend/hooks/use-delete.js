@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 export function useDelete() {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -19,7 +20,7 @@ export function useDelete() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete item');
+        return toast.error('Failed to delete item');
       }
 
       onSuccess?.();

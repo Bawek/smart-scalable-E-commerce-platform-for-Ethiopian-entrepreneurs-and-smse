@@ -23,7 +23,7 @@ export default function MerchantLayout({ children }) {
 // Create a separate client component that contains the provider
 function MerchantLayoutClient({ children }) {
   return (
-    <SidebarProvider>
+    <SidebarProvider className='overflow-x-hidden'>
       {/* Sidebar on the left */}
       <AppSidebar />
 
@@ -32,7 +32,7 @@ function MerchantLayoutClient({ children }) {
         <MerchantNavBar />
 
         {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto overflow-x-hidden">
           {children}
         </main>
       </SidebarInset>

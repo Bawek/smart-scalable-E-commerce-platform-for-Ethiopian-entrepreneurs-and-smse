@@ -37,7 +37,7 @@ const data = {
     },
     {
       title: "Analytics",
-      url: "#",
+      url: "/merchant/analytics",
       icon: BarChartIcon,
     },
     {
@@ -47,17 +47,17 @@ const data = {
     },
     {
       title: "Buyed Templates",
-      url: "merchant/manage-your-templates",
+      url: "/merchant/manage-your-templates",
       icon: FolderIcon,
     },
     {
       title: "Users",
-      url: "#",
+      url: "/merchant/manage-users",
       icon: UsersIcon,
     },
     {
       title: "Manage Orders",
-      url: "merchant/order",
+      url: "/merchant/order",
       icon: ListOrderedIcon,
     },
     {
@@ -83,7 +83,7 @@ export function AppSidebar(props) {
                 <ArrowUpCircleIcon className="h-5 w-5" />
                 <span className="text-base font-semibold">EE-platform</span>
               </Link>
-              
+
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
