@@ -16,6 +16,7 @@ const { initialize } = require('./utils/socket')
 const { testIo } = require('./controllers/merchant.controller')
 const merchantTemplatesRouter = require('./routes/merchantTemplates.route')
 const customizedPageRouter = require('./routes/customizedPage.route')
+const { getMerchantDashboardStats } = require('./controllers/dashboard.controller')
 // constants  
 const PORT = process.env.PORT || 8000
 //start the server 
@@ -47,9 +48,11 @@ app.use('/api/shops', shopRouter)
 app.use('/api/image', imageRouter)
 app.use('/api/pages', pagesRouter)
 app.use('/api/templates', templateRouter)
-app.use('/api/merchantTemplates',merchantTemplatesRouter)
-app.use('/api/customized-pages',customizedPageRouter)
-app.post('/iopost', testIo) 
+app.use('/api/merchantTemplates', merchantTemplatesRouter)
+app.use('/api/customized-pages', customizedPageRouter)
+app.post('/iopost', testIo)
+// dashbaord analytics
+app.get('/api/merchant-dashboard/:merchantId', getMerchantDashboardStats)
 // handling errors
 app.use((err, req, res) => {
     if (err.isOperational) {

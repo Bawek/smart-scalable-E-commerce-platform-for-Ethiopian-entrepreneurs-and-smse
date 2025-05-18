@@ -1,5 +1,3 @@
-"use client"
-
 import {
   BadgeCheck,
   Bell,
@@ -54,9 +52,9 @@ export function NavUser({
                 <span className="truncate font-semibold">{user.firestName}</span>
                 <span className="truncate text-xs">{user.email}</span>
               </div>
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={imageViewer(user?.profileUrl)} alt={user.firestName} />
-                <AvatarFallback className="rounded-lg !text-black dark:!text-white">
+              <Avatar className="h-8 w-8 rounded-full">
+                <AvatarImage className="rounded-full" src={imageViewer(user?.profileUrl)} alt={user.firestName} />
+                <AvatarFallback className="rounded-full !text-black dark:!text-white">
                   {user.firestName ? user.firestName.slice(0, 2).toUpperCase() : 'UR'}
                 </AvatarFallback>
 
