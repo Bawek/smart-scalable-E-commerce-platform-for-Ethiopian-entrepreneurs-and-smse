@@ -5,7 +5,7 @@ const upload = require('../config/multer.config');
 const router = express.Router()
 
 // Account routes
-router.post('/register',upload.single('logoImageUrl'), registerShop)
+router.post('/register', upload.single('logoImageUrl'), registerShop)
 router.get('/get-all', getAllShop)
 router.get('/get/:shopId', getById)
 router.get('/getby-account/:accountId', getShopByAccount)

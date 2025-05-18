@@ -10,6 +10,9 @@ export const shopApi = appApi.injectEndpoints({
       query: (shopId) => `getshop/${shopId}/`,
       // providesTags: ["customisedPage"],
     }),
+    getShopByMerchantTemplateId: builder.query({
+      query: (templateId) => `/shops/getby-merchant-template/${templateId}`,
+    }),
     getShopByAccount: builder.query({
       query: (accountId) => `/shops/getby-account/${accountId}`,
       // providesTags: ["customisedPage"],
@@ -31,6 +34,7 @@ export const shopApi = appApi.injectEndpoints({
 export const {
   useCreateShopMutation,
   useGetShopByAccountQuery,
+  useGetShopByMerchantTemplateIdQuery,
   useGetAllShopsQuery
 } = shopApi;
 

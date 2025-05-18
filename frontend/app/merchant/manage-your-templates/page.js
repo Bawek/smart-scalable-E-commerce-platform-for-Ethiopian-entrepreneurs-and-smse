@@ -15,16 +15,19 @@ import { useRouter } from "next/navigation";
 import CustomDataTable from "@/components/ui/my-components/my-table";
 import Loader from "@/app/components/Prompt/Loader";
 import { Badge } from "@/components/ui/badge";
-import { useChangeMerchantTemplateMutation, useGetAllMerchantTemplatesQuery } from "@/lib/features/merchantTemplates/buyedTemplateApi";
+import { useChangeMerchantTemplateMutation, useGetMerchantTemplatesByAccountQuery } from "@/lib/features/merchantTemplates/buyedTemplateApi";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 const MerchantTemplates = () => {
     const router = useRouter()
-    const { data, isLoading, isError, refetch } = useGetAllMerchantTemplatesQuery()
+    const account = useSelector((state) => state.account)
+    console.log(account.id, 'accountid')
+    const { data, isLoading, isError, refetch } = useGetMerchantTemplatesByAccountQuery(account.id)
     const [changeMerchantTemplate, { isError: changeError, isSuccess: changeSuccess }] = useChangeMerchantTemplateMutation()
-    const handleUseIt = async (id) => {
+    const handleUseIt = async (id) => {  
         try {
             await changeMerchantTemplate(id).unwrap()
-            console.log(changeError,changeSuccess)
+            console.log(changeError, changeSuccess)
             if (changeError) {
                 return toast.error("Sorry, something went wrong. Please try again.")
             }
@@ -174,7 +177,7 @@ const MerchantTemplates = () => {
                 <h1 className="text-2xl font-semibold dark:text-white">Manage Your Template</h1>
             </div>
             <CustomDataTable
-                data={data?.templates}
+                data={data?.templates || []}
                 columns={columns}
                 searchColumen="name"
             />

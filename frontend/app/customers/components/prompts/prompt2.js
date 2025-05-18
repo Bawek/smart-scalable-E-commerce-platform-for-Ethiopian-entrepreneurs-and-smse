@@ -51,7 +51,7 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
 
   const mode = shopData?.shop?.id ? 'update' : 'create';
   const hasTemplate = !!customTemplate?.merchantTemplate?.id;
-  
+
   const shop = shopData?.shop || {};
   console.log(shopData, customTemplate, 'shop data')
   // Initialize form
@@ -59,6 +59,7 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
     resolver: zodResolver(shopSchema),
     defaultValues: {
       slug: shop.slug || "",
+      domain: shop.domain || "",
       description: shop.description || "",
       businessHours: shop.businessHours ? JSON.stringify(shop.businessHours, null, 2) : "{}",
       logoImageUrl: undefined
@@ -70,6 +71,7 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
     if (shop.slug) {
       form.reset({
         slug: shop.slug,
+        domain: shop.domain,
         description: shop.description,
         businessHours: shop.businessHours ? JSON.stringify(shop.businessHours, null, 2) : "{}",
         logoImageUrl: undefined
@@ -219,7 +221,6 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
                           {...field}
                           disabled={!!shop.slug && !editMode}
                           placeholder="my-shop-slug"
-                          pattern="[a-z0-9-]+"
                         />
                       </FormControl>
                       <FormMessage />
@@ -237,7 +238,6 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
                           {...field}
                           disabled={!!shop.domain && !editMode}
                           placeholder="my-shop-domain"
-                          pattern="[a-z0-9-]+"
                         />
                       </FormControl>
                       <FormMessage />

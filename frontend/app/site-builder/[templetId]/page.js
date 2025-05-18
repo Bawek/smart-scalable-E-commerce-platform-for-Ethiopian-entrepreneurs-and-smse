@@ -1,7 +1,7 @@
 'use client'
 import React from "react";
-import Pagebuilder from "@/app/[locale]/components/sitebuilder/pageBuilder";
 import { useParams } from "next/navigation";
+import Pagebuilder from "@/app/components/sitebuilder/pageBuilder";
 function Template() {
   const params = useParams()
   return (

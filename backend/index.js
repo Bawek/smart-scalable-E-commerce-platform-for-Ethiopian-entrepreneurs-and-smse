@@ -1,5 +1,4 @@
 const express = require('express')
-const { validate } = require('./middlewares/validateMiddleware')
 const merchantRouter = require('./routes/merchant/merchant.route')
 const accountRouter = require('./routes/account.route')
 const cors = require('cors')
@@ -16,6 +15,7 @@ const http = require('http');
 const { initialize } = require('./utils/socket')
 const { testIo } = require('./controllers/merchant.controller')
 const merchantTemplatesRouter = require('./routes/merchantTemplates.route')
+const customizedPageRouter = require('./routes/customizedPage.route')
 // constants  
 const PORT = process.env.PORT || 8000
 //start the server 
@@ -23,7 +23,6 @@ const app = express()
 const server = http.createServer(app)
 initialize(server); // Initialize Socket.IO
 
-//default middleware
 // Enable CORS for specific domains
 app.use(cors({
     origin: ['http://localhost:3000', 'https://checkout.chapa.co'],
@@ -49,6 +48,7 @@ app.use('/api/image', imageRouter)
 app.use('/api/pages', pagesRouter)
 app.use('/api/templates', templateRouter)
 app.use('/api/merchantTemplates',merchantTemplatesRouter)
+app.use('/api/customized-pages',customizedPageRouter)
 app.post('/iopost', testIo) 
 // handling errors
 app.use((err, req, res) => {

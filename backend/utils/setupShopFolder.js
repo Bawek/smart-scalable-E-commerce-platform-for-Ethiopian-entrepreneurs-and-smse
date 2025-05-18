@@ -30,10 +30,10 @@ class ShopSetup {
       throw new Error('Invalid domain provided');
     }
     return domain
+
       .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
+      .replace(/[\/\\:*?"<>|]/g, '-')  // replace forbidden Windows filename characters
+
   }
 
   async createPath(filePath, content = '') {

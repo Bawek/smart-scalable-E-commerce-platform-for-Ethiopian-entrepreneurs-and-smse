@@ -93,15 +93,18 @@ const getMerchantTemplateByDomain = async (req, res, next) => {
             where: {
                 merchantId: shop.merchantId,
                 isInUse: true
+            },
+            include: {
+                customPages: true
             }
         })
         if (!template) {
             return res.status(400).json({
                 message: 'Sorry this Template is not available',
-                status: 'error'
+                status: 'error',
+                template: null
             })
         }
-        console.log(template)
         return res.status(200).json({
             template,
             status: 'success'
@@ -111,8 +114,99 @@ const getMerchantTemplateByDomain = async (req, res, next) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+const getMerchantTemplateByAccount = async (req, res, next) => {
+    try {
+        const { accountId } = req.params;
+
+        // First check if merchant exists
+        const merchant = await prisma.merchant.findFirst({
+            where: { accountId }
+        });
+
+        if (!merchant) {
+            return res.status(404).json({
+                message: 'Merchant not found for this account',
+                status: 'error',
+                templates: []
+            });
+        }
+
+        // Get templates for this merchant
+        const templates = await prisma.merchantTemplate.findMany({
+            where: {
+                merchantId: merchant.id
+            }
+        });
+
+        // Since findMany returns array, check length
+        if (templates.length === 0) {
+            return res.status(200).json({
+                message: 'No templates found for this merchant',
+                status: 'success', // Still success since query worked
+                templates: []
+            });
+        }
+
+        return res.status(200).json({
+            templates,
+            status: 'success'
+        });
+
+    } catch (error) {
+        console.error("Error getting template by account:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error.message // Optional: include error details
+        });
+    }
+}
+const getMerchantTemplateById = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        // Validate the ID parameter
+        if (!id) {
+            return res.status(400).json({
+                message: 'Invalid template ID provided',
+                status: 'error',
+                template: null
+            });
+        }
+
+        // Find the template with merchant relation
+        const template = await prisma.merchantTemplate.findUnique({
+            where: { id },
+            include: {
+                customPages: true 
+            }
+        });
+
+        // Handle template not found
+        if (!template) {
+            return res.status(404).json({
+                message: 'Template not found',
+                status: 'error',
+                template: null
+            });
+        }
+
+        // Successful response
+        return res.status(200).json({
+            template,
+            status: 'success'
+        });
+
+    } catch (error) {
+        console.error("Error in getMerchantTemplateById:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+        });
+    }
+};
 module.exports = {
     changeTemplate,
     getAllMerchantTemplates,
-    getMerchantTemplateByDomain
+    getMerchantTemplateByDomain,
+    getMerchantTemplateByAccount,
+    getMerchantTemplateById
 }

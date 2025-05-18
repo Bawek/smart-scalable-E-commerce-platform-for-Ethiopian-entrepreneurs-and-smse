@@ -79,8 +79,8 @@ const getMerchantTemplateByAccount = async (req, res, next) => {
             where: {
                 merchantId: merchant.id
             },
-            include:{
-            customPages:true
+            include: {
+                customPages: true,
             }
         })
 
@@ -196,21 +196,31 @@ const updateTempalate = async (req, res, next) => {
 };
 const buyTemplate = async (req, res, next) => {
     const { accountId } = req.params;
-    const { templateId } = req.body
+    const { templateId } = req.body;
+    console.log(accountId, 'sa', templateId)
+
     try {
-        const merchant = await prisma.merchant.findFirst({
-            where: {
-                accountId: accountId
-            }
-        })
-        const template = await prisma.baseTemplate.findFirst({
-            where: {
-                id: templateId
-            },
-        });
+        // Start a transaction to ensure data consistency
+        const [merchant, template] = await prisma.$transaction([
+            prisma.merchant.findFirst({
+                where: { accountId: accountId }
+            }),
+            prisma.baseTemplate.findFirst({
+                where: { id: templateId },
+                include: {
+                    pages: true
+                }
+            })
+        ]);
+
+        if (!merchant) {
+            return next(new httpError('Merchant not found', 404));
+        }
         if (!template) {
             return next(new httpError('There is no template with this Id', 404));
         }
+
+        // Create the custom template
         const customTemplate = await prisma.merchantTemplate.create({
             data: {
                 merchantId: merchant.id,
@@ -219,31 +229,33 @@ const buyTemplate = async (req, res, next) => {
                 description: template.description,
                 paymentStatus: 'ACTIVE',
             }
-        })
-        const basePage = await prisma.basePage.findFirst({
-            where: {
-                templateId: templateId
-            }
-        })
-        await prisma.customPage.create({
-            data: {
+        });
+        // Check if there are pages to copy
+        if (template?.pages && template.pages.length > 0) {
+            // Prepare all custom pages data in one go
+            const customPagesData = template.pages.map(basePage => ({
                 js: basePage.js,
                 html: basePage.html,
                 css: basePage.css,
                 name: basePage.name,
                 merchantTemplateId: customTemplate.id
+            }));
 
-            }
-        })
-        //  Respond with a success message after the update
+            // Create all custom pages in a single operation
+            await prisma.customPage.createMany({
+                data: customPagesData
+            });
+        }
+
+        // Respond with success
         res.status(200).json({
             status: 'success',
             customTemplateId: customTemplate.id,
+            pagesCreated: template.pages?.length || 0
         });
     } catch (error) {
-        console.log('Template update error:', error);
-        //  Handle errors gracefully
-        next(new httpError(error.message || 'Failed to update the template.', 500));
+        console.error('Template purchase error:', error);
+        next(new httpError(error.message || 'Failed to purchase the template.', 500));
     }
 };
 const getCustomeTemplateById = async (req, res, next) => {

@@ -3,106 +3,99 @@ import React, { useState, useEffect } from "react";
 import WithGrapesjs from "./GrapesjsMain";
 import Loader from "../Prompt/Loader";
 import useCheckUnauthorized from "@/lib/features/auth/unauthorise";
-import { useGetPageContentQuery } from "@/lib/features/webBuilder/webBuilder";
-import { useGetCustomisedPageQuery } from "@/lib/features/shop/shop";
-import { useGetCustomisedPagesQuery } from "@/lib/features/shop/shop";
-import { useLocalStorage } from "@/util/localStorage";
+import { useGetMerchantTemplateByIdQuery } from "@/lib/features/templates/templateApi";
+
 const dynamicConfiguration = {
   plugin: [
     // Define your plugins here
   ],
 };
 
-const Card = (props) => {
-  const templateId = props.templetId;
-  const {
-    data: page,
-    error,
-    isLoading: pageLoading,
-  } = useGetPageContentQuery(templateId);
-console.log(page,'my own db pages')
-  useCheckUnauthorized(error);
-  const [initAppData, setData] = useState(null);
-  const [pages, setpages] = useState([]);
-  const [loading, setLoading] = useState({
-    get: false,
-    update: false,
-  });
+const Card = ({ templetId, ...props }) => {
+  const [initAppData, setInitAppData] = useState(null);
+  const [pages, setPages] = useState([]);
   const [displayPage, setDisplayPage] = useState(false);
 
-  // Set merchantId from localStorage
-  // useEffect(() => {
-  //   const storedmerchantId = localStorage.getItem("unique_id");
-  //   setMerchantId(storedmerchantId);
-  // }, []);
+  const {
+    data,
+    error,
+    isLoading,
+    isError,
+    isSuccess,
+    refetch
+  } = useGetMerchantTemplateByIdQuery(templetId, {
+    skip: !templetId, // skip query if no id
+  });
 
-  // Fetch customized pages only when merchantId is set
-  // const [merchantId] = useLocalStorage();
-  const merchantId = '67890'
-  console.log(merchantId);
-
-  const { data: customized_pages, isLoading: customized_pagesLoading } =
-    useGetCustomisedPagesQuery(merchantId, {
-      skip: !merchantId, // Skip the query if merchantId is null
-    });
+  useCheckUnauthorized(error);
 
   useEffect(() => {
-    if (customized_pages && !customized_pagesLoading) {
-      console.log("sending the customised page");
-      console.log(customized_pages);
-      const pageConfigs = customized_pages.map((pageItem) => ({
-        name: pageItem?.name,
+    if (isSuccess && data?.template?.customPages?.length) {
+      const pageConfigs = data.template.customPages.map((pageItem) => ({
+        name: pageItem?.name || "Unnamed Page",
         brand_url: "",
         canonical: null,
         slug: "",
         configuration: dynamicConfiguration,
         content: {
-          html: pageItem?.html,
-          css: pageItem?.css,
+          html: pageItem?.html || "",
+          css: pageItem?.css || "",
         },
       }));
 
-      setData(pageConfigs);
-      setpages(customized_pages);
+      setInitAppData(pageConfigs);
+      setPages(data.template.customPages);
       setDisplayPage(true);
-    } else if (page && !pageLoading) {
-      console.log("sending the not customised page");
-      console.log(page);
 
-      const pageConfigs = page.pages.map((pageItem) => ({
-        name: pageItem?.name,
-        brand_url: "",
-        canonical: null,
-        slug: "",
-        configuration: dynamicConfiguration,
-        content: {
-          html: pageItem?.html,
-          css: pageItem?.css,
-        },
-      }));
-
-      setData(pageConfigs);
-      setpages(page);
-      setDisplayPage(true);
+      if (process.env.NODE_ENV === "development") {
+        console.log("Loaded custom template pages", data);
+      }
     }
-  }, [page, pageLoading, customized_pages, customized_pagesLoading]);
+  }, [data, isSuccess]);
+
+  // Show loader while loading
+  if (isLoading) {
+    return (
+      <div className="loader-container">
+        {/* <Loader /> */}
+        <h1>Loading ... </h1>
+      </div>
+    );
+  }
+
+  // Show error UI
+  if (isError) {
+    return (
+      <div className="error-container text-red-600 text-center py-4">
+        <h2>Error loading template. Please try again.</h2>
+        {process.env.NODE_ENV === "development" && (
+          <pre>{JSON.stringify(error, null, 2)}</pre>
+        )}
+      </div>
+    );
+  }
+
+  // Show fallback UI if no template found
+  if (!displayPage || !initAppData) {
+    return (
+      <div className="text-center text-gray-500 py-4">
+        <h2>No template data found.</h2>
+      </div>
+    );
+  }
 
   return (
     <div>
-      {displayPage && initAppData ? (
-        <WithGrapesjs
-          templateId={templateId}
-          page={pages.pages}
-          {...props}
-          data={initAppData}
-          setData={setData}
-        />
-      ) : (
-        <div className="loader-container">
-          <Loader />
-        </div>
-      )}
+      <WithGrapesjs
+        templateId={templetId}
+        page={pages}
+        {...props}
+        data={initAppData}
+        setData={setInitAppData}
+        refetch = {refetch}
+      />
     </div>
   );
 };
+
 export default Card;

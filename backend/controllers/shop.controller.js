@@ -102,11 +102,10 @@ const registerShop = async (req, res, next) => {
         mode,
         domain
     } = req.body;
-
     if (!mode || !["create", "update"].includes(mode)) {
         return next(new httpError("Invalid mode. Mode must be either 'create' or 'update'.", 400));
     }
-
+    console.log(domain, 'domain')
     try {
         const merchant = await prisma.merchant.findFirst({
             where: { accountId }
@@ -120,11 +119,12 @@ const registerShop = async (req, res, next) => {
             if (!req.file) return next(new httpError("Logo is required for shop creation.", 400));
 
             const existingShop = await prisma.shop.findFirst({
-                where: { name }
+                where: {
+                    domain: domain
+                }
             });
-
             if (existingShop) {
-                return next(new httpError('Shop name is already taken. Try another one.', 409));
+                return next(new httpError('Shop domain is already taken. Try another one.', 409));
             }
 
             // Start transaction
@@ -152,7 +152,7 @@ const registerShop = async (req, res, next) => {
                     await prisma.shop.update({
                         where: { id: shop.id },
                         data: {
-                            domain: setupResult.path
+                            domain
 
                         }
                     });
@@ -181,42 +181,17 @@ const registerShop = async (req, res, next) => {
             }
 
             // For updates, we only handle folder structure if domain changed
-            if (domain && domain !== existingShop.domain) {
-                await prisma.$transaction(async (prisma) => {
-                    // Update shop with new domain and INITIALIZING status
-                    await prisma.shop.update({
-                        where: { id: existingShop.id },
-                        data: {
-                            domain,
-                        }
-                    });
-
-                    try {
-                        // Setup new folder structure
-                        const shopSetup = new ShopSetup(domain);
-                        const setupResult = await shopSetup.execute();
-
-                        // Clean up old folder if it exists
-                        if (existingShop.domain) {
-                            try {
-                                await fs.rm(existingShop.domain, { recursive: true, force: true });
-                            } catch (cleanupError) {
-                                console.error('Failed to clean up old shop domain:', cleanupError);
-                            }
-                        }
-
-                        // Update shop status and path
-                        await prisma.shop.update({
-                            where: { id: existingShop.id },
-                            data: {
-                                domain: setupResult.path
-                            }
-                        });
-                    } catch (setupError) {
-                        console.error('Shop update failed:', setupError);
-                        throw new Error('Failed to update shop domain');
-                    }
-                });
+            const oldPath = path.join(__dirname, '..', '..', 'frontend', 'app', existingShop.domain)
+            const newPath = path.join(__dirname, '..', '..', 'frontend', 'app', domain)
+            if (existingShop.domain) {
+                try {
+                    // First try to close any possible file handles
+                    await fs.access(oldPath);
+                    await fs.rename(oldPath, newPath);
+                } catch (renameError) {
+                    console.error('Failed to rename shop folder:', renameError);
+                    return next(new httpError('Failed to rename shop folder', 500));
+                }
             }
 
             // Update other shop details
@@ -264,12 +239,11 @@ const getAllShop = async (req, res, next) => {
 }
 const getById = async (req, res, next) => {
     const { shopId } = req.params
-    console.log(shopId, 'shopId')
     try {
-        const pages = await prisma.page.findMany()
+        const pages = await prisma.basePage.findMany()
         const shop = await prisma.shop.findFirst({
             where: {
-                id: Number(shopId)
+                id: shopId
             },
         })
         res.status(200).json({ shop, pages })
@@ -279,9 +253,12 @@ const getById = async (req, res, next) => {
 }
 const getShopByAccount = async (req, res, next) => {
     const { accountId } = req.params
-    console.log(accountId, 'shopId')
     try {
-        const merchant = await prisma.merchant.findFirst()
+        const merchant = await prisma.merchant.findFirst({
+            where: {
+                accountId
+            }
+        })
         if (!merchant) {
             return res.status(404).json({
                 status: 'Success',
@@ -307,5 +284,5 @@ module.exports = {
     registerShop,
     getAllShop,
     getById,
-    getShopByAccount
+    getShopByAccount,
 }
