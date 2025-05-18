@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AppProvider from "./AppProvider";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider } from "./components/ThemeProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
