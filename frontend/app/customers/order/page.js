@@ -1,46 +1,168 @@
-'use client'
-import React from 'react'
-import { useSelector } from 'react-redux'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import Link from 'next/link'
+"use client";
 
-const GoodLuckOrderPage = () => {
-  const cartItems = useSelector(state => state.cart.items)
-  const totalAmount = useSelector(state => state.cart.totalAmount)
-  const totalQuantity = useSelector(state => state.cart.totalQuantity)
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { FaMoneyCheckAlt } from "react-icons/fa";
+import { useProcessPayment } from "@/service/payment.service";
+import { useToast } from "@/hooks/use-toast";
 
-  const handleCheckout = () => {
-    // Replace this with actual Chapa integration or redirect
-    alert('Proceeding to Chapa checkout...')
-  }
+export default function CheckoutPage() {
+  const { totalAmount, totalQuantity } = useSelector((state) => state.cart);
+  const { processPayment, isLoading: paymentLoading } = useProcessPayment();
+  const { toast } = useToast();
+
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    street: "",
+    city: "",
+    state: "",
+    zipcode: "",
+    country: "",
+    phone: "",
+  });
+
+  const [paymentMethod, setPaymentMethod] = useState("chapa");
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handlePayment = async () => {
+    const {
+      firstName,
+      lastName,
+      email,
+      street,
+      city,
+      state,
+      zipcode,
+      country,
+      phone,
+    } = form;
+
+    // Validate form fields
+    if (!firstName || !lastName || !email || !street || !city || !state || !zipcode || !country || !phone) {
+      toast({
+        title: "Missing Information",
+        description: "Please ensure all fields are filled before proceeding.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const data = {
+      amount: totalAmount + 10, // Including shipping fee
+      email,
+      first_name: firstName,
+      last_name: lastName,
+      phone_number: phone,
+      street,
+      city,
+      state,
+      zipcode,
+      country,
+    };
+
+    try {
+      await processPayment(data);
+    } catch (err) {
+      console.error("Payment Error:", err);
+      toast({
+        title: "Payment Failed",
+        description: err.message || "Something went wrong while processing your payment.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  };
 
   return (
-    <div className="p-4 md:p-8 lg:p-16 flex flex-col items-center gap-8">
-      <Card className="shadow-lg max-w-lg text-center">
-        <CardHeader>
-          <CardTitle>🎉 Good Luck with Your Order! 🎉</CardTitle>
-          <CardDescription>Your items are on the way!</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-700 mb-4">Thank you for shopping with us! Your support means the world. We hope you love your new items!</p>
-          <div className="space-y-2">
-            <p>Total Items: {totalQuantity}</p>
-            <p>Subtotal: ${totalAmount.toFixed(2)}</p>
-            <p>Estimated Delivery: 03/31/2024</p>
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white px-4 py-10 md:px-20">
+      <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-10">
+        {/* Delivery Info */}
+        <div>
+          <h2 className="text-2xl font-bold mb-6 border-b border-orange-600 pb-2">
+            DELIVERY <span className="text-orange-600">INFORMATION</span>
+          </h2>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { name: "firstName", placeholder: "First name" },
+              { name: "lastName", placeholder: "Last name" },
+              { name: "email", placeholder: "Email", colSpan: true },
+              { name: "street", placeholder: "Street address", colSpan: true },
+              { name: "city", placeholder: "City" },
+              { name: "state", placeholder: "State" },
+              { name: "zipcode", placeholder: "Zip code" },
+              { name: "country", placeholder: "Country" },
+              { name: "phone", placeholder: "Phone number", colSpan: true },
+            ].map(({ name, placeholder, colSpan }) => (
+              <input
+                key={name}
+                name={name}
+                placeholder={placeholder}
+                onChange={handleChange}
+                className={`border border-black dark:border-white bg-transparent rounded-md px-4 py-2 outline-none focus:ring-2 focus:ring-orange-600 transition-all duration-200 ${
+                  colSpan ? "col-span-2" : ""
+                }`}
+              />
+            ))}
           </div>
-          <Button className="mt-4 w-full" onClick={handleCheckout}>Go to Chapa Checkout</Button>
-        </CardContent>
-      </Card>
-      <div className="mt-4 text-sm text-blue-600 cursor-pointer">
-        &lt;{' '}
-        <Link className="no-underline" href="/customers/products">
-          Continue Shopping
-        </Link>
-      </div>
-    </div>
-  )
-}
+        </div>
 
-export default GoodLuckOrderPage
+        {/* Cart & Payment */}
+        <div>
+          <h2 className="text-2xl font-bold mb-6 border-b border-orange-600 pb-2">
+            ORDER <span className="text-orange-600">SUMMARY</span>
+          </h2>
+          <div className="text-sm border border-black dark:border-white rounded-lg overflow-hidden">
+            <div className="flex justify-between p-4 border-b border-black dark:border-white">
+              <span>Subtotal ({totalQuantity} items)</span>
+              <span>${totalAmount.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between p-4 border-b border-black dark:border-white">
+              <span>Shipping</span>
+              <span>$10.00</span>
+            </div>
+            <div className="flex justify-between p-4 font-bold text-lg">
+              <span>Total</span>
+              <span>${(totalAmount + 10).toFixed(2)}</span>
+            </div>
+          </div>
+
+          {/* Payment Method */}
+          <h3 className="mt-6 mb-3 font-semibold text-lg border-b border-orange-600 pb-1">
+            PAYMENT METHOD
+          </h3>
+          <div className="flex flex-col gap-4">
+            <label className="flex items-center gap-4 border border-black dark:border-white rounded-md px-4 py-3 cursor-pointer transition-all hover:border-orange-600">
+              <input
+                type="radio"
+                name="payment"
+                value="chapa"
+                checked={paymentMethod === "chapa"}
+                onChange={() => setPaymentMethod("chapa")}
+                className="accent-orange-600 w-5 h-5"
+              />
+              <FaMoneyCheckAlt className="text-orange-600 text-2xl" />
+              <span className="text-black dark:text-white font-medium">Pay with Chapa</span>
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            className="mt-6 w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-md font-bold transition"
+            disabled={paymentLoading}
+          onClick={handlePayment}
+          >
+            {paymentLoading ? "Processing..." : "PLACE ORDER"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
