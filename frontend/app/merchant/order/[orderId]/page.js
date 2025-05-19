@@ -13,10 +13,12 @@ import {
     Mail,
     RefreshCw,
     ArrowUpRight,
-    MoreVertical
+    MoreVertical,
+    XCircle,
+    XCircleIcon
 } from 'lucide-react'
 import { format } from 'date-fns'
-import { toast } from '@/components/ui/use-toast'
+// import { toast } from '@/components/ui/use-toast'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -33,7 +35,54 @@ import {
     AlertDialogCancel,
     AlertDialogAction,
 } from '@/components/ui/alert-dialog'
-import { StatusIndicator } from './status-indicator' // Your custom component
+// import { StatusIndicator } from './status-indicator' // Your custom component
+import { useToast } from '@/hooks/use-toast'
+XCircle
+const sampleOrder = {
+    id: 'ORD12345',
+    createdAt: '2025-05-18T10:30:00Z',
+    status: 'PROCESSING',
+    paymentMethod: 'Credit Card',
+    paymentStatus: 'PAID',
+    customer: {
+        name: 'John Doe',
+        email: 'john.doe@example.com',
+        phone: '+251912345678',
+    },
+    shippingAddress: {
+        line1: '123 Main St',
+        line2: 'Apt 4B',
+        city: 'Addis Ababa',
+        state: 'AA',
+        postalCode: '1000',
+        country: 'Ethiopia',
+    },
+    subtotal: 150.00,
+    shippingCost: 10.00,
+    tax: 15.00,
+    total: 175.00,
+    items: [
+        {
+            id: 'PROD001',
+            product: {
+                name: 'Wireless Headphones',
+                images: ['https://example.com/images/headphones.jpg'],
+            },
+            quantity: 1,
+            price: 100.00,
+            discountPrice: 90.00,
+        },
+        {
+            id: 'PROD002',
+            product: {
+                name: 'Smartwatch',
+                images: ['https://example.com/images/smartwatch.jpg'],
+            },
+            quantity: 2,
+            price: 50.00,
+        },
+    ],
+}
 
 export default function OrderDetailPage() {
     const { orderId } = useParams()
@@ -42,7 +91,7 @@ export default function OrderDetailPage() {
     const [statusDialogOpen, setStatusDialogOpen] = useState(false)
     const [newStatus, setNewStatus] = useState('')
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
-
+    const { toast } = useToast()
     // Fetch order data
     useEffect(() => {
         const fetchOrder = async () => {
@@ -64,6 +113,12 @@ export default function OrderDetailPage() {
 
         fetchOrder()
     }, [orderId])
+
+    useEffect(() => {
+        setOrder(sampleOrder);
+        setLoading(false);
+    }, []);
+
 
     const handleStatusUpdate = async () => {
         try {
@@ -170,7 +225,7 @@ export default function OrderDetailPage() {
                                 onClick={() => setCancelDialogOpen(true)}
                                 className="text-red-600"
                             >
-                                <XCircle className="h-4 w-4 mr-2" />
+                                <XCircleIcon className="h-4 w-4 mr-2" />
                                 Cancel Order
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -200,7 +255,6 @@ export default function OrderDetailPage() {
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Status</span>
                                     <Badge variant={order.status.toLowerCase()}>
-                                        <StatusIndicator status={order.status} className="mr-2" />
                                         {order.status}
                                     </Badge>
                                 </div>
@@ -343,7 +397,7 @@ export default function OrderDetailPage() {
                                             variant={newStatus === status ? 'default' : 'outline'}
                                             onClick={() => setNewStatus(status)}
                                         >
-                                            <StatusIndicator status={status} className="mr-2" />
+                                            {/* <StatusIndicator status={status} className="mr-2" /> */}
                                             {status}
                                         </Button>
                                     ))}
