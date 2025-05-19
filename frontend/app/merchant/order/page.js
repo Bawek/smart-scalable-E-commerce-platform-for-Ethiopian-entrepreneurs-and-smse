@@ -25,6 +25,7 @@ import { MoreHorizontal, Eye, RefreshCw, FileText, Truck, XCircle } from 'lucide
 import { useToast } from "@/hooks/use-toast";
 import CardBarChart from "@/app/components/Cards/CardBarChart";
 import CustomDataTable from "@/components/ui/my-components/my-table";
+import { useRouter } from 'next/navigation';
 const sampleOrders = [
   {
     id: '1',
@@ -232,11 +233,7 @@ const sampleOrders = [
 // };
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
-  const { toast } = useToast()
-  const [notification, setNotification] = useState([]);
-
-  const [sseConnection, setSseConnection] = useState(null);
-  const storedmerchantId = localStorage.getItem("unique_id");
+  const router = useRouter()
 
   function showOrderNotification() {
     toast.success("New Order", {
@@ -244,7 +241,7 @@ const OrdersPage = () => {
       duration: 5000, // Duration of the notification in ms
     });
   }
-
+  consle.log("kkdddddd")
   const orderColumns = [
     {
       id: "select",
@@ -395,7 +392,7 @@ const OrdersPage = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuLabel>Order Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => handleAction('view')}>
+                <DropdownMenuItem onClick={() => router.push(`/merchant/order/1`)}>
                   <Eye className="mr-2 h-4 w-4" />
                   View Details
                 </DropdownMenuItem>
@@ -482,7 +479,7 @@ const OrdersPage = () => {
     >
       <div className="flex flex-col flex-wrap">
         <CustomDataTable
-          data={sampleOrder}
+          data={sampleOrders}
           columns={orderColumns}
           searchColumen={"product"}
         />
