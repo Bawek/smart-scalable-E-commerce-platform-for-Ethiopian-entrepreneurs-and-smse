@@ -22,10 +22,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { MoreHorizontal, Eye, RefreshCw, FileText, Truck, XCircle } from 'lucide-react';
-
-// Optional: If you have a custom OrderDetails component
-// import { OrderDetails } from '@/components/order-details';
-
 import { useToast } from "@/hooks/use-toast";
 import CardBarChart from "@/app/components/Cards/CardBarChart";
 import CustomDataTable from "@/components/ui/my-components/my-table";
