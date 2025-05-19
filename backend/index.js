@@ -18,6 +18,7 @@ const merchantTemplatesRouter = require('./routes/merchantTemplates.route')
 const customizedPageRouter = require('./routes/customizedPage.route')
 const { getMerchantDashboardStats } = require('./controllers/dashboard.controller')
 const cartRouter = require('./routes/user/cart.route.js')
+const orderRouter = require('./routes/user/order.route.js')
 // constants  
 const PORT = process.env.PORT || 8000
 //start the server 
@@ -39,9 +40,11 @@ app.use(express.json())
 // chapa payment route
 app.use('/api', paymentRouter);
 app.use('/api/merchant', merchantRouter)
-app.use('/api/cart', cartRouter);
 
-// Accounts route
+app.use('/api/cart', cartRouter);// Accounts route
+app.use('/api/orders', orderRouter);// Accounts route
+
+
 
 app.get('/api/refresh-token', handleRefreshToken)
 

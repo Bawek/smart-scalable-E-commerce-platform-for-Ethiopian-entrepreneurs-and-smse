@@ -26,7 +26,6 @@ import { templateApi } from "./features/templates/templateApi";
 import storage from "./storage";
 import { merchantTemplateApi } from "./features/merchantTemplates/buyedTemplateApi";
 import cartReducer from './features/cart/cartSlice';
-import { cartSlice } from './lib/features/cart/cartSlice'; // Adjust the path if needed
 
 
 
@@ -63,7 +62,6 @@ const rootReducer = combineReducers({
 	editor: editorReducer,
 	prompt: promptSlice,
 	cart:cartReducer,
-	    cart: cartReducer,
 
 });
 
