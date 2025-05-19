@@ -1,172 +1,124 @@
-'use client'
-import React, { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { addItemToCart, removeItemFromCart } from './cartSlice' // adjust path if needed
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Minus, Plus } from 'lucide-react'
-import Link from 'next/link'
+"use client";
 
-const ResponsiveCartPage = () => {
-  const dispatch = useDispatch()
-  const cartItems = useSelector(state => state.cart.items)
-  const totalAmount = useSelector(state => state.cart.totalAmount)
-  const totalQuantity = useSelector(state => state.cart.totalQuantity)
+import { useState } from "react";
+import Image from "next/image";
+import stripeLogo from "@/public/stripe.png";      // Upload logos to /public
+import razorpayLogo from "@/public/razorpay.png";  // Upload logos to /public
 
-  const [loading, setLoading] = useState(true)
+export default function CheckoutPage() {
+  // const amount=useSelector(state=>state.cart.totalAmount)
+  // const quantity=useSelector(state=>state.cart.totalQuantity)
+  // const quantity=useSelector(state=>state.cart.totalQuantity)
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    street: "",
+    city: "",
+    state: "",
+    zipcode: "",
+    country: "",
+    phone: "",
+  });
 
-  // Fetch products once and add to cart with quantity 1 initially (if empty)
-  const fetchCartItems = async () => {
-    try {
-      const response = await fetch('https://fakestoreapi.com/products')
-      const data = await response.json()
+  const [paymentMethod, setPaymentMethod] = useState("cod");
 
-      data.forEach(item => {
-        dispatch(addItemToCart(item)) // Adds each product with quantity=1
-      })
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-      setLoading(false)
-    } catch (error) {
-      console.error('Failed to fetch cart items:', error)
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (cartItems.length === 0) {
-      fetchCartItems()
-    } else {
-      setLoading(false)
-    }
-  }, [])
-
-  const handleDecreaseQuantity = (id) => {
-    dispatch(removeItemFromCart(id))
-  }
-
-  const handleIncreaseQuantity = (id) => {
-    // Find the product in cart to dispatch addItemToCart with full data
-    const item = cartItems.find(i => i.id === id)
-    if (item) {
-      dispatch(addItemToCart(item))
-    }
-  }
-
-  const subtotal = totalAmount // already calculated in Redux slice
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Form Submitted", form, paymentMethod);
+    // send to backend here
+  };
 
   return (
-    <div className="p-4 md:p-8 lg:p-16 grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Product Details Section */}
-      <div className="lg:col-span-2">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <h1>Your Cart Page</h1>
-            <CardTitle>FedEx Small Delivery</CardTitle>
-            <CardDescription>Expected delivery on or before 03/31/2024</CardDescription>
-            <div className="flex justify-between p-4 border-b font-semibold text-gray-600">
-              <p className="w-3/5 text-xl">Product</p>
-              <p className="w-2/4 text-sm">Price</p>
-              <p className="w-1/5 text-sm">Quantity</p>
-              <p className="w-1/5 text-sm">Total Price</p>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {loading ? (
-              <p>Loading cart items...</p>
-            ) : cartItems.length === 0 ? (
-              <p className="text-center text-xl font-semibold text-gray-600 mt-10">
-                No items in your cart
-              </p>
-            ) : (
-              cartItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col md:flex-row items-center max-h-52 gap-4 p-4 border-b"
-                >
-                  <img src={item.image} alt={item.title} className="w-24 h-24 rounded" />
-                  <div className="flex-grow">
-                    <h3 className="font-semibold text-lg">{item.title}</h3>
-                    <p>Category: <span className="text-sm text-gray-400">{item.category}</span></p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <p className="text-red-600 font-bold">${item.price.toFixed(2)}</p>
-                  </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Button variant="outline" onClick={() => handleDecreaseQuantity(item.id)}>
-                      <Minus size={16} />
-                    </Button>
-                    <p className="text-center py-2 px-3">{item.quantity}</p>
-                    <Button variant="outline" onClick={() => handleIncreaseQuantity(item.id)}>
-                      <Plus size={16} />
-                    </Button>
-                  </div>
-                  <div>${item.totalPrice.toFixed(2)}</div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="mt-4 text-sm text-blue-600 cursor-pointer">
-          &lt;{' '}
-          <Link className="no-underline" href="/customers/products">
-            Continue Shopping
-          </Link>
+    <div className="min-h-screen px-4 py-8 md:px-20 bg-white dark:bg-zinc-900 text-black dark:text-white">
+      <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-10">
+        {/* Delivery Info */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4 border-b border-gray-300 pb-2">
+            DELIVERY <span className="font-bold text-black dark:text-white">INFORMATION</span>
+          </h2>
+          <div className="grid grid-cols-2 gap-4">
+            <input name="firstName" placeholder="First name" onChange={handleChange} className="input" />
+            <input name="lastName" placeholder="Last name" onChange={handleChange} className="input" />
+            <input name="email" placeholder="Email address" onChange={handleChange} className="input col-span-2" />
+            <input name="street" placeholder="Street" onChange={handleChange} className="input col-span-2" />
+            <input name="city" placeholder="City" onChange={handleChange} className="input" />
+            <input name="state" placeholder="State" onChange={handleChange} className="input" />
+            <input name="zipcode" placeholder="Zipcode" onChange={handleChange} className="input" />
+            <input name="country" placeholder="Country" onChange={handleChange} className="input" />
+            <input name="phone" placeholder="Phone" onChange={handleChange} className="input col-span-2" />
+          </div>
         </div>
-      </div>
 
-      {/* Summary Section */}
-      <div>
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span>Total Items:</span>
-                <span>{totalQuantity}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Subtotal:</span>
-                <span>${subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>FedEx Small Delivery:</span>
-                <span>$19.00</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tax:</span>
-                <span>--</span>
-              </div>
-              <div className="flex justify-between font-bold">
-                <span>Estimated Total:</span>
-                <span>${(subtotal + 19).toFixed(2)}</span>
-              </div>
-              <Button className="w-full mt-4">CHECKOUT</Button>
-
+        {/* Cart & Payment */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4 border-b border-gray-300 pb-2">
+            CART <span className="font-bold">TOTALS</span>
+          </h2>
+          <div className="text-sm border border-gray-200 dark:border-zinc-700 rounded-md overflow-hidden">
+            <div className="flex justify-between p-3 border-b border-gray-200 dark:border-zinc-700">
+              <span>Subtotal</span>
+              <span>$114.00</span>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg mt-4">
-          <CardContent>
-            <div className="space-y-2">
-              <p>HAVE A PROMO CODE?</p>
-              <div className="flex gap-2">
-                <Input placeholder="PROMO CODE" className="flex-grow" />
-                <Button>Apply</Button>
-                <p>          
-      hetgggggggggggggggggggggggggggg   {totalQuantity || 0}
-                      </p>
-              </div>
+            <div className="flex justify-between p-3 border-b border-gray-200 dark:border-zinc-700">
+              <span>Shipping Fee</span>
+              <span>$10.00</span>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="flex justify-between p-3 font-semibold">
+              <span>Total</span>
+              <span>$124.00</span>
+            </div>
+          </div>
+
+          {/* Payment Method */}
+          <h3 className="mt-6 mb-2 font-semibold border-b border-gray-300 pb-1">PAYMENT METHOD</h3>
+          <div className="flex flex-wrap gap-3">
+            <label className="payment-option">
+              <input
+                type="radio"
+                name="payment"
+                value="stripe"
+                checked={paymentMethod === "stripe"}
+                onChange={() => setPaymentMethod("stripe")}
+              />
+              <Image src={stripeLogo} alt="Stripe" width={80} />
+            </label>
+
+            <label className="payment-option">
+              <input
+                type="radio"
+                name="payment"
+                value="razorpay"
+                checked={paymentMethod === "razorpay"}
+                onChange={() => setPaymentMethod("razorpay")}
+              />
+              <Image src={razorpayLogo} alt="Razorpay" width={80} />
+            </label>
+
+            <label className="payment-option">
+              <input
+                type="radio"
+                name="payment"
+                value="cod"
+                checked={paymentMethod === "cod"}
+                onChange={() => setPaymentMethod("cod")}
+              />
+              <span className="text-green-600 font-semibold">CASH ON DELIVERY</span>
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            className="mt-6 w-full bg-black text-white py-2 text-sm font-semibold hover:bg-gray-800 transition"
+          >
+            PLACE ORDER
+          </button>
+        </div>
+      </form>
     </div>
-  )
+  );
 }
-
-export default ResponsiveCartPage
