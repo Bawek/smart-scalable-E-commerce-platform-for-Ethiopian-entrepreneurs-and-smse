@@ -17,8 +17,8 @@ const createPayment = async (req, res) => {
     last_name,
     phone_number: parseInt(phone_number),
     tx_ref,
-    callback_url: `${process.env.BASE_URL}/api/verify/${tx_ref}`,
-    return_url: `${process.env.BASE_URL}/customers/templates/pay/payment-info?tx_ref=${tx_ref}`,
+    callback_url: `${process.env.BACKEND_BASE_URL}/api/verify/${tx_ref}`,
+    return_url: `${process.env.FRONTEND_BASE_URL}/customers/templates/pay/payment-info?tx_ref=${tx_ref}`,
 
     customization: {
       title: "My Store",

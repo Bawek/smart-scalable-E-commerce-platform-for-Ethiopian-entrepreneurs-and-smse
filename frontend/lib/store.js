@@ -26,6 +26,8 @@ import { templateApi } from "./features/templates/templateApi";
 import storage from "./storage";
 import { merchantTemplateApi } from "./features/merchantTemplates/buyedTemplateApi";
 import cartReducer from './features/cart/cartSlice';
+import { cartSlice } from './lib/features/cart/cartSlice'; // Adjust the path if needed
+
 
 
 // 🔐 Persist Configuration
@@ -80,7 +82,7 @@ export const makeStore = () =>
 				templateApi.middleware,
 				merchantTemplateApi.middleware,
 				accountApi.middleware,
-				publicShopSlice.middleware
+				publicShopSlice.middleware,
 			),
 	});
 
