@@ -85,7 +85,6 @@ export function CustomerNavigationMenu() {
   console.log(cart, 'cart')
 
   const cartItems = cart?.totalQuantity || 0;
-  const cartItems = cart?.totalQuantity || 0;
   console.log(cartItems, 'cartItems')
 
   const [isOpen, setIsOpen] = React.useState(false);

@@ -10,7 +10,7 @@ const paymentRouter = require('./routes/payment.route')
 const cookieParser = require('cookie-parser')
 const handleRefreshToken = require('./controllers/refreshToken.controller')
 const locationRouter = require('./routes/location.route')
-require('dotenv').config
+require('dotenv').config()
 const http = require('http');
 const { initialize } = require('./utils/socket')
 const { testIo } = require('./controllers/merchant.controller')
@@ -21,6 +21,7 @@ const productRouter = require('./routes/product.route')
 const cartRouter = require('./routes/user/cart.route.js')
 const orderRouter = require('./routes/user/order.route.js')
 const analyticsRoutes = require('./routes/dashboardRoutes');
+const contactRoute = require('./routes/contact.route');
 
 // constants  
 const PORT = process.env.PORT || 8000
@@ -64,6 +65,9 @@ app.post('/iopost', testIo)
 // dashbaord analytics
 app.get('/api/merchant-dashboard/:merchantId', getMerchantDashboardStats)
 app.use('/api/dashboard', analyticsRoutes);
+
+// Routes
+app.use('/api', contactRoute);
 // handling errors
 app.use((err, req, res) => {
     if (err.isOperational) {

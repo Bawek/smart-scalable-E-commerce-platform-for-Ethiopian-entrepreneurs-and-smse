@@ -28,21 +28,6 @@ const ContactSection = () => {
             message: ""
         }
     })
-    useEffect(() => {
-        console.log("Component mounted"); // add this for debugging
-        const fetchProducts = async () => {
-            try {
-                const response = await axios.get("http://localhost:8000/api/get-all-products-for-sale");
-                console.log(response, 'response of axios');
-                console.log('Products fetched jsjsjsjjjjjjjjjjjjjjjjjj myeyshh successfully');
-                console.log(response.data, 'Products fetched successfully');
-            } catch (error) {
-                console.error("Error fetching products:", error);
-            }
-        };
-        fetchProducts();
-        console.log('Products fetched getting myeyshh successfully');
-    }, []);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,7 +37,7 @@ const ContactSection = () => {
             // Show loading toast
             // const loadingToast = toast.loading('Submitting form...');
             // Make API call
-            const response = await axios.post('http://localhost:8000/api/contact', values);
+            const response = await axios.post('http://localhost:5000/api/contact', values);
 
             // Handle success
             if (response.data.success) {
@@ -92,8 +77,7 @@ const ContactSection = () => {
                                 <div className="flex items-start gap-4">
                                     <Phone className="w-6 h-6 mt-1 text-primary" />
                                     <div>
-                                        <p className="text-lg font-medium">484,324,2400</p>
-                                        <p className="text-muted-foreground">Mon-Fri: 9am - 5pm EST</p>
+                                        <p className="text-lg font-medium">+251925334258</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4">
@@ -106,8 +90,7 @@ const ContactSection = () => {
                                 <div className="flex items-start gap-4">
                                     <MapPin className="w-6 h-6 mt-1 text-primary" />
                                     <div>
-                                        <p className="text-lg font-medium">15 West 3rd St.</p>
-                                        <p className="text-muted-foreground">Media, Pa. 2025</p>
+                                        <p className="text-lg font-medium">Debremarkos</p>
                                     </div>
                                 </div>
                             </div>
@@ -122,7 +105,7 @@ const ContactSection = () => {
                                             <FormItem>
                                                 <FormLabel>Name</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="First Last" {...field} className="h-12 text-base" />
+                                                    <Input placeholder="Full name" {...field} className="h-12 text-base" />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
