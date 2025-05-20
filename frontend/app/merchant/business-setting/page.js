@@ -12,16 +12,16 @@ const MerchantRegistration = () => {
         isError,
         refetch,
     } = useGetMerchantByAccountQuery(accountId);
-    console.log(data, 'merchant data now added ,', isError, accountId)
     // Decide merchant registration status 
     useEffect(() => {
         if (data?.merchant) {
             setMerchantStatus(data.merchant.status);
         }
         //  else {
-        //     setMerchantStatus("");
-        // }
-    }, [data]);
+            //     setMerchantStatus("");
+            // }
+        }, [data]);
+        console.log(data, 'merchant data now added ,', merchantStatus, isError, accountId)
     const memoizedMerchantData = useMemo(() => {
         if (data) {
             return {

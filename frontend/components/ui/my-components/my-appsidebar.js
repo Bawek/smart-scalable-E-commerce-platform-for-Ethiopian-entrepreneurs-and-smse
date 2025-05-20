@@ -2,169 +2,109 @@
 
 import * as React from "react"
 import {
-  ShoppingCart, Package, User, Settings, CreditCard,
-  Truck, Lock, Store, FileText, LayoutDashboard,
-  ShieldCheck, CheckCircle, XCircle
-} from "lucide-react";
-import { NavMain } from "./nav-main"
-import { NavProjects } from "./nav-projects"
-import { NavUser } from "./nav-user"
+  ArrowUpCircleIcon,
+  BarChartIcon,
+  FolderIcon,
+  LayoutDashboardIcon,
+  ListIcon,
+  ListOrderedIcon,
+  Settings,
+  UsersIcon,
+} from "lucide-react"
+
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
-  SidebarRail,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import Logo from "./logo";
-import { useDispatch, useSelector } from "react-redux";
-import { useLogoutMutation } from "@/lib/features/auth/accountApi";
-import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
-import { logOut } from "@/lib/features/auth/accountSlice";
+import { MerchantSideNav } from "@/app/merchant/components/sidebar-nav";
+import Link from "next/link"
+import { useSidebar } from "@/components/ui/sidebar";
+
 
 // Sample data
 const data = {
-  templates: [
-    {
-      name: "Manage Buyed Template",
-      logo: LayoutDashboard,
-      category: "General",
-      url: '#',
-      status: "Published",
-    }
-  ],
+
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
-      icon: LayoutDashboard,
-      isActive: true,
-      items: [
-        { title: "Overview", url: "#" },
-        { title: "Reports", url: "#" },
-        { title: "Analytics", url: "#" },
-      ],
+      url: "/merchant",
+      icon: LayoutDashboardIcon,
     },
     {
-      title: "Products",
-      url: "#",
-      icon: Package,
-      items: [
-        { title: "All Products", url: "#" },
-        { title: "Manage Products", url: "#" },
-        { title: "Add New", url: "#" },
-        { title: "Categories", url: "#" },
-      ],
+      title: "Analytics",
+      url: "/merchant/analytics",
+      icon: BarChartIcon,
     },
     {
-      title: "Orders",
-      url: "#",
-      icon: ShoppingCart,
-      items: [
-        { title: "All Orders", url: "#" },
-        { title: "Pending", url: "#" },
-        { title: "Completed", url: "#" },
-        { title: "Cancelled", url: "#" },
-      ],
+      title: "Manage Products",
+      url: "/merchant/product",
+      icon: ListIcon,
     },
     {
-      title: "Customers",
-      url: "#",
-      icon: User,
-      items: [
-        { title: "Customer List", url: "#" },
-        { title: "Reviews & Ratings", url: "#" },
-      ],
+      title: "Buyed Templates",
+      url: "/merchant/manage-your-templates",
+      icon: FolderIcon,
+    },
+    {
+      title: "Users",
+      url: "/merchant/manage-users",
+      icon: UsersIcon,
+    },
+    {
+      title: "Manage Orders",
+      url: "/merchant/order",
+      icon: ListOrderedIcon,
     },
     {
       title: "Settings",
-      url: "#",
+      url: "/merchant/business-setting",
       icon: Settings,
-      items: [
-        { title: "Business Settings", url: "/merchant/business-setting" },
-        { title: "Payment Settings", url: "#" },
-        { title: "Shipping Settings", url: "#" },
-        { title: "Security", url: "#" },
-      ],
     },
   ],
-  products: [
-    { name: "Smartphone", category: "Electronics", price: "ETB 15,000", stock: 30, icon: Package },
-    { name: "Office Chair", category: "Furniture", price: "ETB 5,000", stock: 15, icon: Package },
-    { name: "Men’s Jacket", category: "Clothing", price: "ETB 2,500", stock: 50, icon: Package },
-  ],
-  orders: [
-    { id: "#12345", customer: "John Doe", amount: "ETB 3,200", status: "Completed", icon: CheckCircle },
-    { id: "#12346", customer: "Jane Smith", amount: "ETB 1,500", status: "Pending", icon: ShieldCheck },
-    { id: "#12347", customer: "Ali Mohammed", amount: "ETB 4,000", status: "Cancelled", icon: XCircle },
-  ],
-  settings: {
-    business: {
-      storeName: "Merchant Store",
-      storeLogo: "/logos/store-logo.png",
-      currency: "ETB (Ethiopian Birr)",
-      taxRate: 15, // In percentage
-    },
-    payment: {
-      availableMethods: ["Credit Card", "Mobile Money", "Bank Transfer"],
-      defaultMethod: "Mobile Money",
-      transactionFee: "2%",
-      icon: CreditCard,
-    },
-    shipping: {
-      availableCouriers: ["DHL", "Ethiopian Post", "Zemen Express"],
-      defaultCourier: "Zemen Express",
-      deliveryTime: "2-5 Business Days",
-      freeShippingThreshold: "ETB 2,000",
-      icon: Truck,
-    },
-    security: {
-      twoFactorAuth: true,
-      allowedDevices: ["Laptop - Chrome", "Mobile - Safari"],
-      icon: Lock,
-    },
-  },
-};
+}
 
 export function AppSidebar(props) {
-  const user = useSelector((state) => state.account)
-  const [logout] = useLogoutMutation()
-  const router = useRouter()
-  const dispatch = useDispatch()
-  const userLogout = async () => {
-    // router.push('/customers')
-    const response = await logout().unwrap()
-    if (response.status !== 'success') {
-      return toast.error("sorry something went wrong.");
-    }
-    window.location.href = '/customers'
-    dispatch(logOut())
-  }
+  const { open, toggleSidebar } = useSidebar();
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarGroup>
-        <SidebarGroupLabel>
-          <Logo
-            hrefValue='/merchant'
-          />
-        </SidebarGroupLabel>
-        <SidebarMenu className="m-0 p-0">
+    <Sidebar onOpenChange={toggleSidebar} collapsible="offcanvas" {...props}>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              className="data-[slot=sidebar-menu-button]:!p-1.5"
+            >
+              <Link href="/merchant">
+                <ArrowUpCircleIcon className="h-5 w-5" />
+                <span className="text-base font-semibold">EE-platform</span>
+              </Link>
+
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
-      </SidebarGroup>
+      </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.templates} />
+        <MerchantSideNav items={data.navMain} />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser
-         user={user}
-         logout={userLogout}
-         />
+      <SidebarFooter className="bg-amber-100 text-xs px-4 py-3 border-t border-gray-300">
+        <div className="flex flex-col gap-1">
+          <div className="flex justify-between">
+            <span>Role:</span>
+            <span className="font-semibold">Merchant</span>
+          </div>
+          <div className="text-center text-gray-500">
+            © 2025 EE-platform Inc.
+          </div>
+          <div className="text-center text-gray-500">
+            v1.0.0 | Powered by Mebrat
+          </div>
+        </div>
       </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   )
 }

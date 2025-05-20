@@ -6,7 +6,6 @@ import { useCallback } from "react";
 export const useProcessPayment = () => {
     const { toast } = useToast();
     const [initiatePayment, { isLoading }] = useInitiatePaymentMutation();
-
     const processPayment = useCallback(
         async (paymentData) => {
             try {

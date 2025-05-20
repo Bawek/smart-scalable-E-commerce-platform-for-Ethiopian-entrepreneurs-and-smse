@@ -1,288 +1,262 @@
+// pages/checkout/index.js
 "use client";
-import React, { useState, useEffect } from "react";
-import Loading from "@/app/[locale]/loading";
+import React, { useContext, useState } from "react";
+import { ShopContext } from "../../contexts/ShopContext";
 import { useRouter } from "next/navigation";
-import MenuBar from "../../components/MenuBar/MenuBar";
-import {
-  useGetShopQuery,
-  useGetShopWithIdQuery,
-} from "@/lib/features/shop/shop";
-export default function Shop({ params }) {
-  const shopId = params.shopId;
-  const unique_id = localStorage.getItem("unique_id");
-  const [checkOutPage, setCheckOutPage] = useState({});
-  const { data, error, isLoading } = useGetShopQuery(shopId);
+
+const CheckoutPage = () => {
+  const { cartItems, products, currency, clearCart } = useContext(ShopContext);
   const router = useRouter();
-  const {
-    data: shopsData,
-    error: shopsError,
-    isLoading: shopsLoading,
-  } = useGetShopWithIdQuery(shopId);
-  const [customerData, setCustomerData] = useState({});
-  const storedData = localStorage.getItem("cart");
-  let initialCartItems;
-  try {
-    initialCartItems = storedData ? JSON.parse(storedData) : [];
-  } catch (error) {
-    initialCartItems = [];
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    address: "",
+    city: "",
+    zip: "",
+    paymentMethod: "credit-card",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Calculate cart total
+  const cartData = [];
+  for (const productId in cartItems) {
+    for (const size in cartItems[productId]) {
+      if (cartItems[productId][size] > 0) {
+        cartData.push({
+          productId,
+          size,
+          quantity: cartItems[productId][size],
+        });
+      }
+    }
   }
-  const [cartItems, setCartItems] = useState(initialCartItems);
-  useEffect(() => {
-    if (data) {
-      console.log("website data ", data);
-      const checkoutPageData = data.find((page) => page.name === "Checkout");
-      setCheckOutPage(checkoutPageData);
-    }
-  }, [data]);
-  useEffect(() => {
-    const cartItemNumber = document.getElementById("cart-item-number");
-    if (cartItemNumber) {
-      if (cartItems.length !== 0) {
-        cartItemNumber.textContent = cartItems.length;
-      } else {
-        cartItemNumber.textContent = "";
-      }
-    }
-  }, [cartItems]);
-  useEffect(() => {
-    const handleClick = (event, link) => {
-      event.preventDefault();
-      if (link === "contact") {
-        router.push(`/${shopId}/contact`);
-        return;
-      } else if (link === "blog") {
-        router.push(`/${shopId}/blog`);
-        return;
-      } else if (link === "about") {
-        router.push(`/${shopId}/about`);
-      } else if (link === "shopping-cart") {
-        router.push(`/${shopId}/shopping-cart`);
-      } else if (link === "checkout") {
-        router.push(`/${shopId}/checkout`);
-      } else if (link == "home") {
-        router.push(`/${shopId}`);
-      }
-    };
-    const checkOutLink = document.getElementById("checkout");
-    const homeLink = document.getElementById("home");
-    const blogLink = document.getElementById("blog");
-    const contactLink = document.getElementById("contact");
-    const aboutLink = document.getElementById("about");
-    const shopCartLink = document.getElementById("shopping-cart");
-    const proceedPaymentButton = document.getElementById("Proceed-payment-btn");
-    if (proceedPaymentButton) {
-      console.log("proceed to payment event listener add");
-      proceedPaymentButton.addEventListener("click", handleSubmit);
-    }
-    const cartItemNumber = document.getElementById("cart-item-number");
-    if (cartItemNumber) {
-      if (cartItems.length !== 0) {
-        cartItemNumber.textContent = cartItems.length;
-      } else {
-        cartItemNumber.textContent = "";
-      }
-    }
-    if (checkOutLink) {
-      checkOutLink.addEventListener("click", (event) =>
-        handleClick(event, "checkout")
-      );
-    }
-    if (homeLink) {
-      homeLink.addEventListener("click", (event) => handleClick(event, "home"));
-    }
-    if (blogLink) {
-      blogLink.addEventListener("click", (event) => handleClick(event, "blog"));
-    }
-    if (contactLink) {
-      contactLink.addEventListener("click", (event) =>
-        handleClick(event, "contact")
-      );
-    }
-    if (aboutLink) {
-      aboutLink.addEventListener("click", (event) =>
-        handleClick(event, "about")
-      );
-    }
-    if (shopCartLink) {
-      shopCartLink.addEventListener("click", (event) =>
-        handleClick(event, "shopping-cart")
-      );
-    }
-    console.log("cart items in the local storage checkout", cartItems);
-    // Cleanup event listener on component unmount
-    return () => {
-      const blogLink = document.getElementById("blog");
-      if (blogLink) {
-        blogLink.removeEventListener("click", handleClick);
-      }
-      const addToCartButtons = document.querySelectorAll(
-        ".product-cart button"
-      );
-      addToCartButtons.forEach((button, index) => {
-        button.id = `${index}`;
-        console.log("removed event to ", index);
-      });
-    };
-  }, [router, shopId, checkOutPage?.html, cartItems]);
-  useEffect(() => {
-    const proceedPaymentButton = document.getElementById("Proceed-payment-btn");
-    if (proceedPaymentButton) {
-      console.log("proceed to payment event listener add in use Effect");
-      proceedPaymentButton.addEventListener("click", handleSubmit);
-    }
 
-    return () => {
-      if (proceedPaymentButton) {
-        proceedPaymentButton.removeEventListener("click", handleSubmit);
-      }
-    };
-  }, [customerData]);
-  const handleSubmit = async () => {
-    console.log("handle submit called");
-    let first_name = document.getElementById("first-name-input")?.value;
-    let last_name = document.getElementById("last-name-input")?.value;
-    let phone_number = document.getElementById("phone-number-input")?.value;
-    let address1 = document.getElementById("province-address-input")?.value;
-    let address2 = document.getElementById("street-address-input")?.value;
-    let city = document.getElementById("city-input")?.value;
-    let country = document.getElementById("country-input").value;
-    let state = document.getElementById("state-input")?.value;
-    let zip_code = document.getElementById("zip-code-input")?.value;
-    const checkoutData = {
-      first_name,
-      last_name,
-      phone_number,
-      address2,
-      address1,
-      country,
-      city,
-      state,
-      zip_code,
-    };
-    setCustomerData(checkoutData);
-    console.log("checkout data ", checkoutData);
-    console.log("handle form submit called");
-    try {
-      const response = await fetch(
-        `http://localhost:8000/auth/customer/update/${unique_id}/`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ ...checkoutData }),
-        }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to submit form");
-      }
-      const result = await response.json();
-      console.log("Customer created:", result);
-      // Handle successful creation, e.g., redirect or show a success message
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      // Handle error, e.g., show an error message
-    }
-    console.log("handle order executed");
-    var myHeaders = new Headers();
-    myHeaders.append(
-      "Authorization",
-      "Bearer CHASECK_TEST-CfETTzkfDCrst9JDojVyqAW0lgPAepvD"
-    );
-    myHeaders.append("Content-Type", "application/json");
-
-    var raw = JSON.stringify({
-      amount: "10",
-      currency: "ETB",
-      email: "abebech_bekele@gmail.com",
-      first_name: "Bilen",
-      last_name: "Gizachew",
-      phone_number: "0912345678",
-      tx_ref: "chewatatest-6669",
-      callback_url: "https://webhook.site/077164d6-29cb-40df-ba29-8a00e59a7e60",
-      return_url: "https://www.google.com/",
-      "customization[title]": "Payment for my favourite merchant",
-      "customization[description]": "I love online payments",
-      "meta[hide_receipt]": "true",
-    });
-
-    var requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    console.log("fhfghdfgjdf");
-
-    fetch("https://api.chapa.co/v1/transaction/initialize", requestOptions)
-      .then((response) => response.json())
-      .then((result) => console.log(result))
-      .catch((error) => console.log("error", error));
-    let totalPrice = 0;
-    cartItems.forEach((item) => {
-      totalPrice += parseFloat(item.price) * parseInt(item.quantity);
-    });
-    console.log(shopsData);
-    const Order = {
-      customer: unique_id,
-      merchant: shopsData?.owner?.unique_id,
-      total_amount: totalPrice,
-      order_status: "Pending",
-      payment_status: "Paid",
-      payment_method: "Credit Card",
-      shipping_option: 1,
-      order_items: cartItems.map((item) => ({
-        product: item.id,
-        quantity_ordered: item.quantity,
-      })),
-    };
-    console.log(Order);
-    try {
-      const response = await fetch(`http://localhost:8000/order/orders/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(Order),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to submit form");
-      }
-      const result = await response.json();
-      console.log("Customer created:", result);
-      // Handle successful creation, e.g., redirect or show a success message
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      // Handle error, e.g., show an error message
-    }
-    router.push("/order-history");
+  const calculateTotal = () => {
+    return cartData.reduce((total, item) => {
+      const product = products.find(p => p._id === item.productId);
+      return total + (product?.price || 0) * item.quantity;
+    }, 0);
   };
-  const handleOrderData = () => {};
-  if (isLoading) {
-    return <Loading />;
-  }
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
-  if (!checkOutPage) {
-    return <div>No home page found.</div>;
-  }
-  return (
-    <div className="relative">
-      <div className="fixed rounded-full z-[9999] bg-blueGray-800 top-12 left-0">
-        <MenuBar />
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Simulate API call
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // In a real app, you would send the order to your backend here
+      const orderData = {
+        customer: formData,
+        items: cartData.map(item => {
+          const product = products.find(p => p._id === item.productId);
+          return {
+            productId: item.productId,
+            name: product?.name || "",
+            size: item.size,
+            quantity: item.quantity,
+            price: product?.price || 0,
+          };
+        }),
+        total: calculateTotal(),
+        date: new Date().toISOString(),
+      };
+
+      // Save order to localStorage (simulating database)
+      const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+      orders.push(orderData);
+      localStorage.setItem("orders", JSON.stringify(orders));
+
+      // Clear cart and redirect to confirmation
+      clearCart();
+      router.push(`/checkout/confirmation?orderId=${orders.length - 1}`);
+    } catch (error) {
+      console.error("Checkout error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (cartData.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <h1 className="text-2xl mb-4">Your cart is empty</h1>
+        <button
+          onClick={() => router.push("/products")}
+          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+        >
+          Continue Shopping
+        </button>
       </div>
-      <div dangerouslySetInnerHTML={{ __html: checkOutPage.html }} />
-      <style>{checkOutPage.css}</style>
-      <script>{checkOutPage.js}</script>
-      <button
-        onClick={handleSubmit}
-        id="Proceed-payment-btn"
-        type="button"
-        class="px-6 py-3  absolute right-40 bottom-4 text-xl bg-blue-600 text-white rounded-md hover:bg-blue-700"
-      >
-        Proceed To Payment
-      </button>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold mb-6">Customer Information</h2>
+          
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div>
+                <label className="block mb-1">Full Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              
+              <div>
+                <label className="block mb-1">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              
+              <div>
+                <label className="block mb-1">Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  required
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1">City</label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    required
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block mb-1">ZIP Code</label>
+                  <input
+                    type="text"
+                    name="zip"
+                    value={formData.zip}
+                    onChange={handleChange}
+                    required
+                    className="w-full border rounded px-3 py-2"
+                  />
+                </div>
+              </div>
+              
+              <div className="pt-4">
+                <h3 className="font-medium mb-3">Payment Method</h3>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="credit-card"
+                      checked={formData.paymentMethod === "credit-card"}
+                      onChange={handleChange}
+                      className="h-4 w-4"
+                    />
+                    Credit Card
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="paypal"
+                      checked={formData.paymentMethod === "paypal"}
+                      onChange={handleChange}
+                      className="h-4 w-4"
+                    />
+                    PayPal
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="bank-transfer"
+                      checked={formData.paymentMethod === "bank-transfer"}
+                      onChange={handleChange}
+                      className="h-4 w-4"
+                    />
+                    Bank Transfer
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="mt-8 w-full bg-green-600 text-white py-3 rounded hover:bg-green-700 disabled:opacity-50"
+            >
+              {isSubmitting ? "Processing..." : "Place Order"}
+            </button>
+          </form>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
+          
+          <div className="space-y-4">
+            {cartData.map((item) => {
+              const product = products.find(p => p._id === item.productId);
+              if (!product) return null;
+              
+              return (
+                <div key={`${item.productId}-${item.size}`} className="flex justify-between border-b pb-4">
+                  <div>
+                    <p className="font-medium">{product.name}</p>
+                    <p className="text-sm text-gray-600">Size: {item.size} × {item.quantity}</p>
+                  </div>
+                  <p>{currency} {(product.price * item.quantity).toFixed(2)}</p>
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="mt-6 pt-4 border-t">
+            <div className="flex justify-between mb-2">
+              <span>Subtotal</span>
+              <span>{currency} {calculateTotal().toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between mb-2">
+              <span>Shipping</span>
+              <span>Free</span>
+            </div>
+            <div className="flex justify-between font-semibold text-lg mt-4">
+              <span>Total</span>
+              <span>{currency} {calculateTotal().toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default CheckoutPage;

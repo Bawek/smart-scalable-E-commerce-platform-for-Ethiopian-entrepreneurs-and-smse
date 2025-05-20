@@ -6,19 +6,20 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { useCreateShopMutation, useGetShopByAccountQuery } from "@/lib/features/shop/shop";
 import Link from "next/link";
 import { useGetMerchantTemplateByAccountQuery } from "@/lib/features/templates/templateApi";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-// Enhanced validation schema
+import { imageViewer } from "@/app/system-admin/lib/imageViewer";
+import { toast } from "react-toastify";
+
+// Validation schema
 const shopSchema = z.object({
   slug: z.string()
     .min(3, "Shop slug must be at least 3 characters")
-    .max(30, "Shop slug must be less than 30 characters")
-    .regex(/^[a-z0-9-]+$/, "Shop slug can only contain lowercase letters, numbers, and hyphens"),
+    .max(30, "Shop slug must be less than 30 characters"),
   description: z.string().max(500, "Description must be less than 500 characters").optional(),
   businessHours: z.string()
     .refine(val => {
@@ -29,276 +30,328 @@ const shopSchema = z.object({
         return false;
       }
     }, "Invalid business hours format. Please use valid JSON object format"),
+  domain: z.string()
+    .min(3, "shop domain must be at least 3 characters")
+    .max(15, "shop domain must be less than 15 characters"),
   logoImageUrl: z.instanceof(File, "Shop logo is required")
     .refine(file => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type),
       "Only JPEG, PNG & WEBP files are allowed")
     .refine(file => file.size <= 2 * 1024 * 1024, "File size must be less than 2MB")
 });
 
-const ShopRegistration = ({ accountId, editMode, setEditMode }) => {
-  const { toast } = useToast();
+export default function ShopRegistration({ accountId, editMode, setEditMode }) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const { data, isLoading, isError, error } = useGetShopByAccountQuery(accountId);
-  const { data: customTemplate } = useGetMerchantTemplateByAccountQuery(accountId)
   const [imagePreview, setImagePreview] = React.useState("");
+  const router = useRouter();
+
+  // API queries
+  const { data: shopData, isLoading, isError, error } = useGetShopByAccountQuery(accountId);
+  const { data: customTemplate } = useGetMerchantTemplateByAccountQuery(accountId);
   const [createShop] = useCreateShopMutation();
-  const mode = data?.merchantTemplateId ? 'update' : 'create';
-  const router = useRouter()
-  console.log(data, 'exact isSubmitting')
-  // Initialize form with proper default values
+
+  const mode = shopData?.shop?.id ? 'update' : 'create';
+  const hasTemplate = !!customTemplate?.merchantTemplate?.id;
+
+  const shop = shopData?.shop || {};
+  console.log(shopData, customTemplate, 'shop data')
+  // Initialize form
   const form = useForm({
     resolver: zodResolver(shopSchema),
     defaultValues: {
-      slug: data?.shop?.slug || "",
-      description: data?.shop?.description || "",
-      businessHours: data?.shop?.businessHours ? JSON.stringify(data?.shop?.businessHours, null, 2) : "",
+      slug: shop.slug || "",
+      domain: shop.domain || "",
+      description: shop.description || "",
+      businessHours: shop.businessHours ? JSON.stringify(shop.businessHours, null, 2) : "{}",
       logoImageUrl: undefined
     }
   });
 
+  // Reset form when shop data changes
   React.useEffect(() => {
-    if (data?.shop) {
-      form.reset(data?.shop)
-    }
-  }, [data]);
-
-  const handleFileChange = (e, field) => {
-    try {
-      const file = e.target.files[0];
-      if (file) {
-        field.onChange(file);
-        const preview = URL.createObjectURL(file);
-        setImagePreview(preview);
-      }
-    } catch (error) {
-      toast({
-        title: "File Error",
-        variant: "destructive",
-        description: "Failed to process selected file",
+    if (shop.slug) {
+      form.reset({
+        slug: shop.slug,
+        domain: shop.domain,
+        description: shop.description,
+        businessHours: shop.businessHours ? JSON.stringify(shop.businessHours, null, 2) : "{}",
+        logoImageUrl: undefined
       });
+    }
+  }, [shop]);
+
+  const handleFileChange = (event, field) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type and size before processing
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast({
+        title: "Invalid File Type",
+        variant: "destructive",
+        description: "Please upload a JPEG, PNG, or WEBP image",
+      });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be less than 2MB");
+      return;
+    }
+
+    field.onChange(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const processBusinessHours = (businessHoursString) => {
+    try {
+      return JSON.parse(businessHoursString);
+    } catch (err) {
+      throw new Error("Invalid business hours format");
     }
   };
 
-  const onSubmit = async (formData) => {
+  const prepareFormData = (data) => {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value instanceof File) {
+        formData.append(key, value);
+      } else if (key === 'businessHours') {
+        formData.append(key, JSON.stringify(processBusinessHours(value)));
+      } else if (value) {
+        formData.append(key, value);
+      }
+    });
+
+    formData.append('merchantTemplateId', customTemplate?.merchantTemplate?.id);
+    formData.append('accountId', accountId);
+    formData.append('mode', mode)
+
+    return formData;
+  };
+
+  const handleSubmit = async (formData) => {
     setIsSubmitting(true);
     try {
       const validatedData = shopSchema.parse(formData);
-      const formPayload = new FormData();
-
-      // Process business hours JSON
-      let businessHours;
-      try {
-        businessHours = JSON.parse(validatedData.businessHours);
-      } catch (error) {
-        throw new Error("Invalid business hours format");
+      const formPayload = prepareFormData(validatedData);
+      
+      console.log(formPayload, 'mode')
+      await createShop(formPayload).unwrap();
+        toast.success( `Shop ${mode === "create" ? 'created' : 'updated'} successfully`)
+     
+      if (mode === "create") {
+        form.reset();
+        setImagePreview("");
       }
-
-      // Prepare form data
-      Object.entries(validatedData).forEach(([key, value]) => {
-        if (value instanceof File) {
-          formPayload.append(key, value);
-        } else if (key === 'businessHours') {
-          formPayload.append(key, JSON.stringify(businessHours));
-        } else if (value) {
-          formPayload.append(key, value);
-        }
-      });
-      formPayload.append('merchantTemplateId', customTemplate?.merchantTemplate?.id);
-      formPayload.append('accountId', accountId);
-
-      const response = await createShop(formPayload).unwrap();
-      console.log(response, 'shop response')
-      toast({
-        title: "Success",
-        description: `Shop ${mode === "create" ? 'created' : 'updated'} successfully`,
-      });
-
-      if (mode === "create") form.reset();
-
     } catch (error) {
       console.error("Submission error:", error);
-      toast({
-        title: "Error",
-        variant: "destructive",
-        description: error.data?.message || error.message || "An error occurred",
-      });
+      toast.error('Sorry something went wrong. please try again.')
+
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isLoading) return <div className="w-full flex justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-  if (isError) return <div>Error loading shop data: {error?.message}</div>;
+  if (isLoading) return (
+    <div className="w-full flex justify-center">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>
+  );
+
+  if (isError) return (
+    <div className="text-red-500 p-4 border border-red-200 rounded">
+      Error loading shop data: {error?.message || "Unknown error"}
+    </div>
+  );
+
   return (
     <div className="w-full max-w-2xl mx-auto p-4 space-y-6">
-      {!customTemplate?.merchantTemplate?.id && (
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <p className="text-blue-800">
-            🎉 <strong>Congratulations!</strong> Your registration has been approved! Ready to take the next step and start building your shop?
+      {!hasTemplate && (
+        <div className="p-6 rounded-xl shadow-md border">
+          <p className="text-lg leading-relaxed">
+            🎉 <strong>Congratulations!</strong> Your registration has been approved!
             <br />
-            <strong className="text-blue-900">Choose from a variety of customizable templates</strong> at an affordable price to kickstart your business journey. With just a few clicks, you can have your shop up and running in no time!
+            <span className="block mt-2">
+              <strong>Ready to launch your business?</strong>
+            </span>
+            Choose from customizable, mobile-friendly designs at an affordable price!
             <br />
-            <Link href="/customers/templates" className="font-medium hover:text-orange-700 text-blue-900 underline">
+            <Link
+              href="/customers/templates"
+              className="inline-block mt-2 font-semibold underline hover:underline-offset-4 text-orange-400 hover:text-orange-300"
+            >
               Explore Our Shop Templates
-            </Link>{" "}
-            and start building your dream business today!
+            </Link>
           </p>
+
           <Button
             onClick={() => router.push('/customers/templates')}
-            className="mt-4"
+            className="mt-6 w-full sm:w-auto text-md"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "Purchase Starter Template"
+              'Purchase Starter Template 🚀'
             )}
           </Button>
         </div>
-
       )}
-      {
-        customTemplate?.merchantTemplate?.id && (
-          <Card className="p-6">
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-800">
-                {mode === "create" ? "Register New Shop" : "Edit Shop Details"}
-              </h1>
-            </div>
 
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="slug"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Shop Slug <span className="text-red-500">*</span></FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            disabled={!!data?.shop && !editMode}
-                            placeholder="my-shop-slug"
-                            pattern="[a-z0-9-]+"
-                            title="Lowercase letters, numbers, and hyphens only"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+      {hasTemplate && (
+        <Card className="p-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">
+              {mode === "create" ? "Register New Shop" : "Edit Shop Details"}
+            </h1>
+          </div>
 
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Input
-                            as="textarea"
-                            rows={3}
-                            {...field}
-                            disabled={!!data?.shop && !editMode}
-                            placeholder="Describe your shop..."
-                            className="resize-none"
-                          />
-                        </FormControl>
-                        <div className="text-sm text-gray-500 text-right">
-                          {field.value?.length || 0}/500
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="businessHours"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>Business Hours</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            disabled={!!data?.shop && !editMode}
-                            placeholder='{"monday": {"open": "09:00", "close": "18:00"}}'
-                            className="font-mono text-sm"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                        <div className="text-sm text-gray-500 mt-1">
-                          Use JSON format. Example:{" "}
-                          <Link href="/examples/business-hours" target="_blank" className="text-blue-600 underline">
-                            View format example
-                          </Link>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="slug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Shop Slug <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          disabled={!!shop.slug && !editMode}
+                          placeholder="my-shop-slug"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="domain"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Shop Domain <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          disabled={!!shop.domain && !editMode}
+                          placeholder="my-shop-domain"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <textarea
+                          {...field}
+                          rows={3}
+                          disabled={!!shop.description && !editMode}
+                          placeholder="Describe your shop..."
+                          className="w-full p-2 rounded-md resize-none dark:text-white dark:bg-gray-950"
+                        />
+                      </FormControl>
+                      <div className="text-sm border-none text-gray-500 text-right">
+                        {field.value?.length || 0}/500
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormField
-                    control={form.control}
-                    name="logoImageUrl"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>Shop Logo <span className="text-red-500">*</span></FormLabel>
-                        <FormControl>
-                          <div className="flex items-center gap-4">
-                            <div className="relative">
-                              <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleFileChange(e, field)}
-                                disabled={!!data?.shop && !editMode}
-                                className="w-fit cursor-pointer"
-                                aria-label="Upload shop logo"
-                              />
-                              <span className="text-sm text-gray-500 ml-2">
-                                Max 2MB (JPEG, PNG, WEBP)
-                              </span>
-                            </div>
-                            {imagePreview && (
-                              <div className="relative w-20 h-20">
-                                <img
-                                  src={imagePreview}
-                                  alt="Logo preview"
-                                  className="w-full h-full rounded-full object-cover border-2 border-gray-200"
-                                  onError={() => setImagePreview("")}
-                                />
-                              </div>
-                            )}
+                <FormField
+                  control={form.control}
+                  name="businessHours"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Business Hours</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          disabled={!!shop.businessHours && !editMode}
+                          placeholder='{"monday": {"open": "09:00", "close": "18:00"}}'
+                          className="font-mono text-sm"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <div className="text-sm text-gray-500 mt-1">
+                        Use JSON format. Example:{" "}
+                        <Link href="/examples/business-hours" target="_blank" className="text-blue-600 underline">
+                          View format example
+                        </Link>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="logoImageUrl"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Shop Logo <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-4">
+                          <div className="relative">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleFileChange(e, field)}
+                              disabled={!!shop.logoImageUrl && !editMode}
+                              className="w-fit cursor-pointer"
+                            />
+                            <span className="text-sm text-gray-500 ml-2">
+                              Max 2MB (JPEG, PNG, WEBP)
+                            </span>
                           </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                          {(imagePreview || shop.logoImageUrl) && (
+                            <div className="relative w-20 h-20">
+                              <img
+                                src={imagePreview || imageViewer(shop.logoImageUrl)}
+                                alt="Logo preview"
+                                className="w-full h-full rounded-full object-cover border-2 border-gray-200"
+                                onError={() => setImagePreview("")}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-                <div className="flex justify-end gap-4">
-                  <Button
-                    type="submit"
-                    className="bg-orange-700 hover:bg-orange-800 min-w-[150px]"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
+              <div className="flex justify-end gap-4">
+                <Button
+                  type="submit"
+                  className="bg-orange-700 hover:bg-orange-800 min-w-[150px]"
+                  disabled={isSubmitting || !editMode}
+                >
+                  {isSubmitting ? (
+                    <div className="flex gap-2 items-center justify-center">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : mode === "create" ? (
-                      "Register Shop"
-                    ) : (
-                      "Save Changes"
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </Card>
-        )
-      }
-
+                      Submitting
+                    </div>
+                  ) : mode === "create" ? (
+                    "Register Shop"
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </Card>
+      )}
     </div>
   );
-};
-
-export default ShopRegistration;
+}

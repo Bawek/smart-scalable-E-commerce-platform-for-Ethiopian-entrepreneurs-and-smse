@@ -13,7 +13,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import "../../../../styles/app.css";
+import "../../../styles/app.css";
 import { useDispatch, useSelector } from "react-redux";
 import { setStatus, setPageName } from "@/lib/features/uiBuilder/status";
 

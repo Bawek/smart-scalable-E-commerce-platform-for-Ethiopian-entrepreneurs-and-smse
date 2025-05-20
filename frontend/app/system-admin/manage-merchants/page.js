@@ -19,20 +19,21 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useGetAllMerchantsQuery } from "@/lib/features/merchant/registrationApi";
 import { imageViewer } from "../lib/imageViewer";
+import { toast } from "react-toastify";
 const ManageShops = () => {
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const [merchants, setMerchants] = useState([
         { id: "1", name: "Shop 1", owner: "Owner 1", status: "Active" },]);
     const [selectedShop, setSelectedShop] = useState(null);
-    const { data: allMerchants, isLoading, isError } = useGetAllMerchantsQuery();
+    const { data: allMerchants, isLoading, isError, refetch } = useGetAllMerchantsQuery();
     const data = allMerchants?.merchant?.map(merchant => ({
-        name: `${merchant.account?.firestName} ${merchant.account?.lastName}`, // Corrected field names (firestName -> firstName)
+        name: `${merchant.account?.firstName} ${merchant.account?.lastName}`, // Corrected field names (firstName -> firstName)
         email: merchant.account?.email,
         status: merchant.status,
         identityCard: merchant.identityCard
     }));
 
     const [isEditing, setIsEditing] = useState(false);
-    const { toast } = useToast()
     const router = useRouter()
     const handleDeleteMerchant = (id) => {
     }
@@ -174,9 +175,30 @@ const ManageShops = () => {
     };
 
     // Save edited shop
-    const saveShopChanges = () => {
-        setMerchants(merchants.map(shop => (shop.id === selectedShop.id ? selectedShop : shop)));
+    const saveShopChanges = async (shop) => {
+        console.log('hello it comes', selectedShop, data)
+        setIsSubmitting(true)
         setIsEditing(false);
+
+        try {
+            const response = {
+
+            }
+            console.log(response, 'response')
+            if (response?.status !== 'success') {
+                return toast.error(response?.message)
+            }
+            refetch()
+            setIsEditing(false);
+            toast.success('merchant updated')
+            setIsEditing(false);
+        } catch (error) {
+            console.log('update shop status error', error)
+            toast.error('sorry something go wrong.Tray again.')
+        }
+        finally {
+            setIsSubmitting(false)
+        }
     };
     if (isLoading) {
         return <h1 className="text-center">Loading...</h1>
@@ -189,30 +211,39 @@ const ManageShops = () => {
             {/* Edit Shop Modal */}
             <Dialog open={isEditing} onOpenChange={setIsEditing}>
                 <DialogContent>
-                    <DialogTitle>Edit Merchant Details</DialogTitle>
+                    <DialogTitle>Edit Shop Details</DialogTitle>
+                    {/* {
+                        isUpdateError &&
+                        <DialogDescription>
+                            {updateError?.message}
+                        </DialogDescription>
+                    } */}
                     {selectedShop && (
                         <div className="space-y-3">
                             <input
                                 type="text"
                                 value={selectedShop.name}
+                                disabled
                                 onChange={(e) => setSelectedShop({ ...selectedShop, name: e.target.value })}
-                                className="border p-2 w-full rounded"
-                            />
-                            <input
-                                type="text"
-                                value={selectedShop.shopName}
-                                onChange={(e) => setSelectedShop({ ...selectedShop, shopName: e.target.value })}
-                                className="border p-2 w-full rounded"
+                                className="border p-2 w-full rounded dark:bg-gray-800 dark:text-white"
                             />
                             <select
                                 value={selectedShop.status}
                                 onChange={(e) => setSelectedShop({ ...selectedShop, status: e.target.value })}
-                                className="border p-2 w-full rounded"
+                                className="border p-2 w-full rounded dark:bg-gray-800 dark:text-white"
                             >
-                                <option value="Active">Active</option>
-                                <option value="Suspended">Suspended</option>
+                                <option value="ACTIVE">ACTIVE</option>
+                                <option value="SUSPENDED">SUSPENDED</option>
                             </select>
-                            <Button onClick={saveShopChanges} className="w-full">Save Changes</Button>
+                            <Button onClick={saveShopChanges} className="w-full dark:bg-gray-800 dark:text-white">
+                                {
+                                    isSubmitting &&
+                                    <Loader className="w-6 h-6 animate-spin" />
+                                }
+                                {
+                                    isSubmitting ? ' Saving' : 'Save changes'
+                                }
+                            </Button>
                         </div>
                     )}
                 </DialogContent>

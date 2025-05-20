@@ -49,6 +49,8 @@ model Account {
   lastName     String
   role         Role      @default(CUSTOMER)
   email        String    @unique
+  cart         Cart?
+  orders       Order[]
   password     String
   profileUrl   String?
   refreshToken String?
@@ -114,6 +116,7 @@ model Shop {
   businessHours      Json?
   socialMedia        Json?
   bannerImageUrl     String?
+  domain             String?
   logoImageUrl       String?
   status             ShopStatus        @default(ACTIVE)
   approved           Boolean           @default(false)
@@ -228,6 +231,8 @@ model Order {
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   Payment    Payment[]
+  Account    Account?    @relation(fields: [accountId], references: [id])
+  accountId  String?
 
   @@map("orders")
 }
@@ -239,6 +244,7 @@ model Product {
   price         Float
   discountPrice Float?
   quantity      Int
+  carts         CartItem[] // Back-relation
   category      String
   tags          String[]
   status        StatusIndicator @default(PENDING)
@@ -281,4 +287,34 @@ model Payment {
   paidAt         DateTime? // null until paid
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  user      Account    @relation(fields: [userId], references: [id])
+  userId    String     @unique
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  expiresAt DateTime?  @default(dbgenerated("NOW() + INTERVAL '30 days'")) // Auto-cart cleanup
+
+  // Optimized for frequent cart lookup
+  @@index([userId, updatedAt])
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int      @default(1) // Custom validation
+  price     Float?
+  addedAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Composite unique constraint + index
+  @@unique([cartId, productId])
+  @@index([productId, cartId]) // Reverse lookup
+  @@map("cart_items")
 }

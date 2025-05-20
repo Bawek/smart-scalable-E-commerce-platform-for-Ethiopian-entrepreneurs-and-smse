@@ -1,5 +1,4 @@
 const express = require('express')
-const { validate } = require('./middlewares/validateMiddleware')
 const merchantRouter = require('./routes/merchant/merchant.route')
 const accountRouter = require('./routes/account.route')
 const cors = require('cors')
@@ -15,6 +14,12 @@ require('dotenv').config
 const http = require('http');
 const { initialize } = require('./utils/socket')
 const { testIo } = require('./controllers/merchant.controller')
+const merchantTemplatesRouter = require('./routes/merchantTemplates.route')
+const customizedPageRouter = require('./routes/customizedPage.route')
+const { getMerchantDashboardStats } = require('./controllers/dashboard.controller')
+const productRouter = require('./routes/product.route')
+const cartRouter = require('./routes/user/cart.route.js')
+const orderRouter = require('./routes/user/order.route.js')
 // constants  
 const PORT = process.env.PORT || 8000
 //start the server 
@@ -22,7 +27,6 @@ const app = express()
 const server = http.createServer(app)
 initialize(server); // Initialize Socket.IO
 
-//default middleware
 // Enable CORS for specific domains
 app.use(cors({
     origin: ['http://localhost:3000', 'https://checkout.chapa.co'],
@@ -37,7 +41,11 @@ app.use(express.json())
 // chapa payment route
 app.use('/api', paymentRouter);
 app.use('/api/merchant', merchantRouter)
-// Accounts route
+
+app.use('/api/cart', cartRouter);// Accounts route
+app.use('/api/orders', orderRouter);// Accounts route
+
+
 
 app.get('/api/refresh-token', handleRefreshToken)
 
@@ -46,8 +54,13 @@ app.use('/api/location', locationRouter)
 app.use('/api/shops', shopRouter)
 app.use('/api/image', imageRouter)
 app.use('/api/pages', pagesRouter)
+app.use('/api/products', productRouter)
 app.use('/api/templates', templateRouter)
-app.post('/iopost', testIo) 
+app.use('/api/merchantTemplates', merchantTemplatesRouter)
+app.use('/api/customized-pages', customizedPageRouter)
+app.post('/iopost', testIo)
+// dashbaord analytics
+app.get('/api/merchant-dashboard/:merchantId', getMerchantDashboardStats)
 // handling errors
 app.use((err, req, res) => {
     if (err.isOperational) {

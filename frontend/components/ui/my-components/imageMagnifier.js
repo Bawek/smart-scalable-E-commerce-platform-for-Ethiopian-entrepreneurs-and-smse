@@ -12,7 +12,7 @@ const MerchantCard = ({ merchant }) => {
     return (
         <div className=''>
             {/* Thumbnail Image with Hover Zoom */}
-            <div className="bg-white p-6 rounded-xl shadow-sm">
+            <div className="p-6 rounded-xl shadow-sm">
                 <h1 className="font-semibold mb-4">Identity Card:</h1>
                 <figure className="relative">
                     <Zoom>

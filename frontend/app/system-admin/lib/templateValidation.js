@@ -12,9 +12,9 @@ export const pageSchema = z.object({
         },
     }),
 
-    PreviewImage: z.instanceof(File).optional(),
+    previewUrls: z.instanceof(File).optional(),
 
-    price: z.string().min(1, {
+    basePrice: z.string().min(1, {
         message: "Price is required",
     }),
 

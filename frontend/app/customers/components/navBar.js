@@ -19,7 +19,6 @@ import { useState } from "react";
 import Logo from "@/components/ui/my-components/logo";
 import { useSelector } from "react-redux";
 // Platform information remains the same...
-const cartItems = 0;
 const companyLinks = [
   {
     title: "Products",
@@ -82,6 +81,12 @@ const shopLinks = [
 
 
 export function CustomerNavigationMenu() {
+    const cart = useSelector((state) => state.cart)
+    console.log(cart, 'cart')
+
+  const cartItems = cart?.totalQuantity||0;
+  console.log(cartItems, 'cartItems')
+
   const [isOpen, setIsOpen] = React.useState(false);
   const [open, setOpen] = useState(false);
   const closeDrawer = () => setOpen(false);
@@ -109,21 +114,23 @@ export function CustomerNavigationMenu() {
         <Logo />
         {/* mobile navbar */}
         {!isMobile ? (
-          <DesktopMenu account={account} />
+          <DesktopMenu account={account} cartItems={cartItems} />
         ) : (
           <MobileMenu
-            account={account}
-            open={open}
-            setOpen={setOpen}
-            closeDrawer={closeDrawer}
-          />
+  account={account}
+  open={open}
+  setOpen={setOpen}
+  closeDrawer={closeDrawer}
+  cartItems={cartItems}
+/>
+
         )}
       </div>
     </nav>
   );
 }
 
-function DesktopMenu({ account }) {
+function DesktopMenu({ account, cartItems }) {
   return (
     <div className="container flex items-center h-16 gap-6">
       {/* Navigation Menu */}
@@ -171,7 +178,11 @@ function DesktopMenu({ account }) {
       ))}
       <div className="flex-1"></div>
       {/* Cart Button */}
+<<<<<<< HEAD
       <Link href="/customers/cart" className="relative flex items-center text-sm no-underline text-black dark:text-white">
+=======
+      <Link href="/customers/cart" className="relative flex items-end text-sm no-underline text-black  dark:text-white">
+>>>>>>> d2ce75aa1468cb7435f08f2d11fd68bd9e79a386
         <ShoppingCart className="h-8 w-8 mr-2" />
         {cartItems > 0 && (
           <span className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center bg-red-600 text-white text-xs font-bold rounded-full">
@@ -210,7 +221,7 @@ function DesktopMenu({ account }) {
   );
 }
 
-function MobileMenu({ account, open, setOpen, closeDrawer }) {
+function MobileMenu({ account, open, setOpen, closeDrawer, cartItems }) {
   return (
     <Sheet aria-describedby={'mobile menu'} open={open} onOpenChange={setOpen}>
       <SheetTitle

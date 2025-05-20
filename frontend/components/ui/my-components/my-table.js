@@ -65,14 +65,9 @@ export default function CustomDataTable({ data, columns, searchColumen }) {
           }
           className="max-w-sm"
         />
-        <Slider
-         defaultValue={50}
-          aria-label="Default" 
-          valueLabelDisplay="auto"
-           />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="outline" className="ml-auto dark:text-white">
               Columns <ChevronDown />
             </Button>
           </DropdownMenuTrigger>
@@ -104,7 +99,9 @@ export default function CustomDataTable({ data, columns, searchColumen }) {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                    className="dark:text-white"
+                    key={header.id}>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -125,7 +122,7 @@ export default function CustomDataTable({ data, columns, searchColumen }) {
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell className="dark:text-white" key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -138,7 +135,7 @@ export default function CustomDataTable({ data, columns, searchColumen }) {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center dark:text-white"
                 >
                   No results.
                 </TableCell>
@@ -154,6 +151,7 @@ export default function CustomDataTable({ data, columns, searchColumen }) {
         </div>
         <div className="space-x-2">
           <Button
+          className="dark:text-white"
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
@@ -162,6 +160,7 @@ export default function CustomDataTable({ data, columns, searchColumen }) {
             Previous
           </Button>
           <Button
+          className="dark:text-white"
             variant="outline"
             size="sm"
             onClick={() => table.nextPage()}

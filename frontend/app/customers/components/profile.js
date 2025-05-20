@@ -3,14 +3,13 @@ import { useState } from 'react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { profileLinks } from '../data/nav-links';
-import { useDispatch, useSelector } from 'react-redux';
+import {  useSelector } from 'react-redux';
 import { imageViewer } from '@/app/system-admin/lib/imageViewer';
 import { useLogout } from '@/util/userLogout';
 
 const ProfileMenu = () => {
   const [openDialog, setOpenDialog] = useState(null);
   const account = useSelector((state) => state.account)
-  const dispatch = useDispatch()
   const logout = useLogout()
   console.log(account?.profileUrl, 'url')
   return (

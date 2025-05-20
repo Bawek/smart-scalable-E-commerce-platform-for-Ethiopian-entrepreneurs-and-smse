@@ -1,81 +1,76 @@
 'use client'
-import { SidebarTrigger } from '@/components/ui/sidebar'
-import React from 'react'
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem
-} from "@/components/ui/form";
-import { useForm } from 'react-hook-form';
-import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { NotificationAdd } from '@mui/icons-material';
-import NotificationTest from '@/app/components/systemAdmin/test';
-import axios from 'axios';
-const AdminTopNav = () => {
-    const form = useForm();
-    const [isOpened, setIsOpened] = useState(false)
-    const handleSearch = () => {
-        // Handle search functionality
-    }
-    const sendTestNotification = async () => {
-        const testData = {
-            message: 'Test merchant needs approval',
-            merchantId: 'test-' + Math.random().toString(36).slice(2, 8),
-            businessName: 'Test Business',
-            timestamp: new Date().toISOString()
-        };
+import { BellIcon, Menu, Search } from 'lucide-react';
+import { NavUser } from '@/components/ui/my-components/nav-user';
+import { useSelector } from 'react-redux';
+import { useLogout } from '@/util/userLogout';
+import { ModeToggle } from '@/app/components/ModeToggle';
+import { useRouter } from 'next/navigation';
+import { useSidebar } from "@/components/ui/sidebar";
+import { selectNotifications } from '@/lib/features/notification/notificationSlice';
 
-        try {
-            await axios.post('http://localhost:8000/iopost', testData, {
-                headers: { 'Content-Type': 'application/json' },
-                withCredentials: true
-            });
+export default function AdminTopNav() {
+    const [searchQuery, setSearchQuery] = useState('');
+    const notifications = useSelector(selectNotifications)
 
-        } catch (error) {
-            console.error('Error:', error)
-            alert(`Error: ${error.response?.data?.error || error.message}`)
-        }
+    const {
+        isMobile,
+        toggleSidebar,
+    } = useSidebar();
+
+    const router = useRouter();
+    const user = useSelector((state) => state.account);
+    const logout = useLogout();
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        console.log('Search:', searchQuery);
     };
+
     return (
-        <div className="py-2">
-            <div className="max-w-screen-xl mx-auto flex items-center gap-10 lg:justify-between">
-                {/* Sidebar Trigger */}
-                <SidebarTrigger />
+        <nav className="shadow-sm p-4 w-full bg-white dark:bg-gray-900">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
 
-                {/* Search Form */}
-                <div className="w-full md:w-1/3 lg:w-1/4 xl:w-1/5 mr-5">
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(handleSearch)} className="space-y-4 flex items-center gap-3">
-                            <FormField
-                                control={form.control}
-                                name="search"
-                                render={({ field }) => (
-                                    <FormItem className="w-full">
-                                        <FormControl>
-                                            <Input
-                                                type="text"
-                                                placeholder="Search..."
-                                                {...field}
-                                                className="w-full px-4 py-2 rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black bg-gray-700"
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                        </form>
-                    </Form>
-                </div>
-                <div>
+                <Menu onClick={toggleSidebar} className="w-6 h-6 text-muted-foreground md:hidden cursor-pointer hover:text-primary hover:bg-amber-100" />
 
-                    <NotificationAdd onClick={() => setIsOpened(true)} />
-                    <button onClick={sendTestNotification}>toast</button>
+
+                {/* Center: Search Input */}
+                <div className="flex-1">
+                    <form onSubmit={handleSearch} className="relative max-w-lg mx-auto">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Search className="h-5 w-5 dark:text-white" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Enter your search request..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 flex pr-4 py-2 rounded-lg border dark:bg-gray-800 dark:text-white border-gray-300 focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                    </form>
                 </div>
-              
+
+                {/* Right: Icons */}
+                <div className="flex items-center space-x-3">
+                    <ModeToggle />
+
+                    <button
+                        onClick={() => router.push('/merchant/notification')}
+                        className="p-2 rounded-full relative hover:bg-gray-200 dark:hover:bg-gray-700"
+                    >
+                        <BellIcon className="h-6 w-6 dark:text-white" />
+                        <span className="absolute top-0 right-0 text-xs font-semibold text-amber-600 rounded-full">
+
+                            {notifications?.length || 0}
+                        </span>
+
+                        {/* <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-amber-600 rounded-full">
+                        </span> */}
+                    </button>
+
+                    <NavUser user={user} logout={logout} />
+                </div>
             </div>
-        </div>
-    )
+        </nav>
+    );
 }
-
-export default AdminTopNav;

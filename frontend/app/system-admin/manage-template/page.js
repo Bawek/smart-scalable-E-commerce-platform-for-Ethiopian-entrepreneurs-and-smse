@@ -177,8 +177,8 @@ const Templates = () => {
         console.log(data, 'tamplates')
         formData.append('status', data.status)
         formData.append('name', data.name)
-        formData.append('price', data.price)
-        formData.append('PreviewImage', data.PreviewImage)
+        formData.append('basePrice', data.basePrice)
+        formData.append('previewUrls', data.previewUrls)
         formData.append('description', data.description)
         try {
             const response = await axios.post('http://localhost:8000/api/templates/register', formData)
@@ -213,9 +213,9 @@ const Templates = () => {
     };
 
     return (
-        <div>
-            <div className="flex flex-col md:flex-row items-center justify-between">
-                <h1 className="text-2xl font-semibold text-gray-800">Manage Template</h1>
+        <div className="py-3">
+            <div className="flex flex-col md:flex-row gap-2 items-center justify-between">
+                <h1 className="text-2xl font-semibold dark:text-white">Manage Template</h1>
                 <div className="flex justify-end">
                     <Sheet open={isOpen} onOpenChange={setIsOpen}>
                         <SheetTrigger className="flex gap-2 justify-center items-center text-white p-2 rounded-md hover:bg-slate-900 bg-orange-700">

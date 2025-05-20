@@ -1,15 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
-// import Loading from "../loading";
-import { useParams, useRouter } from "next/navigation";
+import Loading from "../loading";
+import { useRouter } from "next/navigation";
 import { useGetshopQuery } from "@/lib/features/shop/publicShopSlice";
 import MenuBar from "../components/MenuBar/MenuBar";
-import Loading from "../customers/loading";
 
 export default function Shop() {
-  const params = useParams()
+  const params = useParam()
   const shopId = params.shopId;
-  // console.log(shopId,'params value')
   const [homepage, setHomepage] = useState({});
   const { data, error, isLoading } = useGetshopQuery(shopId);
   const router = useRouter();
@@ -23,7 +21,7 @@ export default function Shop() {
   useEffect(() => {
     if (data) {
       console.log("website data ", data);
-      const homePageData = data.pages.find((page) => page.name === "Home");
+      const homePageData = data.find((page) => page.name === "Home");
       setHomepage(homePageData);
     }
   }, [data]);

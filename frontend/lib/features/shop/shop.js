@@ -2,10 +2,17 @@ import { appApi } from "@/lib/appApi";
 
 export const shopApi = appApi.injectEndpoints({
   tagTypes: ["Shop"],
+  overrideExisting:true,
   endpoints: (builder) => ({
+    getAllShops: builder.query({
+      query: () => '/shops/get-all'
+    }),
     getShop: builder.query({
-      query: (shopId) => `getshop/${shopId}/`,
+      query: (shopId) => `/shops/get/${shopId}`,
       // providesTags: ["customisedPage"],
+    }),
+    getShopByMerchantTemplateId: builder.query({
+      query: (templateId) => `/shops/getby-merchant-template/${templateId}`,
     }),
     getShopByAccount: builder.query({
       query: (accountId) => `/shops/getby-account/${accountId}`,
@@ -23,10 +30,21 @@ export const shopApi = appApi.injectEndpoints({
       }),
       // invalidatesTags: ["Shop"],
     }),
+    updateById: builder.mutation({
+      query: (data) => ({
+        url: `/shops/update/${data.id}`,
+        method: "PUT",
+        body: data
+      }),
+    }),
   }),
 });
 export const {
   useCreateShopMutation,
   useGetShopByAccountQuery,
+  useGetShopByMerchantTemplateIdQuery,
+  useGetAllShopsQuery,
+  useGetShopQuery,
+  useUpdateByIdMutation
 } = shopApi;
 

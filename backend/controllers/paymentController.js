@@ -4,7 +4,8 @@ const { initializePayment, verifyPayment } = require("../services/chapaService")
 const generateTxRef = () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
 const createPayment = async (req, res) => {
-  const { amount, email, first_name, last_name, phone_number, currency } = req.body;
+  console.log(req.body, 'payment data');
+  const { amount, email, first_name, last_name, phone_number, currency, FRONTEND_BASE_URL } = req.body;
 
   // Generate tx_ref manually
   const tx_ref = generateTxRef();
@@ -17,8 +18,8 @@ const createPayment = async (req, res) => {
     last_name,
     phone_number: parseInt(phone_number),
     tx_ref,
-    callback_url: `${process.env.BASE_URL}/api/verify/${tx_ref}`,
-    return_url: `${process.env.BASE_URL}/customers/templates/pay/payment-info?tx_ref=${tx_ref}`,
+    callback_url: `${process.env.BACKEND_BASE_URL}/api/verify/${tx_ref}`,
+    return_url: `FRONTEND_BASE_URL`,
 
     customization: {
       title: "My Store",
@@ -52,7 +53,6 @@ const verifyPaymentProcess = async (req, res) => {
     // Check if payment is successful
     const isSuccess = chapaRes.status === 'success' && chapaRes.data.status === 'success';
 
-    // Return JSON response instead of redirecting
     if (isSuccess) {
       res.status(200).json({
         success: true,
@@ -73,7 +73,6 @@ const verifyPaymentProcess = async (req, res) => {
       });
     }
   } catch (err) {
-    // Handle verification failure
     res.status(500).json({
       success: false,
       status: 'error',

@@ -12,7 +12,7 @@ import { authSlice } from "./features/auth/authMerchant";
 import { shopApi } from "./features/shop/shop";
 import editorReducer from "./features/editor";
 import shopNameSlice from "./features/shop/shopNameSlice";
-import { publicShopSlice } from "./features/shop/publicShopSlice";
+// import { publicShopSlice } from "./features/shop/publicShopSlice";
 import currentPage from "./features/admin-my/currentPageSlice";
 import currentIdPage from "./features/admin-my/woking-page";
 import promptSlice from "./features/prompt";
@@ -24,6 +24,10 @@ import AdminEditor from "./features/admin-my/admin-editor";
 import { accountApi } from "./features/auth/accountApi";
 import { templateApi } from "./features/templates/templateApi";
 import storage from "./storage";
+import { merchantTemplateApi } from "./features/merchantTemplates/buyedTemplateApi";
+import cartReducer from './features/cart/cartSlice';
+
+
 
 // 🔐 Persist Configuration
 const persistConfig = {
@@ -42,7 +46,8 @@ const rootReducer = combineReducers({
 	[authSlice.reducerPath]: authSlice.reducer,
 	[shopApi.reducerPath]: shopApi.reducer,
 	[templateApi.reducerPath]: templateApi.reducer,
-	[publicShopSlice.reducerPath]: publicShopSlice.reducer,
+	[merchantTemplateApi.reducerPath]: merchantTemplateApi.reducer,
+	// [publicShopSlice.reducerPath]: publicShopSlice.reducer,
 
 	merchant: merchantSlice,
 	shopName: shopNameSlice,
@@ -56,6 +61,8 @@ const rootReducer = combineReducers({
 	status,
 	editor: editorReducer,
 	prompt: promptSlice,
+	cart:cartReducer,
+
 });
 
 // 🏭 Store Factory
@@ -71,8 +78,9 @@ export const makeStore = () =>
 				authSlice.middleware,
 				shopApi.middleware,
 				templateApi.middleware,
+				merchantTemplateApi.middleware,
 				accountApi.middleware,
-				publicShopSlice.middleware
+				// publicShopSlice.middleware
 			),
 	});
 

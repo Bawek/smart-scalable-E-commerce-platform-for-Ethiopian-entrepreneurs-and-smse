@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button"
-import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+import { ArrowUpDown, Loader, MoreHorizontal } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
@@ -12,31 +12,28 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import CustomDataTable from "@/components/ui/my-components/my-table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { imageViewer } from "../lib/imageViewer";
+import { useGetAllShopsQuery, useUpdateByIdMutation } from "@/lib/features/shop/shop";
+import { toast } from "react-toastify";
 
-// Dummy shop data (Replace with API call)
-const data = [
-  { shopId: "1", name: "Shop 1", owner: "Owner 1", status: "Active" },
-  { shopId: "2", name: "Shop 2", owner: "Owner 2", status: "Inactive" },
-  { shopId: "3", name: "Shop 3", owner: "Owner 3", status: "Active" },
-  { shopId: "4", name: "Shop 4", owner: "Owner 4", status: "Pending" },
-  { shopId: "5", name: "Shop 5", owner: "Owner 5", status: "Active" },
-  { shopId: "6", name: "Shop 6", owner: "Owner 6", status: "Inactive" },
-  { shopId: "7", name: "Shop 7", owner: "Owner 7", status: "Active" },
-  { shopId: "8", name: "Shop 8", owner: "Owner 8", status: "Pending" },
-  { shopId: "9", name: "Shop 9", owner: "Owner 9", status: "Inactive" },
-  { shopId: "10", name: "Shop 10", owner: "Owner 10", status: "Active" }
-];
 const ManageShops = () => {
-  const [shops, setShops] = useState(data);
+  const [shops, setShops] = useState([]);
   const [selectedShop, setSelectedShop] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isEditing, setIsEditing] = useState(false);
-  const { toast } = useToast()
   const router = useRouter()
+  const { data, isLoading, isError, error } = useGetAllShopsQuery()
+  const [updateById, { isError: isUpdateError, error: updateError }] = useUpdateByIdMutation()
+  useEffect(() => {
+    if (data?.shops) {
+      setShops(data.shops)
+    }
+  }, [data])
   // columns
   const columns = [
     {
@@ -62,11 +59,23 @@ const ManageShops = () => {
       enableHiding: false,
     },
     {
-      accessorKey: "shopId",
-      header: "Shop Id",
-      cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("shopId")}</div>
-      ),
+      accessorKey: "logoUrl",
+      header: "Shop Logo",
+      cell: ({ row }) => {
+        const logoUrl = row.original.logoUrl;
+        return (
+          <div className="w-10 h-10 rounded-md overflow-hidden border">
+            <img
+              src={imageViewer(logoUrl) || '/placeholder-product.png'}
+              alt={'logo-url'}
+              className="object-cover w-full h-full"
+              onError={(e) => {
+                e.target.src = '/placeholder-product.png';
+              }}
+            />
+          </div>);
+      }
+
     },
     {
       accessorKey: "name",
@@ -84,10 +93,12 @@ const ManageShops = () => {
       cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
     },
     {
-      accessorKey: "owner",
+      accessorKey: "merchant",
       header: () => <div className="text-right">Shop Owner</div>,
       cell: ({ row }) => {
-        return <div className="text-right font-medium">{row.getValue("owner")}</div>
+        const merchant = row.original.merchant;
+
+        return <div className="text-right font-medium">{merchant?.ownerName}</div>
       },
     },
     {
@@ -142,7 +153,7 @@ const ManageShops = () => {
 
               <DropdownMenuItem
                 className="cursor-pointer"
-                onClick={() => router.push(`/system-admin/manage-shops/${shop.shopId}`)}
+                onClick={() => router.push(`/system-admin/manage-shops/${shop.id}`)}
               >
                 View Details
               </DropdownMenuItem>
@@ -158,12 +169,41 @@ const ManageShops = () => {
     setSelectedShop(shop);
     setIsEditing(true);
   };
-
+  console.log(shops, 'shops here')
   // Save edited shop
-  const saveShopChanges = () => {
-    setShops(shops.map(shop => (shop.shopId === selectedShop.shopId ? selectedShop : shop)));
-    setIsEditing(false);
+  const saveShopChanges = async (shop) => {
+    console.log('hello it comes', selectedShop, data)
+    setIsSubmitting(true)
+    try {
+      const response = await updateById(selectedShop).unwrap()
+      console.log(response, 'response')
+      if (response.status !== 'success') {
+        return toast.success(response.message)
+      }
+      setShops(shops.map(shop => (shop.id === selectedShop.id ? response.shop : shop)));
+      setIsEditing(false);
+    } catch (error) {
+      console.log('update shop status error', error)
+      toast.error('sorry something go wrong.Tray again.')
+    }
+    finally {
+      setIsSubmitting(false)
+    }
   };
+  if (isLoading) {
+    return (
+      <div>
+        <h1>loading...</h1>
+      </div>
+    )
+  }
+  if (isError) {
+    return (
+      <div>
+        <h1>sorry Something went wrong. we can not load the shops.</h1>
+      </div>
+    )
+  }
 
   return (
     <div className="">
@@ -171,29 +211,45 @@ const ManageShops = () => {
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent>
           <DialogTitle>Edit Shop Details</DialogTitle>
+          {
+            isUpdateError &&
+            <DialogDescription>
+              {updateError?.message}
+            </DialogDescription>
+          }
           {selectedShop && (
             <div className="space-y-3">
               <input
                 type="text"
                 value={selectedShop.name}
+                disabled
                 onChange={(e) => setSelectedShop({ ...selectedShop, name: e.target.value })}
-                className="border p-2 w-full rounded"
+                className="border p-2 w-full rounded dark:bg-gray-800 dark:text-white"
               />
               <input
                 type="text"
-                value={selectedShop.owner}
+                value={selectedShop?.merchant?.ownerName}
+                disabled
                 onChange={(e) => setSelectedShop({ ...selectedShop, owner: e.target.value })}
-                className="border p-2 w-full rounded"
+                className="border p-2 w-full rounded dark:bg-gray-800 dark:text-white"
               />
               <select
                 value={selectedShop.status}
                 onChange={(e) => setSelectedShop({ ...selectedShop, status: e.target.value })}
-                className="border p-2 w-full rounded"
+                className="border p-2 w-full rounded dark:bg-gray-800 dark:text-white"
               >
-                <option value="Active">Active</option>
-                <option value="Suspended">Suspended</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="SUSPENDED">SUSPENDED</option>
               </select>
-              <Button onClick={saveShopChanges} className="w-full">Save Changes</Button>
+              <Button onClick={saveShopChanges} className="w-full dark:bg-gray-800 dark:text-white">
+                {
+                  isSubmitting &&
+                  <Loader className="w-6 h-6 animate-spin" />
+                }
+                {
+                  isSubmitting ? ' Saving' : 'Save changes'
+                }
+              </Button>
             </div>
           )}
         </DialogContent>

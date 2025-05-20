@@ -55,7 +55,7 @@ const MerchantDetailPage = () => {
             <div className="max-w-6xl mx-auto">
                 {/* Header Section */}
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold">{`${merchant?.account?.firestName} ${merchant?.account?.lastName}`}</h1>
+                    <h1 className="text-3xl font-bold">{`${merchant?.account?.firstName} ${merchant?.account?.lastName}`}</h1>
                     <div className="flex gap-2">
                         {/* <Button className="">
                             Edit Merchant
@@ -82,27 +82,27 @@ const MerchantDetailPage = () => {
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Left Column */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm">
+                    <div className=" p-6 rounded-xl shadow-sm">
                         <h2 className="text-xl font-semibold mb-4">General Information</h2>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="text-sm text-gray-500">Merchant ID</label>
+                                <label className="text-sm ">Merchant ID</label>
                                 <p className="font-medium">{merchant.id}</p>
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-500">Registration Date</label>
+                                <label className="text-sm ">Registration Date</label>
                                 <p className="font-medium">{merchant.registrationDate}</p>
                             </div>
 
                             <div>
-                                <label className="text-sm text-gray-500">Last Login</label>
+                                <label className="text-sm ">Last Login</label>
                                 <p className="font-medium">{merchant?.status !== 'ACTIVE' ? "PENDING TILL YET" : merchant.lastLogin}</p>
                             </div>
                             {/* Location Info */}
                             <div className="mt-4">
-                                <label className="text-sm text-gray-500">Address Information</label>
+                                <label className="text-sm ">Address Information</label>
                                 <div className="font-medium">
                                     <p><strong>Town:</strong> {merchant?.location.town}</p>
                                     <p><strong>Country:</strong> {merchant?.location.country}</p>
@@ -117,17 +117,17 @@ const MerchantDetailPage = () => {
                     {/* Right Column */}
                     <div className="space-y-8">
                         {/* Contact Information Card */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm">
+                        <div className=" p-6 rounded-xl shadow-sm">
                             <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
 
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
-                                    <Edit className="w-5 h-5 text-gray-400" />
+                                    <Edit className="w-5 h-5 " />
                                     <span className="font-medium">{merchant?.account?.email}</span>
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                    <PhoneMissed className="w-5 h-5 text-gray-400" />
+                                    <PhoneMissed className="w-5 h-5 " />
                                     <span className="font-medium">{merchant?.businessPhone}</span>
                                 </div>
                             </div>
@@ -138,30 +138,18 @@ const MerchantDetailPage = () => {
                 </div>
 
                 {/* Admin Actions Section */}
-                <div className="mt-8 bg-white p-6 rounded-xl shadow-sm">
+                <div className="mt-8  p-6 rounded-xl shadow-sm">
                     <h2 className="text-xl font-semibold mb-4"> Actions</h2>
                     <div className="flex flex-col md:flex-row justify-between gap-4">
                         <select
                             onChange={(e) => handleChange(e)}
                             value={currentStatus || 'select status'}
-                            className="rounded-md w-full border border-gray-400 focus:outline-none">
+                            className="rounded-md w-full border border-gray-400 focus:outline-none dark:bg-gray-800">
                             <option className="hover:bg-gray-400" value={'ACTIVE'}>ACTIVE</option>
                             <option className="hover:bg-gray-400" value={'SUSPENDED'}>SUSPENDED</option>
                             <option className="hover:bg-gray-400" value="PENDING">PENDING</option>
                         </select>
-                        {/* <CustomSelect
-                            data={[
-                                'ACTIVE',
-                                'SUSPENDED',
-                                'PENDING',
-                            ]}
-                            onChange={handleChange}
-                            value={""}
-                            title={'Status'}
-                            width={''}
-                        /> */}
-
-                        <Button className="w-full">
+                        <Button className="w-full dark:bg-gray-800 dark:text-white">
                             Delete Merchant
                         </Button>
                     </div>

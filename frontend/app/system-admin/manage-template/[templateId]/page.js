@@ -1,5 +1,4 @@
 'use client'
-import { CustomForm } from '@/app/[locale]/components/forms/common-form/my-form'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
 import { fields } from '../../lib/template-uload-form-controls'
@@ -7,6 +6,7 @@ import { pageSchema } from '../../lib/templateValidation'
 import { useState } from 'react'
 import axios from 'axios'
 import { useToast } from '@/hooks/use-toast'
+import { CustomForm } from '@/app/components/forms/common-form/my-form'
 
 const EditTemplate = () => {
     const params = useParams()
@@ -18,8 +18,8 @@ const EditTemplate = () => {
         const formData = new FormData()
         formData.append('status', data.status)
         formData.append('name', data.name)
-        formData.append('price', data.price)
-        formData.append('PreviewImage', data.PreviewImage)
+        formData.append('basePrice', data.basePrice)
+        formData.append('previewUrls', data.previewUrls)
         formData.append('description', data.description)
         try {
             const response = await axios.put(`http://localhost:8000/api/templates/update/${templateId}`, formData)

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 const httpError = require('../middlewares/httpError')
-const generateAccessToken = async (userInfo) => {
+const generateAccessToken = async (userInfo,next) => {
     try {
         return await jwt.sign(
             { userInfo },
@@ -13,7 +13,7 @@ const generateAccessToken = async (userInfo) => {
         next(new httpError(error.message, 500))
     }
 }
-const generateRefreshToken = async (userInfo) => {
+const generateRefreshToken = async (userInfo,next) => {
     try {
         return await jwt.sign(
             { userInfo },
