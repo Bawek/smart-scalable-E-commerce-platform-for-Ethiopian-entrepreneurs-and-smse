@@ -1,8 +1,8 @@
 'use client'
-import React, { useEffect, useRef, useState } from 'react';
-import { useTemplate } from './layout';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { TemplateContext } from './layout';
 const EcommerceTemplate = () => {
-  const { domain, data, isLoading } = useTemplate();
+  const { domain, data, isLoading } = useContext(TemplateContext);
   const [currentTemplate, setCurrentTemplate] = useState({
     html: '<h1 className="text-center text-red-600"> loading the page ... </h1>',
     css: `h1{text-align:center;color:red;}`

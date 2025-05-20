@@ -5,7 +5,7 @@ const path = require('path');
 const registerTemplate = async (req, res, next) => {
     const {
         name,
-        price,
+        basePrice,
         description,
     } = req.body
     if (!req.file) return res.status(400).json({ message: 'File is required', success: false })
@@ -21,7 +21,7 @@ const registerTemplate = async (req, res, next) => {
         const newTemplate = await prisma.baseTemplate.create({
             data: {
                 name,
-                basePrice: parseFloat(price),
+                basePrice: parseFloat(basePrice),
                 description,
                 previewUrls: [req.file.filename]
             }
@@ -143,14 +143,15 @@ const updateTempalate = async (req, res, next) => {
     try {
         //  Check if the file is required, if provided, handle the file logic
         if (req.file) {
-            const currentTemplate = await prisma.template.findUnique({
+            const currentTemplate = await prisma.baseTemplate.findUnique({
                 where: { id: templateId },
-                select: { previewImage: true }
+                select: { previewUrls: true }
             });
 
-            if (currentTemplate && currentTemplate.previewImage.length > 0) {
+
+            if (currentTemplate && currentTemplate.previewUrls.length > 0) {
                 // If a file already exists, delete it from the server (assuming the file is stored locally)
-                const oldFileName = currentTemplate.previewImage[0]; // Assuming previewImage is an array of file paths
+                const oldFileName = currentTemplate.previewUrls[0]; // Assuming previewUrls is an array of file paths
                 const oldFilePath = path.join(__dirname, '..', 'uploads', "images", oldFileName); // Adjust the path as necessary
                 if (fs.existsSync(oldFilePath)) {
                     fs.unlinkSync(oldFilePath);
@@ -158,18 +159,19 @@ const updateTempalate = async (req, res, next) => {
             }
 
             // Save the new file path from the uploaded file
-            previewImage = [req.file.filename];
         }
+        console.log(req.file,req?.files)
+        const previewUrls = [req?.file?.filename];
 
         //Prepare the data to update
-        const updateData = {
+        const updateData = {  
             ...req.body,
-            ...(req.body.price && { price: parseFloat(req.body.price) }),
-            ...(previewImage && { previewImage })
+            ...(req.body.basePrice && { basePrice: parseFloat(req.body.basePrice) }),
+            ...(previewUrls && { previewUrls })
         };
 
         //  Update the template with the provided templateId
-        const template = await prisma.template.update({
+        const template = await prisma.baseTemplate.update({
             where: {
                 id: templateId
             },
@@ -197,8 +199,6 @@ const updateTempalate = async (req, res, next) => {
 const buyTemplate = async (req, res, next) => {
     const { accountId } = req.params;
     const { templateId } = req.body;
-    console.log(accountId, 'sa', templateId)
-
     try {
         // Start a transaction to ensure data consistency
         const [merchant, template] = await prisma.$transaction([
@@ -219,7 +219,6 @@ const buyTemplate = async (req, res, next) => {
         if (!template) {
             return next(new httpError('There is no template with this Id', 404));
         }
-
         // Create the custom template
         const customTemplate = await prisma.merchantTemplate.create({
             data: {
@@ -246,7 +245,6 @@ const buyTemplate = async (req, res, next) => {
                 data: customPagesData
             });
         }
-
         // Respond with success
         res.status(200).json({
             status: 'success',

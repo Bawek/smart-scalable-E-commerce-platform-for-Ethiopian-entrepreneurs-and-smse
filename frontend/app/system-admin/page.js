@@ -7,9 +7,16 @@ import { SectionCards } from "./components/dashbard-cards";
 
 export default function Dashboard() {
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+    <div className="min-h-screen w-full text-foreground flex flex-col">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8  space-y-6">
+
+        {/* Dashboard Title */}
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-center text-primary">
+          Admin Dashboard Overview
+        </h1>
+      </div>
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div className="flex flex-col gap-4  md:gap-6">
           <SectionCards />
           <div className="px-4 lg:px-6">
             <CardLineChart />

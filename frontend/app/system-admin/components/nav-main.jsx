@@ -1,63 +1,57 @@
 "use client"
 
-import { ChevronRight } from "lucide-react";
 
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import {
   SidebarGroup,
-  SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
-import Link from "next/link";
+import { useSelector } from "react-redux"
+import { DashboardCustomizeTwoTone } from "@mui/icons-material"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
-export function NavMain({
-  items
-}) {
+export function NavMain({ items }) {
+  const account = useSelector((state) => state.account)
+  const pathname = usePathname();
+
+  console.log(pathname,'pathName')
   return (
-    (<SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
-      <SidebarMenu className="m-0 p-0">
-        {items.map((item) => (
-          <Collapsible
-            key={item.title}
-            asChild
-            defaultOpen={item.isActive}
-            className="group/collapsible">
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
+    <SidebarGroup>
+      <SidebarGroupContent className="flex flex-col gap-2">
+        <SidebarMenu>
+          <SidebarMenuItem className="flex items-center gap-2">
+            <SidebarMenuButton
+              tooltip="Merchant Dashbaord"
+              className="min-w-8 bg-orange-600 text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
+            >
+              <DashboardCustomizeTwoTone />
+              <span> {account?.firestName} Dashboard</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+        <SidebarMenu>
+          {items.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <Link href={item.url}>
+                <SidebarMenuButton
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors
+                              ${pathname === item.url
+                      ? 'border-l-4 border-amber-500 focus:border-none focus:outline-none bg-amber-100 dark:bg-gray-600 font-semibold'
+                      : 'hover:bg-muted dark:hover:bg-gray-700'}
+`}
+                  tooltip={item.title}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
-                  <ChevronRight
-                    className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                 </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
-                        <Link className="no-underline text-black dark:text-white" href={subItem.url}>
-                          <span>{subItem.title}</span>
-                        </Link>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
+              </Link>
             </SidebarMenuItem>
-          </Collapsible>
-        ))}
-      </SidebarMenu>
-    </SidebarGroup>)
-  );
+          ))}
+        </SidebarMenu>
+
+      </SidebarGroupContent>
+    </SidebarGroup>
+  )
 }

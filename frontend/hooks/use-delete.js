@@ -16,11 +16,10 @@ export function useDelete() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: itemId }),
       });
 
       if (!response.ok) {
-        return toast.error('Failed to delete item');
+      return  onError?.()
       }
 
       onSuccess?.();

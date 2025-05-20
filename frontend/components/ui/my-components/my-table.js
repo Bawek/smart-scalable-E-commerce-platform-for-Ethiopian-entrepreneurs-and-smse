@@ -65,11 +65,6 @@ export default function CustomDataTable({ data, columns, searchColumen }) {
           }
           className="max-w-sm"
         />
-        <Slider
-         defaultValue={50}
-          aria-label="Default" 
-          valueLabelDisplay="auto"
-           />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto dark:text-white">

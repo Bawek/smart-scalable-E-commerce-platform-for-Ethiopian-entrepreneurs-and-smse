@@ -7,14 +7,14 @@ export const fields = [
         type: "text", // Text input
     },
     {
-        name: "price",
+        name: "basePrice",
         label: "Template Price",
         placeholder: "Enter your Template Price",
         description: "Provide the Template Price.",
         type: "Number", // Text input
     },
     {
-        name: "PreviewImage",
+        name: "previewUrls",
         label: "Preview Image",
         type: "file", // Checkbox input
         description: "Enter your Preview Image .",

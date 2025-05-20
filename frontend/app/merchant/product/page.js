@@ -30,6 +30,8 @@ import Link from 'next/link';
 import { useDelete } from '@/hooks/use-delete';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import { useGetProductsQuery } from '@/lib/features/products/products';
+import Loader from '@/app/components/Prompt/Loader';
 // Sample data 
 const sampleInventory = [
   {
@@ -100,16 +102,16 @@ const sampleInventory = [
 
 export default function Inventory() {
 
-  const [inventory, setInventory] = useState(sampleInventory);
+  const [inventory, setInventory] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { data: prodcutData, isLoading, isError, error } = useGetProductsQuery()
+  console.log(prodcutData,'new pro data',inventory)
   const { deleteItem } = useDelete()
   const router = useRouter()
   const handleDelete = async (id) => {
     try {
       deleteItem({
-        endpoint: `/api/inventory/${id}`, // Adjust the endpoint as needed
+        endpoint: `http://localhost:8000/api/products/delete/${id}`, // Adjust the endpoint as needed
         itemId: id,
         onSuccess: () => {
           setDeleteDialogOpen(false);
@@ -321,30 +323,23 @@ export default function Inventory() {
 
   // Fetch inventory data
   useEffect(() => {
-    setInventory(sampleInventory)
-    //const fetchInventory = async () => {
-    //   try {
-    //     const res = await fetch('/api/inventory');
-    //     const data = await res.json();
-    //     setInventory(data);
-    //     setFilteredItems(data);
-    //   } catch (err) {
-    //     setError(err.message);
-    //   } finally {
-    //     setIsLoading(false);
-    //   }
-    // };
-    // fetchInventory();
-    setIsLoading(false);
+    setInventory(prodcutData?.products)
 
-  }, []);
 
-  if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
+  }, [prodcutData]);
 
+  if (isError) return <div className="p-4 text-red-500">Error: {error}</div>;
+  if (isLoading) {
+    return (
+      <div className='w-full flex justify-center items-center'>
+        <Loader />
+      </div>
+    )
+  }
   return (
     <div className="min-h-screen pt-0 mt-0">
       <main className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-6 text-center">Inventory Management</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center dark:text-white">Inventory Management</h1>
 
         {/* Stats Cards */}
         <InventoryStats inventory={inventory} />

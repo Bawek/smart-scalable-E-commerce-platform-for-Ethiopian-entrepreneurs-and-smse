@@ -91,11 +91,11 @@ export function AppSidebar(props) {
       <SidebarContent>
         <MerchantSideNav items={data.navMain} />
       </SidebarContent>
-      <SidebarFooter className="bg-gray-900 text-gray-400 text-xs px-4 py-3 border-t border-gray-700">
+      <SidebarFooter className="bg-amber-100 text-xs px-4 py-3 border-t border-gray-300">
         <div className="flex flex-col gap-1">
           <div className="flex justify-between">
             <span>Role:</span>
-            <span className="text-white font-semibold">Merchant</span>
+            <span className="font-semibold">Merchant</span>
           </div>
           <div className="text-center text-gray-500">
             © 2025 EE-platform Inc.

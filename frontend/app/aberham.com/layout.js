@@ -1,14 +1,19 @@
 "use client";
 import React, { useEffect, useState, createContext, useContext } from "react";
 import { useGetMerchantTemplateByDomainQuery } from "@/lib/features/merchantTemplates/buyedTemplateApi";
-const TemplateContext = createContext();
-
-export function useTemplate() {
-  return useContext(TemplateContext);
-}
+// Create a context
+export const TemplateContext = createContext({
+  domain: "",
+  data: null,
+  isLoading: false,
+});
 export default function AberhamLayout({ children }) {
   const [domain, setDomain] = useState("");
-
+  const [myTemplate, setMytemplate] = useState([])
+  useEffect(() => {
+    setDomain(window.location.pathname.slice(1));
+  }, [domain]);
+  const { data, isLoading } = useGetMerchantTemplateByDomainQuery(domain);
   const [headerPage, setHeaderPage] = useState({
     html: '<button id="contactBtn">Contact</button>',
     css: "#contactBtn { color: blue; }",
@@ -17,13 +22,11 @@ export default function AberhamLayout({ children }) {
     html: '<button id="subscribeBtn">Subscribe</button>',
     css: "#subscribeBtn { color: green; }",
   });
-
   useEffect(() => {
-    setDomain(window.location.pathname.slice(1));
-  }, []);
+    setMytemplate(data)
+  }, [data]);
 
-  const { data, isLoading } = useGetMerchantTemplateByDomainQuery(domain);
-
+  console.log(domain, 'domain')
   useEffect(() => {
     if (!isLoading && data?.template?.customPages?.length > 0) {
       const pages = data.template.customPages;
@@ -33,6 +36,7 @@ export default function AberhamLayout({ children }) {
       if (footer) setFooterPage(footer);
     }
   }, [isLoading, data]);
+  console.log(data)
 
   useEffect(() => {
     // Handle user dropdown toggle
@@ -90,7 +94,7 @@ export default function AberhamLayout({ children }) {
   }, [headerPage.html, footerPage.html]); // re-run on GrapesJS updates
 
   return (
-    <TemplateContext.Provider value={{ domain, data, isLoading }}>
+    <TemplateContext.Provider value={{ domain, data:myTemplate, isLoading }}>
       <div className="min-h-screen min-w-full">
         <style>{headerPage.css}</style>
         <style>{footerPage.css}</style>

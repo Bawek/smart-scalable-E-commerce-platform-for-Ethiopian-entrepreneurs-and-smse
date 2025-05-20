@@ -24,7 +24,7 @@ const MerchantTemplates = () => {
     console.log(account.id, 'accountid')
     const { data, isLoading, isError, refetch } = useGetMerchantTemplatesByAccountQuery(account.id)
     const [changeMerchantTemplate, { isError: changeError, isSuccess: changeSuccess }] = useChangeMerchantTemplateMutation()
-    const handleUseIt = async (id) => {  
+    const handleUseIt = async (id) => {
         try {
             await changeMerchantTemplate(id).unwrap()
             console.log(changeError, changeSuccess)
@@ -137,11 +137,7 @@ const MerchantTemplates = () => {
                                 className="cursor-pointer"
                                 onClick={() => {
                                     navigator.clipboard.writeText(template.id)
-                                    toast({
-                                        title: "Copied",
-                                        description: <p className="text-black">{template?.id}</p>,
-                                        variant: "default"
-                                    })
+                                    return toast.success('Template id is Copied')
                                 }}
                             >
                                 Copy template Id

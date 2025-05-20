@@ -130,7 +130,6 @@ export default function MerchantFullRegistration({ existingData, onSuccess, mSta
                 <h1 className="text-2xl font-bold text-gray-800">
                     {existingData ? "Edit Merchant" : "New Merchant Registration"}
                 </h1>
-
                 {existingData && (
                     <div className="flex items-center space-x-2">
                         <label>Edit Mode</label>

@@ -6,12 +6,6 @@ import MetricCard from "../components/cardMatrics";
 import CardLineChart from "@/app/components/Cards/CardLineChart";
 import { Button } from "@/components/ui/button";
 import { RecentSales } from "../components/resentSell";
-// import { CalendarDateRangePicker } from "@/components/date-range-picker";
-// import { OverviewChart } from "@/components/overview-chart";
-// import { SalesByCategoryChart } from "@/components/sales-by-category";
-// import { RecentSales } from "@/components/recent-sales";
-// import { MetricCard } from "@/components/metric-card";
-
 export default function AnalyticsPage() {
   // Sample data - replace with your API calls
   const metrics = [
