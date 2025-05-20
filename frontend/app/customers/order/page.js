@@ -1,168 +1,92 @@
-"use client";
+'use client';
+import React, { useEffect, useState } from 'react';
 
-import { useState } from "react";
-import { useSelector } from "react-redux";
-import { FaMoneyCheckAlt } from "react-icons/fa";
-import { useProcessPayment } from "@/service/payment.service";
-import { useToast } from "@/hooks/use-toast";
+// Mock API calls
+const fetchOrderStatus = async (orderId) => {
+    return {
+        id: orderId,
+        status: 'Processing',
+        items: [
+            { name: 'Coffee Beans', quantity: 2 },
+            { name: 'Ceramic Mug', quantity: 1 },
+        ],
+        merchant: {
+            name: 'Ethiopian Coffee Shop',
+            contact: 'merchant@example.com',
+        },
+        estimatedDelivery: '2024-07-10',
+    };
+};
 
-export default function CheckoutPage() {
-  const { totalAmount, totalQuantity } = useSelector((state) => state.cart);
-  const { processPayment, isLoading: paymentLoading } = useProcessPayment();
-  const { toast } = useToast();
+const sendMessageToMerchant = async (orderId, message) => {
+    return { success: true };
+};
 
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    street: "",
-    city: "",
-    state: "",
-    zipcode: "",
-    country: "",
-    phone: "",
-  });
+export default function OrderPage() {
+    const [order, setOrder] = useState(null);
+    const [message, setMessage] = useState('');
+    const [sending, setSending] = useState(false);
+    const [sent, setSent] = useState(false);
 
-  const [paymentMethod, setPaymentMethod] = useState("chapa");
+    useEffect(() => {
+        fetchOrderStatus('12345').then(setOrder);
+    }, []);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handlePayment = async () => {
-    const {
-      firstName,
-      lastName,
-      email,
-      street,
-      city,
-      state,
-      zipcode,
-      country,
-      phone,
-    } = form;
-
-    // Validate form fields
-    if (!firstName || !lastName || !email || !street || !city || !state || !zipcode || !country || !phone) {
-      toast({
-        title: "Missing Information",
-        description: "Please ensure all fields are filled before proceeding.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const data = {
-      amount: totalAmount + 10, // Including shipping fee
-      email,
-      first_name: firstName,
-      last_name: lastName,
-      phone_number: phone,
-      street,
-      city,
-      state,
-      zipcode,
-      country,
+    const handleSendMessage = async (e) => {
+        e.preventDefault();
+        setSending(true);
+        await sendMessageToMerchant(order.id, message);
+        setSending(false);
+        setSent(true);
+        setMessage('');
     };
 
-    try {
-      await processPayment(data);
-    } catch (err) {
-      console.error("Payment Error:", err);
-      toast({
-        title: "Payment Failed",
-        description: err.message || "Something went wrong while processing your payment.",
-        variant: "destructive",
-      });
-    }
-  };
+    if (!order) return <div className="text-center text-lg py-10">Loading order details...</div>;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  };
+    return (
+        <div className="max-w-xl mx-auto px-4 py-8">
+            <h2 className="text-2xl font-semibold mb-4">Order Tracking</h2>
 
-  return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white px-4 py-10 md:px-20">
-      <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-10">
-        {/* Delivery Info */}
-        <div>
-          <h2 className="text-2xl font-bold mb-6 border-b border-orange-600 pb-2">
-            DELIVERY <span className="text-orange-600">INFORMATION</span>
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { name: "firstName", placeholder: "First name" },
-              { name: "lastName", placeholder: "Last name" },
-              { name: "email", placeholder: "Email", colSpan: true },
-              { name: "street", placeholder: "Street address", colSpan: true },
-              { name: "city", placeholder: "City" },
-              { name: "state", placeholder: "State" },
-              { name: "zipcode", placeholder: "Zip code" },
-              { name: "country", placeholder: "Country" },
-              { name: "phone", placeholder: "Phone number", colSpan: true },
-            ].map(({ name, placeholder, colSpan }) => (
-              <input
-                key={name}
-                name={name}
-                placeholder={placeholder}
-                onChange={handleChange}
-                className={`border border-black dark:border-white bg-transparent rounded-md px-4 py-2 outline-none focus:ring-2 focus:ring-orange-600 transition-all duration-200 ${
-                  colSpan ? "col-span-2" : ""
-                }`}
-              />
-            ))}
-          </div>
+            <div className="space-y-1 text-gray-700 mb-4">
+                <div><span className="font-medium">Order ID:</span> {order.id}</div>
+                <div><span className="font-medium">Status:</span> {order.status}</div>
+                <div><span className="font-medium">Estimated Delivery:</span> {order.estimatedDelivery}</div>
+            </div>
+
+            <h3 className="text-xl font-semibold mt-6 mb-2">Items</h3>
+            <ul className="list-disc list-inside space-y-1 mb-4">
+                {order.items.map((item, idx) => (
+                    <li key={idx}>
+                        {item.name} × {item.quantity}
+                    </li>
+                ))}
+            </ul>
+
+            <h3 className="text-xl font-semibold mt-6 mb-2">Merchant</h3>
+            <div className="space-y-1 text-gray-700 mb-4">
+                <div><span className="font-medium">Name:</span> {order.merchant.name}</div>
+                <div><span className="font-medium">Contact:</span> {order.merchant.contact}</div>
+            </div>
+
+            <h3 className="text-xl font-semibold mt-6 mb-2">Contact Merchant</h3>
+            <form onSubmit={handleSendMessage} className="space-y-4">
+                <textarea
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    rows={3}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Type your message to the merchant..."
+                    required
+                />
+                <button
+                    type="submit"
+                    disabled={sending || !message.trim()}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+                >
+                    {sending ? 'Sending...' : 'Send Message'}
+                </button>
+                {sent && <div className="text-green-600 text-sm">Message sent!</div>}
+            </form>
         </div>
-
-        {/* Cart & Payment */}
-        <div>
-          <h2 className="text-2xl font-bold mb-6 border-b border-orange-600 pb-2">
-            ORDER <span className="text-orange-600">SUMMARY</span>
-          </h2>
-          <div className="text-sm border border-black dark:border-white rounded-lg overflow-hidden">
-            <div className="flex justify-between p-4 border-b border-black dark:border-white">
-              <span>Subtotal ({totalQuantity} items)</span>
-              <span>${totalAmount.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between p-4 border-b border-black dark:border-white">
-              <span>Shipping</span>
-              <span>$10.00</span>
-            </div>
-            <div className="flex justify-between p-4 font-bold text-lg">
-              <span>Total</span>
-              <span>${(totalAmount + 10).toFixed(2)}</span>
-            </div>
-          </div>
-
-          {/* Payment Method */}
-          <h3 className="mt-6 mb-3 font-semibold text-lg border-b border-orange-600 pb-1">
-            PAYMENT METHOD
-          </h3>
-          <div className="flex flex-col gap-4">
-            <label className="flex items-center gap-4 border border-black dark:border-white rounded-md px-4 py-3 cursor-pointer transition-all hover:border-orange-600">
-              <input
-                type="radio"
-                name="payment"
-                value="chapa"
-                checked={paymentMethod === "chapa"}
-                onChange={() => setPaymentMethod("chapa")}
-                className="accent-orange-600 w-5 h-5"
-              />
-              <FaMoneyCheckAlt className="text-orange-600 text-2xl" />
-              <span className="text-black dark:text-white font-medium">Pay with Chapa</span>
-            </label>
-          </div>
-
-          <button
-            type="submit"
-            className="mt-6 w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-md font-bold transition"
-            disabled={paymentLoading}
-          onClick={handlePayment}
-          >
-            {paymentLoading ? "Processing..." : "PLACE ORDER"}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
+    );
 }

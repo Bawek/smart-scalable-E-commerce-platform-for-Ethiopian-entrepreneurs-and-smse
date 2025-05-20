@@ -28,6 +28,7 @@ import { merchantTemplateApi } from "./features/merchantTemplates/buyedTemplateA
 import cartReducer from './features/cart/cartSlice';
 
 
+
 // 🔐 Persist Configuration
 const persistConfig = {
 	key: "account",
@@ -61,7 +62,6 @@ const rootReducer = combineReducers({
 	editor: editorReducer,
 	prompt: promptSlice,
 	cart:cartReducer,
-	    cart: cartReducer,
 
 });
 
