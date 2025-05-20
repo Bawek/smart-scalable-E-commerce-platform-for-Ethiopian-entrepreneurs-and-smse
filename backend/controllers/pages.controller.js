@@ -12,7 +12,7 @@ const registerPage = async (req, res, next) => {
         if (page) return next(new httpError('Sorry The page is present', 409))
         const newPage = await prisma.basePage.create({
             data: {
-                name: req.body.name, 
+                name: req.body.name,
                 html: req.body.html,
                 css: req.body.css,
                 js: req.body.js,
@@ -33,6 +33,23 @@ const registerPage = async (req, res, next) => {
 const getAllPage = async (req, res, next) => {
     try {
         const pages = await prisma.basePage.findMany()
+        if (!pages) return res.status(200).json({
+            pages: [],
+            status: 'success',
+        })
+        res.status(200).json({
+            pages,
+            status: 'success'
+        })
+    } catch (error) {
+        console.log('Register Merchant Error', error)
+        next(new httpError(error.message, 500))
+    }
+
+}
+const getAllCustomPage = async (req, res, next) => {
+    try {
+        const pages = await prisma.customPage.findMany()
         if (!pages) return res.status(200).json({
             pages: [],
             status: 'success',
@@ -72,12 +89,12 @@ const getPagesByTemplate = async (req, res, next) => {
 const updatePage = async (req, res, next) => {
     const { pageId } = req.params
     const { name, id } = req.body;
-    console.log(pageId,'merchant')
-    try { 
+    console.log(pageId, 'merchant')
+    try {
         const page = await prisma.basePage.upsert({
-            where: { id: pageId }, 
+            where: { id: pageId },
             update: {
-                name: req.body.name, 
+                name: req.body.name,
                 html: req.body.html,
                 css: req.body.css,
                 js: req.body.js,
@@ -153,5 +170,6 @@ module.exports = {
     updatePage,
     getPagesByTemplate,
     getById,
-    deletePageById
+    deletePageById,
+    getAllCustomPage
 }

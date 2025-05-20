@@ -1,13 +1,37 @@
-// app/aberham.com/product/[id]/page.js
-export const metadata = {
-  title: 'product | aberham.com',
-}
+'use client'
+import { useParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useTemplate } from '../../layout';
 
-export default function ProductPage({ params }) {
+const ProductDetail = () => {
+  const { domain, data, isLoading } = useTemplate();
+
+  const { id } = useParams();
+  const [currentTemplate, setCurrentTemplate] = useState({
+    html: `<div class="product-detail-loading">Loading product ${id}...</div>`,
+    css: `.product-detail-loading { padding: 2rem; }`
+  });
+
+  useEffect(() => {
+    if (!isLoading && data?.template?.customPages) {
+      const productDetailPage = data.template.customPages.find(page => page.name === "product-detail");
+      if (productDetailPage) {
+        // You can dynamically insert the product ID into the template
+        let customizedHtml = productDetailPage.html.replace(/{productId}/g, id);
+        setCurrentTemplate({
+          ...productDetailPage,
+          html: customizedHtml
+        });
+      }
+    }
+  }, [data, isLoading, id]);
+
   return (
-    <section className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">aberham.com product</h1>
-      <p className="text-lg">ID: {params.id}</p>
-    </section>
-  )
-}
+    <div className="product-detail-page">
+      <style>{currentTemplate.css}</style>
+      <div dangerouslySetInnerHTML={{ __html: currentTemplate.html }} />
+    </div>
+  );
+};
+
+export default ProductDetail;

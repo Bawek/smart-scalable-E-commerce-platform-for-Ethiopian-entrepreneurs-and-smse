@@ -1,19 +1,16 @@
 "use client";
 import React, { useEffect, useState, createContext, useContext } from "react";
 import { useGetMerchantTemplateByDomainQuery } from "@/lib/features/merchantTemplates/buyedTemplateApi";
-// Create a context
-export const TemplateContext = createContext({
-  domain: "",
-  data: null,
-  isLoading: false,
-});
+import { usePathname } from "next/navigation";
+const TemplateContext = createContext();
+
+export function useTemplate() {
+  return useContext(TemplateContext);
+}
 export default function AberhamLayout({ children }) {
-  const [domain, setDomain] = useState("");
-  const [myTemplate, setMytemplate] = useState([])
-  useEffect(() => {
-    setDomain(window.location.pathname.slice(1));
-  }, [domain]);
-  const { data, isLoading } = useGetMerchantTemplateByDomainQuery(domain);
+  const pathname = usePathname();
+  const firstSegment = pathname.split('/')[1];
+  const [domain, setDomain] = useState(firstSegment);
   const [headerPage, setHeaderPage] = useState({
     html: '<button id="contactBtn">Contact</button>',
     css: "#contactBtn { color: blue; }",
@@ -22,10 +19,11 @@ export default function AberhamLayout({ children }) {
     html: '<button id="subscribeBtn">Subscribe</button>',
     css: "#subscribeBtn { color: green; }",
   });
-  useEffect(() => {
-    setMytemplate(data)
-  }, [data]);
+  // useEffect(() => {
+  //   setDomain(window.location.pathname.slice(1));
+  // }, []);
 
+  const { data, isLoading } = useGetMerchantTemplateByDomainQuery(domain);
   console.log(domain, 'domain')
   useEffect(() => {
     if (!isLoading && data?.template?.customPages?.length > 0) {
@@ -36,7 +34,6 @@ export default function AberhamLayout({ children }) {
       if (footer) setFooterPage(footer);
     }
   }, [isLoading, data]);
-  console.log(data)
 
   useEffect(() => {
     // Handle user dropdown toggle
@@ -94,7 +91,7 @@ export default function AberhamLayout({ children }) {
   }, [headerPage.html, footerPage.html]); // re-run on GrapesJS updates
 
   return (
-    <TemplateContext.Provider value={{ domain, data:myTemplate, isLoading }}>
+    <TemplateContext.Provider value={{ domain, data, isLoading }}>
       <div className="min-h-screen min-w-full">
         <style>{headerPage.css}</style>
         <style>{footerPage.css}</style>
