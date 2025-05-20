@@ -1,5 +1,5 @@
 export default function InventoryStats({ inventory }) {
-  const totalItems = inventory?.length;
+  const totalItems = inventory?.reduce((sum, item) => sum + (item.quantity), 0)
   const lowStockItems = inventory?.filter(item => item.quantity < 10).length;
   const outOfStockItems = inventory?.filter(item => item.quantity === 0).length;
   const inventoryValue = inventory?.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -10,7 +10,6 @@ export default function InventoryStats({ inventory }) {
     { name: 'Out of Stock', value: outOfStockItems, alert: outOfStockItems > 0 },
     { name: 'Inventory Value', value: `$${inventoryValue?.toLocaleString()}` },
   ];
-
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 flex-1 lg:grid-cols-4 mb-6">
       {stats.map((stat) => (

@@ -1,15 +1,42 @@
-// app/aberham.com/contact/page.js
-export const metadata = {
-  title: 'contact | aberham.com',
-}
+'use client'
+import React, { useEffect, useRef, useState } from 'react';
+import { useTemplate } from '../layout';
 
-export default function ContactPage() {
+const Contact = () => {
+  const { domain, data, isLoading } = useTemplate();
+  const [currentTemplate, setCurrentTemplate] = useState({
+    html: '<div class="contact-loading">Loading contact form...</div>',
+    css: `.contact-loading { padding: 2rem; text-align: center; color: #666; }`
+  });
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!isLoading && data?.template?.customPages) {
+      const contactPage = data.template.customPages.find(page => page.name === "contact");
+      if (contactPage) setCurrentTemplate(contactPage);
+    }
+  }, [data, isLoading]);
+
+  // Handle form submissions
+  useEffect(() => {
+    if (containerRef.current) {
+      const forms = containerRef.current.querySelectorAll('form');
+      forms.forEach(form => {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          alert('Contact form submitted!');
+          // Add your form submission logic here
+        });
+      });
+    }
+  }, [currentTemplate]);
+
   return (
-    <section className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">aberham.com contact</h1>
-      <div className="prose prose-lg">
-        {/* contact page content */}
-      </div>
-    </section>
-  )
-}
+    <div className="contact-page">
+      <style>{currentTemplate.css}</style>
+      <div ref={containerRef} dangerouslySetInnerHTML={{ __html: currentTemplate.html }} />
+    </div>
+  );
+};
+
+export default Contact;

@@ -11,7 +11,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { ShoppingBag, ShoppingCart, MenuIcon } from "lucide-react";
+import { ShoppingCart, MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWindowSize } from "@uidotdev/usehooks";
 import ProfileMenu from "./profile";
@@ -81,10 +81,10 @@ const shopLinks = [
 
 
 export function CustomerNavigationMenu() {
-    const cart = useSelector((state) => state.cart)
-    console.log(cart, 'cart')
+  const cart = useSelector((state) => state.cart)
+  console.log(cart, 'cart')
 
-  const cartItems = cart?.totalQuantity||0;
+  const cartItems = cart?.totalQuantity || 0;
   console.log(cartItems, 'cartItems')
 
   const [isOpen, setIsOpen] = React.useState(false);
@@ -117,12 +117,12 @@ export function CustomerNavigationMenu() {
           <DesktopMenu account={account} cartItems={cartItems} />
         ) : (
           <MobileMenu
-  account={account}
-  open={open}
-  setOpen={setOpen}
-  closeDrawer={closeDrawer}
-  cartItems={cartItems}
-/>
+            account={account}
+            open={open}
+            setOpen={setOpen}
+            closeDrawer={closeDrawer}
+            cartItems={cartItems}
+          />
 
         )}
       </div>
@@ -132,88 +132,91 @@ export function CustomerNavigationMenu() {
 
 function DesktopMenu({ account, cartItems }) {
   return (
-    <div className="container flex items-center h-16 gap-2">
-      {/* Navigation Menu */}
-      <NavigationMenu className="">
-        <NavigationMenuList className="my-auto">
-          <NavigationMenuItem className="bg-transparent">
-            <NavigationMenuTrigger className="text-sm">Company</NavigationMenuTrigger>
-            <NavigationMenuContent className="absolute left-0 w-[400px] md:w-[500px] lg:w-[500px] p-4">
-              <ul className="grid gap-3 md:grid-cols-2">
-                {companyLinks.map((link) => (
-                  <ListItem key={link.title} title={link.title} href={link.href}>
-                    {link.description}
-                  </ListItem>
-                ))}
-              </ul>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
-      <NavigationMenu className="mr-1">
-        <NavigationMenuList className="my-auto">
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className="text-sm">shops</NavigationMenuTrigger>
-            <NavigationMenuContent className="absolute left-0 w-[400px] md:w-[500px] lg:w-[500px] p-4">
-              <ul className="grid gap-3 md:grid-cols-2">
-                {shopLinks.map((link) => (
-                  <ListItem key={link.title} title={link.title} href={link.href}>
-                    {link.description}
-                  </ListItem>
-                ))}
-              </ul>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
+    <div className="container flex items-center h-16 gap-6">
+      <div className="container flex items-center h-16 gap-6">
+        {/* Navigation Menu */}
+        <NavigationMenu className="">
+          <NavigationMenuList className="my-auto">
+            <NavigationMenuItem className="bg-transparent">
+              <NavigationMenuTrigger className="text-sm">Company</NavigationMenuTrigger>
+              <NavigationMenuContent className="absolute left-0 w-[400px] md:w-[500px] lg:w-[500px] p-4">
+                <ul className="grid gap-3 md:grid-cols-2">
+                  {companyLinks.map((link) => (
+                    <ListItem key={link.title} title={link.title} href={link.href}>
+                      {link.description}
+                    </ListItem>
+                  ))}
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+        <NavigationMenu className="mr-1">
+          <NavigationMenuList className="my-auto">
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="text-sm">shops</NavigationMenuTrigger>
+              <NavigationMenuContent className="absolute left-0 w-[400px] md:w-[500px] lg:w-[500px] p-4">
+                <ul className="grid gap-3 md:grid-cols-2">
+                  {shopLinks.map((link) => (
+                    <ListItem key={link.title} title={link.title} href={link.href}>
+                      {link.description}
+                    </ListItem>
+                  ))}
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
 
 
-      {/* Main Navigation Links */}
-      {[
-        { href: "/customers/products", label: "Market Place" },
-      ].map((navItem) => (
-        <Link key={navItem.label} href={navItem.href} className="text-sm no-underline text-black dark:text-white">
-          {navItem.label}
-        </Link>
-      ))}
+        {/* Main Navigation Links */}
+        {[
+          { href: "/customers/products", label: "Market Place" },
+        ].map((navItem) => (
+          <Link key={navItem.label} href={navItem.href} className="text-sm no-underline text-black dark:text-white">
+            {navItem.label}
+          </Link>
+        ))}
+        <div className="flex-1"></div>
+        {/* Cart Button */}
 
-      {/* Cart Button */}
-      <Link href="/customers/cart" className="relative flex items-end text-sm no-underline text-black  dark:text-white">
-        <ShoppingCart className="h-8 w-8 mr-2" />
-        {cartItems > 0 && (
-          <span className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center bg-red-600 text-white text-xs font-bold rounded-full">
-            {cartItems}
-          </span>
-        )}
-      </Link>
+        <Link href="/customers/cart" className="relative flex items-center text-sm no-underline text-black dark:text-white">
 
-      {/* Right Section - User Profile / Authentication */}
-      <div className="ml-auto flex items-center gap-2">
-        {
-          account?.accessToken ? (
-            <ProfileMenu />
-
-          ) : (
-            <>
-              <Link
-                className="no-underline text-white bg-orange-700 hover:bg-orange-800 font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
-                href="/customers/auth/login"
-              >
-                Login
-              </Link>
-
-              <Link
-                className="no-underline text-white bg-orange-700 hover:bg-orange-800font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
-                href="/customers/auth/register"
-              >
-                Register
-              </Link>
-
-            </>
+          <ShoppingCart className="h-8 w-8 mr-2" />
+          {cartItems > 0 && (
+            <span className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center bg-red-600 text-white text-xs font-bold rounded-full">
+              {cartItems}
+            </span>
           )}
+        </Link>
+
+        {/* Right Section - User Profile / Authentication */}
+        <div className="ml-auto flex items-center gap-2">
+          {
+            account?.accessToken ? (
+              <ProfileMenu />
+
+            ) : (
+              <>
+                <Link
+                  className="no-underline text-white bg-orange-700 hover:bg-orange-800 font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
+                  href="/customers/auth/login"
+                >
+                  Login
+                </Link>
+
+                <Link
+                  className="no-underline text-white bg-orange-700 hover:bg-orange-800font-medium py-1 px-2 rounded-lg transition duration-300 ease-in-out"
+                  href="/customers/auth/register"
+                >
+                  Register
+                </Link>
+
+              </>
+            )}
+        </div>
       </div>
     </div>
-
   );
 }
 
