@@ -327,8 +327,36 @@ export default function CheckoutPage() {
       state,
       zipcode,
       country,
-      FRONTEND_BASE_URL: "http://localhost:3001/customers/order",
+      FRONTEND_BASE_URL: "http://localhost:3000/customers/order",
     };
+
+const orderPayload = {
+  firstName,
+  lastName,
+  email,
+  phone,
+  street,
+  city,
+  state,
+  zipcode,
+  country,
+  shopId:'' ,      // Replace with real value (from Redux, Context, or props)
+  productId:'mm' // Replace with real value (e.g., cart first item)
+};
+
+try {
+  const response = await axios.post("http://localhost:8000/api/orders", orderPayload);
+  console.log("Order Created:", response.data);
+} catch (orderError) {
+  console.error("Order Submission Error:", orderError);
+  toast({
+    title: "Order Failed",
+    description: "Your payment succeeded, but order creation failed.",
+    variant: "destructive",
+  });
+}
+
+
 
     try {
       await processPayment(data);

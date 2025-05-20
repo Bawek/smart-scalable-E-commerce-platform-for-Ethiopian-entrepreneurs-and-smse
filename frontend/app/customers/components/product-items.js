@@ -81,16 +81,35 @@ import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/util/currency';
-import { useDispatch } from 'react-redux';
+import { useDispatch,useSelector} from 'react-redux';
 import { addItemToCart } from '@/lib/features/cart/cartSlice';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const ProductItem = ({ product }) => {
     const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cart.items);
+  const totalAmount = useSelector((state) => state.cart.totalAmount);
+  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
+  const account = useSelector((state) => state.account);
+   const handleAddToCart = async (e) => {
+    e.stopPropagation();
 
-    const handleAddToCart = (e) => {
-        e.stopPropagation();
-        dispatch(addItemToCart({ ...product }));
-    };
+    try {
+
+        await axios.post('http://localhost:8000/api/cart/add', {
+            userId: account.id,
+            productId: product.id,
+            quantity: totalQuantity + 1,
+        });
+
+        dispatch(addItemToCart({ ...product, quantity: 1 }));
+        toast.success('Added to cart!');
+    } catch (error) {
+        console.error('Add to cart failed:', error);
+        toast.error('Could not add to cart.');
+    }
+};
 
     return (
         <Card key={product.id} className='group relative overflow-hidden transition-shadow hover:shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-[500px] flex flex-col justify-between'>

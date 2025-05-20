@@ -4,14 +4,28 @@ const prisma = new PrismaClient();
 // Create a new order
 exports.createOrder = async (req, res) => {
   try {
-    const { customerId, shopId, productId, locationId } = req.body;
+    const { firstName, lastName, email, phone, street, city, state, zipcode, country, shopId, productId } = req.body;
 
+    // Step 1: Create or find Customer
+    const customer = await prisma.customer.upsert({
+      where: { email },
+      update: { firstName, lastName, phone },
+      create: { firstName, lastName, email, phone },
+    });
+
+    // Step 2: Create location
+    const location = await prisma.location.create({
+      data: { street, city, state, zipcode, country },
+    });
+
+    // Step 3: Create Order
     const order = await prisma.order.create({
       data: {
-        customerId,
+        customerId: customer.id,
         shopId,
         productId,
-        locationId,
+        locationId: location.id,
+        status: 'pending', // optional
       },
     });
 
