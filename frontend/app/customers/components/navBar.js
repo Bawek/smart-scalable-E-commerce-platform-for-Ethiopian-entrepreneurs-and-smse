@@ -133,6 +133,7 @@ export function CustomerNavigationMenu() {
 function DesktopMenu({ account, cartItems }) {
   return (
     <div className="container flex items-center h-16 gap-6">
+    <div className="container flex items-center h-16 gap-6">
       {/* Navigation Menu */}
       <NavigationMenu className="">
         <NavigationMenuList className="my-auto">
@@ -176,10 +177,13 @@ function DesktopMenu({ account, cartItems }) {
           {navItem.label}
         </Link>
       ))}
-      <div className="flex-1"> </div>
 
       {/* Cart Button */}
+<<<<<<< HEAD
+      <Link href="/customers/cart" className="relative flex items-center text-sm no-underline text-black dark:text-white">
+=======
       <Link href="/customers/cart" className="relative flex items-end text-sm no-underline text-black  dark:text-white">
+>>>>>>> d2ce75aa1468cb7435f08f2d11fd68bd9e79a386
         <ShoppingCart className="h-8 w-8 mr-2" />
         {cartItems > 0 && (
           <span className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center bg-red-600 text-white text-xs font-bold rounded-full">
