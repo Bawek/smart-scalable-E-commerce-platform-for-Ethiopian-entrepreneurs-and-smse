@@ -246,13 +246,9 @@ model Product {
   quantity      Int
   carts         CartItem[] // Back-relation
   category      String
-  tags          String[]
   status        StatusIndicator @default(PENDING)
   images        String[]
   brand         String?
-  videoUrl      String?
-  slug          String          @unique
-  views         Int             @default(0)
   ratings       Float           @default(0.0)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -266,7 +262,6 @@ model Product {
 model Notification {
   id      String @id @default(uuid())
   message String
-
   @@map("notifications")
 }
 

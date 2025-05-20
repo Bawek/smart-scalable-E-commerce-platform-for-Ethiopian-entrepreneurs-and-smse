@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Logs } from 'lucide-react'
 import { useParams } from 'next/navigation'
+import axios from 'axios'
 
 const ShopLayout = ({ children }) => {
     const [products, setProducts] = useState([]);
@@ -12,7 +13,20 @@ const ShopLayout = ({ children }) => {
     const [sortOption, setSortOption] = useState('popularity');
     const [minPrice, setMinPrice] = useState(0);
     const [maxPrice, setMaxPrice] = useState(1000);
+    // const { data,isLoading, isError,error } = useGetProductsForSaleQuery()
     const category = useParams();
+    const getAllProducts = async () => {
+        try {
+            const response = await axios.get("http://localhost:8000/api/get-all-products-for-sale");
+            console.log(response, 'response of axios');
+            console.log('Products fetched jsjsjsjjjjjjjjjjjjjjjjjj myeyshh successfully');
+
+            console.log(response.data, 'Products fetched successfully');
+            setProducts(response.data.products);
+        } catch (error) {
+            console.error("Error fetching products:", error);
+        }
+    };
     const [selectedCategory, setSelectedCategory] = useState(category.category);
 
     const [tempFilters, setTempFilters] = useState({
@@ -21,43 +35,19 @@ const ShopLayout = ({ children }) => {
         sizes: [],
         priceRange: [0, 1000]
     });
-    // fetching Products
-    const fetchProducts = async () => {
-        try {
-            const response = await fetch("https://dummyjson.com/products");
-            const data = await response.json();
-            console.log(data.products, 'Products fetched successfully');  // Check what is being fetched
-            setProducts(data.products);  // Update state with the 'products' array
-        } catch (error) {
-            console.error("Error fetching products:", error);
-        }
-    };
-
-
     // Dynamic filter options
     const [categories, setCategories] = useState([]);
     const [colors, setColors] = useState([]);
     const [sizes, setSizes] = useState([]);
-    // town sample
-    const sampleProducts = [
-        { id: 1, name: "Product 1", price: 29.99, town: "Addis Ababa", category: "Cloths", color: "blue", size: "medium" },
-        { id: 2, name: "Product 2", price: 49.99, town: "Dire Dawa", category: "Electronics", color: "gray", size: "large" },
-        { id: 3, name: "Product 3", price: 19.99, town: "Bahir Dar", category: "Health & Safety", color: "green", size: "small" },
-        { id: 4, name: "Product 4", price: 79.99, town: "Addis Ababa", category: "Cloths", color: "red", size: "medium" },
-        { id: 5, name: "Product 5", price: 39.99, town: "Gondar", category: "Electronics", color: "blue", size: "large" },
-        { id: 6, name: "Product 6", price: 59.99, town: "Hawassa", category: "Mechanics", color: "gray", size: "small" },
-        { id: 7, name: "Product 7", price: 89.99, town: "Mekelle", category: "Health & Safety", color: "green", size: "medium" },
-        { id: 8, name: "Product 8", price: 24.99, town: "Addis Ababa", category: "Cloths", color: "red", size: "large" },
-        { id: 9, name: "Product 9", price: 69.99, town: "Bahir Dar", category: "Electronics", color: "blue", size: "small" },
-        { id: 10, name: "Product 10", price: 44.99, town: "Adama", category: "Mechanics", color: "gray", size: "medium" },
-    ];
-
     useEffect(() => {
+
         // For demo purposes, use sample data
         // setProducts(sampleProducts);
-        fetchProducts()
-        // Calculate initial price range
-        const prices = sampleProducts.map(p => p.price);
+        getAllProducts()
+        console.log('Products fetched getting myeyshh successfully');
+        if (products.length === 0) return;
+        // Calculate initial price range 
+        const prices = products.map(p => p.price);
         const min = Math.floor(Math.min(...prices));
         const max = Math.ceil(Math.max(...prices));
 
@@ -67,10 +57,10 @@ const ShopLayout = ({ children }) => {
         if (selectedCategory) {
             setTempFilters(prev => ({ ...prev, categories: [selectedCategory] }));
         }
-    }, [selectedCategory]);
+    }, [selectedCategory, products]);
+    console.log(products, 'products are here listed')
 
     useEffect(() => {
-        // Update filter options based on products
         if (products.length > 0) {
             const categoryCounts = products.reduce((acc, product) => {
                 acc[product.category] = (acc[product.category] || 0) + 1;
@@ -133,7 +123,20 @@ const ShopLayout = ({ children }) => {
         if (sortOption === 'price_desc') return b.price - a.price;
         return a.id - b.id; // Default sorting by ID
     });
-
+    // if (isLoading) {
+    //     return (
+    //         <div>
+    //             loading...
+    //         </div>
+    //     )
+    // }
+    // if (isError) {
+    //     return (
+    //         <div>
+    //             Some thing go wrong
+    //         </div>
+    //     )
+    // }
     return (
         <main className="w-full px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row gap-8">

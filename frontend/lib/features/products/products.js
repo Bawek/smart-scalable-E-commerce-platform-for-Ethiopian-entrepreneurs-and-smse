@@ -10,6 +10,10 @@ export const productsApi = createApi({
       query: () => `/products/get-all-products`,
       providesTags: ["product"],
     }),
+    getProductsForSale: builder.query({
+      query: () => `/products/get-all-products-for-sale`,
+      providesTags: ["product"],
+    }),
     getProductsById: builder.query({
       query: (id) => `/products/product-get-by-id/${id}/`,
       providesTags: ["product"],
@@ -18,7 +22,7 @@ export const productsApi = createApi({
       query: (merchant_id) => `product/stock/${merchant_id}/`,
       providesTags: ["product"],
     }),
-      createProduct: builder.mutation({
+    createProduct: builder.mutation({
       query: (formData) => ({
         url: `/products/create`,
         method: "POST",
@@ -29,10 +33,10 @@ export const productsApi = createApi({
     updateProduct: builder.mutation({
       query: (data) => {
         return {
-        url: `/products/update`,
-        method: "PUT",
-        body: data // Accepting an array of new products
-      }
+          url: `/products/update`,
+          method: "PUT",
+          body: data // Accepting an array of new products
+        }
       },
       invalidatesTags: ["product"],
     }),
@@ -46,5 +50,6 @@ export const {
   useUpdateProductMutation,
   useCreateProductMutation,
   useGetOutOfStockProductsQuery,
-  useGetProductsByIdQuery
+  useGetProductsByIdQuery,
+  useGetProductsForSaleQuery
 } = productsApi;

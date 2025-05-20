@@ -14,7 +14,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import axios from "axios"; // Import Axios
@@ -28,7 +27,7 @@ const ResponsiveCartPage = () => {
   const account = useSelector((state) => state.account);
   const [error, setError] = useState(null);
   const userId = account.id; //  Replace with actual user ID,  Important
-console.log(account,'acccoutn')
+  console.log(account, 'acccoutn')
   const fetchCart = async () => {
     try {
       const response = await axios.get(

@@ -11,7 +11,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { ShoppingBag, ShoppingCart, MenuIcon } from "lucide-react";
+import { ShoppingCart, MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWindowSize } from "@uidotdev/usehooks";
 import ProfileMenu from "./profile";
@@ -132,7 +132,7 @@ export function CustomerNavigationMenu() {
 
 function DesktopMenu({ account, cartItems }) {
   return (
-    <div className="container flex items-center h-16 gap-2">
+    <div className="container flex items-center h-16 gap-6">
       {/* Navigation Menu */}
       <NavigationMenu className="">
         <NavigationMenuList className="my-auto">
@@ -176,6 +176,7 @@ function DesktopMenu({ account, cartItems }) {
           {navItem.label}
         </Link>
       ))}
+      <div className="flex-1"> </div>
 
       {/* Cart Button */}
       <Link href="/customers/cart" className="relative flex items-end text-sm no-underline text-black  dark:text-white">

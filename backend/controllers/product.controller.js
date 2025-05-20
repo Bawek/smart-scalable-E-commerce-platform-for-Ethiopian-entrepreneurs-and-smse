@@ -9,64 +9,115 @@ const createProduct = async (req, res, next) => {
         discountPrice,
         quantity,
         category,
-        tags,
-        status,
-        images,
+        status = 'PENDING',
         brand,
-        videoUrl,
-        slug,
-        shopId,
         accountId
-    } = req.body
-    console.log(req.files)
-    if (!req.file) {
-        return next(new httpError("Product Image is required for registration.", 400));
-    }
-    if (name === "" || price === " ") {
-        console.log("empty comes")
-        return next(new httpError("Sorry All Fields are Required.", 403))
-    }
+    } = req.body;
+
     try {
+        // Validate required fields
+        const requiredFields = ['name', 'price', 'quantity', 'category', 'accountId'];
+        const missingFields = requiredFields.filter(field => !req.body[field]);
+
+        if (missingFields.length > 0) {
+            return next(new httpError(
+                `Missing required fields: ${missingFields.join(', ')}`,
+                400
+            ));
+        }
+
+        // Check for images (now using req.files instead of req.file)
+        if (!req.files || req.files.length === 0) {
+            return next(new httpError("At least one product image is required", 400));
+        }
+
+        // Validate numeric fields
+        if (isNaN(price) || isNaN(quantity) || (discountPrice && isNaN(discountPrice))) {
+            return next(new httpError("Price and quantity must be valid numbers", 400));
+        }
+
+        // Check merchant and shops
         const merchant = await prisma.merchant.findFirst({
+            where: { accountId },
+            include: { shops: true },
+            rejectOnNotFound: true
+        });
+
+        if (!merchant.shops || merchant.shops.length === 0) {
+            return next(new httpError("Merchant has no shops to associate with product", 400));
+        }
+
+        // Check for existing product
+        const existingProduct = await prisma.product.findFirst({
             where: {
-                accountId
-            },
-            include: {
-                shops: true
-            }
-        })
-        // check precence 
-        const product = await prisma.product.findFirst({
-            where: {
-                name
-            }
-        })
-        console.log(merchant.shops[0].id, 'shops of manner')
-        if (product) return next(new httpError("Sorry Product is Allready Registred.", 409))
-        // Register the new account (additional validation as necessary)
-        const newProduct = await prisma.product.create({
-            data: {
-                name,
-                description,
-                price: Number(price),
-                discountPrice: Number(price),
-                quantity: Number(price),
-                category,
-                tags: [tags],
-                status,
-                images: [req?.file?.filename],
-                brand,
-                videoUrl,
-                slug,
+                name: { equals: name, mode: 'insensitive' },
                 shopId: merchant.shops[0].id
             }
         });
 
-        // Success: Return the newly created account
+        if (existingProduct) {
+            return next(new httpError("Product with this name already exists in your shop", 409));
+        }
+
+        // Process multiple images
+        const imageFilenames = req.files.map(file => file.filename);
+
+        // Calculate final discount price
+        const numericPrice = parseFloat(price);
+        const finalDiscountPrice = discountPrice ?
+            numericPrice * (parseFloat(discountPrice) / 100) :
+            null;
+
+        // Create the product with multiple images
+        const newProduct = await prisma.product.create({
+            data: {
+                name,
+                description,
+                price: numericPrice,
+                discountPrice: finalDiscountPrice,
+                quantity: parseInt(quantity),
+                category,
+                status,
+                images: imageFilenames, // Now storing array of filenames
+                brand,
+                shopId: merchant.shops[0].id,
+                accountId,
+                slug: generateSlug(name),
+                createdAt: new Date(),
+                updatedAt: new Date()
+            }
+        });
+
         return res.status(201).json({
-            message: 'merchant registered successfully',
+            message: 'Product created successfully with multiple images',
             status: "success",
             product: newProduct,
+        });
+
+    } catch (error) {
+        console.error('Product Creation Error:', error);
+
+        // Handle specific errors
+        if (error.name === 'NotFoundError') {
+            return next(new httpError("Merchant account not found", 404));
+        }
+
+        if (error.code === 'P2002') {
+            return next(new httpError("Product with similar attributes already exists", 409));
+        }
+
+        next(new httpError(
+            error.message || 'Failed to create product',
+            error.statusCode || 500
+        ));
+    }
+};
+const getAllProducts = async (req, res, next) => {
+    try {
+        const products = await prisma.product.findMany()
+        return res.status(201).json({
+            status: "success",
+            products,
         });
     } catch (error) {
         console.log('Register Merchant Error', error)
@@ -74,9 +125,19 @@ const createProduct = async (req, res, next) => {
     }
 
 }
-const getAllProducts = async (req, res, next) => {
+const getAllProductsForSale = async (req, res, next) => {
     try {
-        const products = await prisma.product.findMany()
+        const products = await prisma.product.findMany({
+            where: {
+                status: 'ACTIVE'
+            }
+        })
+        if (products.length === 0) {
+            return res.status(201).json({
+                status: "success",
+                products: [],
+            });
+        }
         return res.status(201).json({
             status: "success",
             products,
@@ -136,54 +197,93 @@ const updateProductById = async (req, res, next) => {
         discountPrice,
         quantity,
         category,
-        tags,
         status,
-        images,
         brand,
-        videoUrl,
-        slug,
         shopId,
         accountId,
+        deletedImages = [],
         id
-    } = req.body
-    try {
-        if (!req.file) {
-            return next(new httpError("Product Image is required for registration.", 400));
-        }
-        const product = await prisma.product.update({
-            where: {
-                id
-            },
-            data: {
-                price: Number(price),
-                discountPrice: Number(price),
-                quantity: Number(price),
-                category,
-                tags: [tags],
-                status,
-                images: [req?.file?.filename],
-                brand,
-                videoUrl,
-                slug,
-            }
-        })
-        // Success: Return the newly created account
-        return res.status(200).json({
-            message: 'Succefully update the product',
-            status: "success",
-            product,
-        });
-    } catch (error) {
-        console.log('Register Merchant Error', error)
-        next(new httpError(error.message, 500))
-    }
+    } = req.body;
 
-}
+    try {
+        // Validate required fields
+        if (!id) {
+            return next(new httpError("Product ID is required for update.", 400));
+        }
+
+        // Check if product exists
+        const existingProduct = await prisma.product.findUnique({
+            where: { id }
+        });
+
+        if (!existingProduct) {
+            return next(new httpError("Product not found", 404));
+        }
+
+        // Process images
+        let updatedImages = [...existingProduct.images];
+
+        // Handle deleted images
+        if (deletedImages && deletedImages.length > 0) {
+            updatedImages = updatedImages.filter(img => !deletedImages.includes(img));
+            // Here you would also delete the actual image files from storage
+        }
+
+        // Add new images if any
+        if (req.files && req.files.length > 0) {
+            const newImages = req.files.map(file => file.filename);
+            updatedImages = [...updatedImages, ...newImages];
+        }
+
+        // Prepare update data
+        const updateData = {
+            name: name || existingProduct.name,
+            description: description || existingProduct.description,
+            price: price ? Number(price) : existingProduct.price,
+            discountPrice: discountPrice ?
+                Number(price) * (Number(discountPrice) / 100) :
+                existingProduct.discountPrice,
+            quantity: quantity ? Number(quantity) : existingProduct.quantity,
+            category: category || existingProduct.category,
+            status: status || existingProduct.status,
+            brand: brand || existingProduct.brand,
+            images: updatedImages, // Updated images array
+            updatedAt: new Date()
+        };
+
+        // Perform the update
+        const updatedProduct = await prisma.product.update({
+            where: { id },
+            data: updateData
+        });
+
+        // Return success response
+        return res.status(200).json({
+            message: 'Product updated successfully',
+            status: "success",
+            product: updatedProduct,
+        });
+
+    } catch (error) {
+        console.error('Product Update Error:', error);
+
+        // Handle Prisma specific errors
+        if (error.code === 'P2025') {
+            return next(new httpError("Product not found", 404));
+        }
+
+        next(new httpError(
+            error.message || 'An error occurred while updating the product',
+            error.statusCode || 500
+        ));
+    }
+};
 
 module.exports = {
     createProduct,
     getAllProducts,
     getProductById,
     updateProductById,
-    deleteProductById
+    deleteProductById,
+    getAllProductsForSale
 }

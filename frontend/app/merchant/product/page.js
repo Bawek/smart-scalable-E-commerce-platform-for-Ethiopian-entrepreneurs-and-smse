@@ -32,80 +32,11 @@ import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import { useGetProductsQuery } from '@/lib/features/products/products';
 import Loader from '@/app/components/Prompt/Loader';
-// Sample data 
-const sampleInventory = [
-  {
-    id: "1",
-    name: "Wireless Headphones",
-    price: 99.99,
-    quantity: 15,
-    category: "Electronics",
-    images: ["/headphones.jpg"]
-  },
-  {
-    id: "2",
-    name: "Organic Cotton T-Shirt",
-    price: 24.99,
-    quantity: 3, // Low stock
-    category: "Apparel",
-    images: ["/tshirt.jpg"]
-  },
-  {
-    id: "3",
-    name: "Stainless Steel Water Bottle",
-    price: 19.99,
-    quantity: 0, // Out of stock
-    category: "Accessories",
-    images: ["/bottle.jpg"]
-  },
-  {
-    id: "4",
-    name: "Bluetooth Speaker",
-    price: 59.99,
-    quantity: 42,
-    category: "Electronics",
-    images: ["/speaker.jpg"]
-  },
-  {
-    id: "5",
-    name: "Yoga Mat",
-    price: 29.99,
-    quantity: 8, // Low stock
-    category: "Fitness",
-    images: ["/yoga-mat.jpg"]
-  },
-  {
-    id: "6",
-    name: "Espresso Machine",
-    price: 199.99,
-    quantity: 5, // Low stock
-    category: "Home Appliances",
-    images: ["/espresso-machine.jpg"]
-  },
-  {
-    id: "7",
-    name: "Leather Wallet",
-    price: 34.99,
-    quantity: 22,
-    category: "Accessories",
-    images: ["/wallet.jpg"]
-  },
-  {
-    id: "8",
-    name: "Smartphone Stand",
-    price: 12.99,
-    quantity: 0, // Out of stock
-    category: "Electronics",
-    images: ["/phone-stand.jpg"]
-  }
-];
-
 export default function Inventory() {
-
   const [inventory, setInventory] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const { data: prodcutData, isLoading, isError, error } = useGetProductsQuery()
-  console.log(prodcutData,'new pro data',inventory)
+  console.log(prodcutData, 'new pro data', inventory)
   const { deleteItem } = useDelete()
   const router = useRouter()
   const handleDelete = async (id) => {

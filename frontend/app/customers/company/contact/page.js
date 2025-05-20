@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Phone, Mail, MapPin, Loader2 } from 'lucide-react'
 import { useForm } from "react-hook-form"
 import axios from "axios"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "react-toastify"
 
 const contactSchema = z.object({
@@ -28,6 +28,21 @@ const ContactSection = () => {
             message: ""
         }
     })
+    useEffect(() => {
+        console.log("Component mounted"); // add this for debugging
+        const fetchProducts = async () => {
+            try {
+                const response = await axios.get("http://localhost:8000/api/get-all-products-for-sale");
+                console.log(response, 'response of axios');
+                console.log('Products fetched jsjsjsjjjjjjjjjjjjjjjjjj myeyshh successfully');
+                console.log(response.data, 'Products fetched successfully');
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            }
+        };
+        fetchProducts();
+        console.log('Products fetched getting myeyshh successfully');
+    }, []);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,7 +53,7 @@ const ContactSection = () => {
             // const loadingToast = toast.loading('Submitting form...');
             // Make API call
             const response = await axios.post('http://localhost:8000/api/contact', values);
- 
+
             // Handle success
             if (response.data.success) {
                 toast.success('Message sent successfully!');
