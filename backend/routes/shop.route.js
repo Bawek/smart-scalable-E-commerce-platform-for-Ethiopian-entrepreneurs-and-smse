@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerShop, getAllShop, getById } = require('../controllers/shop.controller');
+const { registerShop, getAllShop, getById, getShopByAccount } = require('../controllers/shop.controller');
 const upload = require('../config/multer.config');
 
 const router = express.Router()
@@ -8,5 +8,6 @@ const router = express.Router()
 router.post('/register',upload.single('logoImageUrl'), registerShop)
 router.get('/get-all', getAllShop)
 router.get('/get/:shopId', getById)
+router.get('/getby-account/:accountId', getShopByAccount)
 module.exports = router
 

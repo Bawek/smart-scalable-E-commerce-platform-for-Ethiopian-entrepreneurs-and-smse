@@ -1,13 +1,18 @@
-import { i18nRouter } from "next-i18n-router";
-import i18nConfig from "./i18nConfig";
+import { NextResponse } from "next/server";
 
 export default function middleware(req) {
-  return i18nRouter(req, i18nConfig);
+  const url = req.nextUrl;
+
+  // Redirect root path "/" to "/customers"
+  if (url.pathname === "/") {
+    url.pathname = "/customers";
+    return NextResponse.redirect(url);
+  }
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    // Combine the matchers from both middleware functions
     "/((?!.*\\..*|_next).*)",
     "/(api|trpc)(.*)",
   ],

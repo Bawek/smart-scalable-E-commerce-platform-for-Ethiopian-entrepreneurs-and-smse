@@ -3,18 +3,16 @@ import { appApi } from "@/lib/appApi";
 export const MerchantRegistrationApi = appApi.injectEndpoints({
     tagTypes: ["MerchantRegistration"],
     endpoints: (builder) => ({
-        // getMerchants: builder.query({
-        //     query: () => `/merchants/`,
-        //     providesTags: ["MerchantRegistration"],
-        // }),
-        // getMerchant: builder.query({
-        //     query: (unique_id) => `MerchantRegistration/merchant/${unique_id}/`, // Ensure this endpoint matches your backend
-        //     providesTags: ["MerchantRegistration"],
-        // }),
-        // getAllOrders: builder.query({
-        //     query: () => `order/all-orders/`,
-        //     providesTags: ["Shop"],
-        // }),
+        getAllMerchants: builder.query({
+            query: () => `/merchant/get-all`,
+            // providesTags: ["MerchantRegistration"],
+        }),
+        getMerchantById: builder.query({
+            query: (merchantId) => `merchant/get/${merchantId}/`,
+        }),
+        getMerchantByAccount: builder.query({
+            query: (accountId) => `/merchant/getby-account/${accountId}/`,
+        }),
         // Login mutation
         registerMerchant: builder.mutation({
             query: (formData) => {
@@ -26,19 +24,32 @@ export const MerchantRegistrationApi = appApi.injectEndpoints({
             },
             // invalidatesTags: ["MerchantRegistration"],
         }),
-
-        // Registration mutation
-        //     registerMerchantRegistration: builder.mutation({
-        //         query: (formData) => ({
-        //             url: "/MerchantRegistrations/register",
-        //             method: "POST",
-        //             body: formData,
-        //         }),
-        //         invalidatesTags: ["MerchantRegistration"],
-        //     }),
+        // change merchant status
+        changeMerchantStatus: builder.mutation({
+            query: (data) => {
+                console.log('data ', data)
+                return {
+                    url: `/merchant/updateStatus/${data.id}`,
+                    method: "PUT",
+                    body: data
+                };
+            },
+            // invalidatesTags: ["MerchantRegistration"],
+        }),
+        deleteMerchant: builder.mutation({
+            query: (id) => ({
+                url: `/merchant/delete/${id}`,
+                method: "DELETE",
+            }),
+        }),
     }),
 });
 
 export const {
-    useRegisterMerchantMutation
+    useRegisterMerchantMutation,
+    useGetAllMerchantsQuery,
+    useGetMerchantByIdQuery,
+    useDeleteMerchantMutation,
+    useChangeMerchantStatusMutation,
+    useGetMerchantByAccountQuery,
 } = MerchantRegistrationApi;

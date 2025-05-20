@@ -3,16 +3,16 @@ const httpError = require("../middlewares/httpError")
 
 const registerPage = async (req, res, next) => {
     try {
-        const page = await prisma.page.findFirst({
+        const page = await prisma.basePage.findFirst({
             where: {
                 name: req.body.name,
                 templateId: req.body.templateId
             }
         })
         if (page) return next(new httpError('Sorry The page is present', 409))
-        const newPage = await prisma.page.create({
+        const newPage = await prisma.basePage.create({
             data: {
-                name: req.body.name,
+                name: req.body.name, 
                 html: req.body.html,
                 css: req.body.css,
                 js: req.body.js,
@@ -32,7 +32,7 @@ const registerPage = async (req, res, next) => {
 }
 const getAllPage = async (req, res, next) => {
     try {
-        const pages = await prisma.page.findMany()
+        const pages = await prisma.basePage.findMany()
         if (!pages) return res.status(200).json({
             pages: [],
             status: 'success',
@@ -51,7 +51,7 @@ const getPagesByTemplate = async (req, res, next) => {
     const { templateId } = req.params; // Get templateId from request params
 
     try {
-        const pages = await prisma.page.findMany({
+        const pages = await prisma.basePage.findMany({
             where: { templateId }, // Filter by templateId
         });
         if (!pages) return res.status(200).json({
@@ -72,11 +72,12 @@ const getPagesByTemplate = async (req, res, next) => {
 const updatePage = async (req, res, next) => {
     const { pageId } = req.params
     const { name, id } = req.body;
-    try {
-        const page = await prisma.page.upsert({
-            where: { id: req.body.id },
+    console.log(pageId,'merchant')
+    try { 
+        const page = await prisma.basePage.upsert({
+            where: { id: pageId }, 
             update: {
-                name: req.body.name,
+                name: req.body.name, 
                 html: req.body.html,
                 css: req.body.css,
                 js: req.body.js,
@@ -105,7 +106,7 @@ const getById = async (req, res, next) => {
     const { pageId } = req.params
     console.log('pages update', req.body)
     try {
-        const page = await prisma.page.findFirst({
+        const page = await prisma.basePage.findFirst({
             where: {
                 id: Number(pageId)
             },
@@ -124,14 +125,13 @@ const deletePageById = async (req, res, next) => {
     const { pageId } = req.params
     console.log('pages update', req.body)
     try {
-        const page = await prisma.page.findFirst({
+        const page = await prisma.basePage.findFirst({
             where: {
                 id: pageId
             }
         })
         if (!page) return next(new httpError('Sorry The page is present', 409))
-
-        await prisma.page.delete({
+        await prisma.basePage.delete({
             where: {
                 id: pageId
             },

@@ -1,5 +1,5 @@
 const https = require('https');
-
+require('dotenv').config();
 async function makeRequest(options, postData = null) {
   return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
@@ -21,9 +21,9 @@ async function makeRequest(options, postData = null) {
   });
 }
 
-exports.initializePayment = async (paymentData) => {
+const initializePayment = async (paymentData) => {
   const postData = JSON.stringify(paymentData);
-
+console.log(process.env.CHAPA_SECRET_KEY)
   const options = {
     hostname: 'api.chapa.co',
     path: '/v1/transaction/initialize',
@@ -38,7 +38,7 @@ exports.initializePayment = async (paymentData) => {
   return makeRequest(options, postData);
 };
 
-exports.verifyPayment = async (tx_ref) => {
+const verifyPayment = async (tx_ref) => {
   const options = {
     hostname: 'api.chapa.co',
     path: `/v1/transaction/verify/${tx_ref}`,
@@ -50,3 +50,8 @@ exports.verifyPayment = async (tx_ref) => {
 
   return makeRequest(options);
 };
+
+module.exports = {
+  initializePayment,
+  verifyPayment
+}

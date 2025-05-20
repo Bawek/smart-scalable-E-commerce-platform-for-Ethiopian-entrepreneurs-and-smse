@@ -2,25 +2,10 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  ShoppingBag,
-  SquareTerminal,
-
-} from "lucide-react"
-import {
   ShoppingCart, Package, User, Settings, CreditCard,
   Truck, Lock, Store, FileText, LayoutDashboard,
   ShieldCheck, CheckCircle, XCircle
 } from "lucide-react";
-import { TeamSwitcher } from "./teams"
 import { NavMain } from "./nav-main"
 import { NavProjects } from "./nav-projects"
 import { NavUser } from "./nav-user"
@@ -30,43 +15,26 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarRail,
-  SidebarTrigger,
 } from "@/components/ui/sidebar"
-import Link from "next/link";
+import Logo from "./logo";
+import { useDispatch, useSelector } from "react-redux";
+import { useLogoutMutation } from "@/lib/features/auth/accountApi";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { logOut } from "@/lib/features/auth/accountSlice";
 
 // Sample data
 const data = {
-  user: {
-    name: "Merchant Name",
-    email: "merchant@example.com",
-    avatar: "/avatars/merchant.jpg",
-    role: "Seller", // "Admin" or "Seller"
-  },
   templates: [
     {
-      name: "Fashion Store Template",
+      name: "Manage Buyed Template",
       logo: LayoutDashboard,
-      category: "Clothing & Accessories",
+      category: "General",
       url: '#',
       status: "Published",
-    },
-    {
-      name: "Electronics Shop",
-      logo: Store,
-      category: "Electronics & Gadgets",
-      url: '#',
-      status: "Draft",
-    },
-    {
-      name: "Home & Furniture",
-      logo: FileText,
-      category: "Furniture & Home Decor",
-      url: '#',
-      status: "Published",
-    },
+    }
   ],
   navMain: [
     {
@@ -116,7 +84,7 @@ const data = {
       url: "#",
       icon: Settings,
       items: [
-        { title: "Business Settings", url: "business-setting" },
+        { title: "Business Settings", url: "/merchant/business-setting" },
         { title: "Payment Settings", url: "#" },
         { title: "Shipping Settings", url: "#" },
         { title: "Security", url: "#" },
@@ -162,19 +130,26 @@ const data = {
 };
 
 export function AppSidebar(props) {
+  const user = useSelector((state) => state.account)
+  const [logout] = useLogoutMutation()
+  const router = useRouter()
+  const dispatch = useDispatch()
+  const userLogout = async () => {
+    // router.push('/customers')
+    const response = await logout().unwrap()
+    if (response.status !== 'success') {
+      return toast.error("sorry something went wrong.");
+    }
+    window.location.href = '/customers'
+    dispatch(logOut())
+  }
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarGroup>
         <SidebarGroupLabel>
-          <ShoppingBag className="h-6 w-6 text-green-400" /> {/* Icon with a color */}
-          <Link
-            href="/merchant"
-            className="flex items-center justify-end flex-nowrap w-full py-3 no-underline gap-2 font-semibold"
-          >
-            <span className="bg-gradient-to-r capitalize from-green-400 via-yellow-400 to-red-400 bg-clip-text text-transparent">
-              E-Commerce plafform
-            </span>
-          </Link>
+          <Logo
+            hrefValue='/merchant'
+          />
         </SidebarGroupLabel>
         <SidebarMenu className="m-0 p-0">
         </SidebarMenu>
@@ -184,7 +159,10 @@ export function AppSidebar(props) {
         <NavProjects projects={data.templates} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+         user={user}
+         logout={userLogout}
+         />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

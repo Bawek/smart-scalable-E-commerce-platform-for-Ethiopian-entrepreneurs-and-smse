@@ -1,9 +1,9 @@
-const { initializePayment, verifyPayment } = require('../services/chapaService'); // adjust path as needed
+const { initializePayment, verifyPayment } = require("../services/chapaService");
 
 // Generate unique transaction reference without uuid
 const generateTxRef = () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-exports.createPayment = async (req, res) => {
+const createPayment = async (req, res) => {
   const { amount, email, first_name, last_name, phone_number, currency } = req.body;
 
   // Generate tx_ref manually
@@ -15,11 +15,11 @@ exports.createPayment = async (req, res) => {
     email,
     first_name,
     last_name,
-    phone_number:parseInt(phone_number),
+    phone_number: parseInt(phone_number),
     tx_ref,
     callback_url: `${process.env.BASE_URL}/api/verify/${tx_ref}`,
     return_url: `${process.env.BASE_URL}/customers/templates/pay/payment-info?tx_ref=${tx_ref}`,
-    
+
     customization: {
       title: "My Store",
       description: "Buying goods",
@@ -28,7 +28,6 @@ exports.createPayment = async (req, res) => {
 
   try {
     const chapaRes = await initializePayment(paymentData);
-
     if (chapaRes.status === 'success') {
       // Send back the checkout URL to the frontend
       res.json({ checkout_url: chapaRes.data.checkout_url });
@@ -37,13 +36,14 @@ exports.createPayment = async (req, res) => {
       res.status(400).json({ error: chapaRes.message || 'Failed to initialize payment' });
     }
   } catch (err) {
+    console.log(err, 'error in payment controller');
     // Handle server-side errors
     res.status(500).json({ error: err.message });
   }
 };
 
 
-exports.verifyPayment = async (req, res) => {
+const verifyPaymentProcess = async (req, res) => {
   const { tx_ref } = req.params;
 
   try {
@@ -81,4 +81,10 @@ exports.verifyPayment = async (req, res) => {
       message: 'Internal server error during verification'
     });
   }
+};
+
+
+module.exports = {
+  createPayment,
+  verifyPaymentProcess
 };

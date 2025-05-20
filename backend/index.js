@@ -1,12 +1,8 @@
 const express = require('express')
-const httpError = require('./middlewares/httpError')
-const prisma = require('./config/db')
 const { validate } = require('./middlewares/validateMiddleware')
-const validationSchema = require('./validations/validationSchema')
 const merchantRouter = require('./routes/merchant/merchant.route')
 const accountRouter = require('./routes/account.route')
 const cors = require('cors')
-const path = require('path')
 const shopRouter = require('./routes/shop.route')
 const imageRouter = require('./routes/image.route')
 const pagesRouter = require('./routes/pages.route')
@@ -16,16 +12,22 @@ const cookieParser = require('cookie-parser')
 const handleRefreshToken = require('./controllers/refreshToken.controller')
 const locationRouter = require('./routes/location.route')
 require('dotenv').config
+const http = require('http');
+const { initialize } = require('./utils/socket')
+const { testIo } = require('./controllers/merchant.controller')
 // constants  
 const PORT = process.env.PORT || 8000
-
 //start the server 
 const app = express()
+const server = http.createServer(app)
+initialize(server); // Initialize Socket.IO
+
 //default middleware
 // Enable CORS for specific domains
 app.use(cors({
     origin: ['http://localhost:3000', 'https://checkout.chapa.co'],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static('uploads'))
@@ -45,11 +47,9 @@ app.use('/api/shops', shopRouter)
 app.use('/api/image', imageRouter)
 app.use('/api/pages', pagesRouter)
 app.use('/api/templates', templateRouter)
-//app routes
-
+app.post('/iopost', testIo) 
 // handling errors
-app.use((err, req, res, next) => {
-    console.log(err.isOperational, 'isoperational')
+app.use((err, req, res) => {
     if (err.isOperational) {
         err.statusCode = err.statusCode || 500
         err.status = err.status || 'error'
@@ -58,16 +58,15 @@ app.use((err, req, res, next) => {
             status: err.status,
             message: err.message
         })
-    } else {
-        console.log(err, 'critical error')
-        res.status(500).json({
-            status: 'error',
-            message: err.message || 'Something went seriously wrong'
-        })
+    }
+    else {
+        // res.status(500).json({
+        //     status: 'error',
+        //     message: err.message || 'Something went seriously wrong'
+        // })
     }
 })
 //start the server
-app.listen(PORT, () => {
-    console.log(`server is running on port ${PORT}`)
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
 })
-

@@ -5,7 +5,7 @@ const uploadImage = async (req, res, next) => {
     try {
         const imageUrl = `http://localhost:8000/images/${req.files.files[0].filename}`; // Construct URL for frontend
 
-        // Save image URL to database (Optional)
+        // Save  image URL to database (Optional)
         await prisma.picture.create({
             data: { image: imageUrl }, // Save file path to database
         });
