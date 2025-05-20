@@ -2,12 +2,13 @@ import { appApi } from "@/lib/appApi";
 
 export const shopApi = appApi.injectEndpoints({
   tagTypes: ["Shop"],
+  overrideExisting:true,
   endpoints: (builder) => ({
     getAllShops: builder.query({
       query: () => '/shops/get-all'
     }),
     getShop: builder.query({
-      query: (shopId) => `getshop/${shopId}/`,
+      query: (shopId) => `/shops/get/${shopId}`,
       // providesTags: ["customisedPage"],
     }),
     getShopByMerchantTemplateId: builder.query({
@@ -29,12 +30,21 @@ export const shopApi = appApi.injectEndpoints({
       }),
       // invalidatesTags: ["Shop"],
     }),
+    updateById: builder.mutation({
+      query: (data) => ({
+        url: `/shops/update/${data.id}`,
+        method: "PUT",
+        body: data
+      }),
+    }),
   }),
 });
 export const {
   useCreateShopMutation,
   useGetShopByAccountQuery,
   useGetShopByMerchantTemplateIdQuery,
-  useGetAllShopsQuery
+  useGetAllShopsQuery,
+  useGetShopQuery,
+  useUpdateByIdMutation
 } = shopApi;
 

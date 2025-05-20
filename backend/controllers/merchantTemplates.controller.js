@@ -89,15 +89,16 @@ const getMerchantTemplateByDomain = async (req, res, next) => {
                 status: 'error'
             })
         }
+        console.log(shop)
         const template = await prisma.merchantTemplate.findFirst({
             where: {
                 merchantId: shop.merchantId,
-                isInUse: true
             },
             include: {
                 customPages: true
             }
         })
+
         if (!template) {
             return res.status(400).json({
                 message: 'Sorry this Template is not available',

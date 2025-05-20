@@ -1,192 +1,83 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import { ImageIcon, Video } from 'lucide-react';
+import { ImageIcon, Loader, Video } from 'lucide-react';
 import { z } from 'zod';
-
-import { CustomForm } from '@/app/components/forms/common-form/my-form';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectItem } from "@/components/ui/select";
 import { useCreateProductMutation, useGetProductsByIdQuery, useUpdateProductMutation } from '@/lib/features/products/products';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from 'react-toastify';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
+const BUSINESS_CATEGORIES = [
+    "Retail & Wholesale", "Food & Beverage", "Technology", "Healthcare",
+    "Construction", "Transportation", "Education", "Entertainment"
+];
 // Define product schema
 const productSchema = z.object({
     name: z.string().min(3, "Name must be at least 3 characters"),
     description: z.string().min(10, "Description must be at least 10 characters"),
-    price: z.number().min(0, "Price must be positive"),
-    discountPrice: z.number().min(0).optional(),
-    quantity: z.number().int().min(0, "Quantity must be positive"),
+    price: z.string().min(1, "Price must be positive"),
+    discountPrice: z.string().min(1).optional(),
+    quantity: z.string().min(1, "Quantity must be positive"),
     category: z.string().min(1, "Category is required"),
-    tags: z.array(z.string()).min(1, "At least one tag is required"),
-    status: z.enum(["PENDING", "APPROVED", "REJECTED", "DRAFT"]),
-    images: z.array(z.string()).min(1, "At least one image is required"),
+    status: z.enum(["PENDING", "SUSPENDED", "ACTIVE"]),
+    tags: z.enum([
+        "new", "sale", "popular", "limited"
+    ]),
+    images: z.instanceof(File, { message: "Image required" }),
     brand: z.string().optional(),
     videoUrl: z.string().url("Invalid URL").optional(),
     slug: z.string().min(3, "Slug must be at least 3 characters"),
 });
 // Form fields configuration
-const productFormFields = [
-    {
-        name: 'name',
-        label: 'Product Name',
-        type: 'text',
-        placeholder: 'Enter product name',
-        required: true,
-    },
-    {
-        name: 'description',
-        label: 'Description',
-        type: 'textarea',
-        placeholder: 'Enter product description',
-        required: true,
-    },
-    {
-        name: 'price',
-        label: 'Price',
-        type: 'number',
-        placeholder: 'Enter price',
-        step: '0.01',
-        required: true,
-    },
-    {
-        name: 'discountPrice',
-        label: 'Discount Price',
-        type: 'number',
-        placeholder: 'Enter discount price',
-        step: '0.01',
-    },
-    {
-        name: 'quantity',
-        label: 'Quantity',
-        type: 'number',
-        placeholder: 'Enter available quantity',
-        required: true,
-    },
-    {
-        name: 'category',
-        label: 'Category',
-        type: 'select',
-        options: [
-            { value: 'electronics', label: 'Electronics' },
-            { value: 'clothing', label: 'Clothing' },
-            { value: 'home', label: 'Home' },
-            { value: 'beauty', label: 'Beauty' },
-            { value: 'sports', label: 'Sports' },
-        ],
-        required: true,
-    },
-    {
-        name: 'tags',
-        label: 'Tags',
-        type: 'multiselect',
-        options: [
-            { value: 'new', label: 'New' },
-            { value: 'sale', label: 'Sale' },
-            { value: 'popular', label: 'Popular' },
-            { value: 'limited', label: 'Limited Edition' },
-        ],
-        required: true,
-    },
-    {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        options: [
-            { value: 'PENDING', label: 'Pending' },
-            { value: 'APPROVED', label: 'Approved' },
-            { value: 'REJECTED', label: 'Rejected' },
-            { value: 'DRAFT', label: 'Draft' },
-        ],
-        required: true,
-    },
-    {
-        name: 'images',
-        label: 'Product Images',
-        type: 'file',
-        accept: 'image/*',
-        multiple: true,
-        icon: <ImageIcon className="h-4 w-4" />,
-        required: true,
-    },
-    {
-        name: 'brand',
-        label: 'Brand',
-        type: 'text',
-        placeholder: 'Enter brand name',
-    },
-    {
-        name: 'videoUrl',
-        label: 'Video URL',
-        type: 'text',
-        placeholder: 'Enter product video URL',
-        icon: <Video className="h-4 w-4" />,
-    },
-    {
-        name: 'slug',
-        label: 'Product Slug',
-        type: 'text',
-        placeholder: 'Enter URL slug',
-        required: true,
-    },
-];
-
-
 const AddProduct = () => {
     const [mode, setMode] = useState('register');
     const searchParams = new URLSearchParams(window.location.search);
+    const [product, setProduct] = useState([])
     const productId = searchParams.get('rtx');
+    const [isloading, setIsLoading] = useState(false)
     const [files, setFiles] = useState([]);
-
+    const account = useSelector((state) => state.account)
+    const router = useRouter()
     // API Hooks
-    const { data: product, isLoading, isError, refetch } = useGetProductsByIdQuery(productId);
+    const { data, isLoading, isError, refetch } = useGetProductsByIdQuery(productId);
     const [createProduct] = useCreateProductMutation();
     const [updateProduct] = useUpdateProductMutation();
+
+    useEffect(() => {
+        if (productId) {
+            setProduct(data?.product)
+        }
+    }, [productId])
+    useEffect(() => {
+        if (productId) form.reset(data?.product);
+    }, [productId, product]);
 
     // Form initialization
     const form = useForm({
         resolver: zodResolver(productSchema),
-        defaultValues: async () => {
-            // Return empty defaults initially
-            if (!productId) return {
-                name: '',
-                description: '',
-                price: 0,
-                discountPrice: 0,
-                quantity: 0,
-                category: '',
-                tags: [],
-                status: 'PENDING',
-                images: [],
-                brand: '',
-                videoUrl: '',
-                slug: ''
-            };
-
-            // Fetch and return product data when in edit mode
-            try {
-                const { data } = await refetch();
-                return {
-                    name: data?.name || '',
-                    description: data?.description || '',
-                    price: data?.price || 0,
-                    discountPrice: data?.discountPrice || 0,
-                    quantity: data?.quantity || 0,
-                    category: data?.category || '',
-                    tags: data?.tags || [],
-                    status: data?.status || 'PENDING',
-                    images: data?.images || [],
-                    brand: data?.brand || '',
-                    videoUrl: data?.videoUrl || '',
-                    slug: data?.slug || ''
-                };
-            } catch (error) {
-                console.error("Error loading product:", error);
-                return {}; // Return empty object if fetch fails
-            }
+        defaultValues: data?.product || {
+            name: '',
+            description: '',
+            price: 0,
+            discountPrice: 0,
+            quantity: 0,
+            category: '',
+            tags: [],
+            status: 'PENDING',
+            images: [],
+            brand: '',
+            videoUrl: '',
+            slug: ''
         }
     });
-
     // Effect to handle mode changes
     useEffect(() => {
         if (productId && product) {
@@ -215,6 +106,7 @@ const AddProduct = () => {
                 formData.append(key, value);
             }
         });
+        formData.append('accountId', account.id);
         if (mode === 'edit' && productId) {
             formData.append('id', productId);
         }
@@ -222,25 +114,34 @@ const AddProduct = () => {
     };
 
     const handleSubmit = async (values) => {
+        setIsLoading(true)
         try {
             const formData = setupInputData(values);
 
+
             if (mode === 'edit') {
-                await updateProduct(formData).unwrap();
+                const response = await updateProduct(formData).unwrap();
+                if (response.status !== 'success') {
+                    return toast.error('Sorry Something went wrong. please try agin.')
+                }
+                form.reset(response?.product)
                 toast.success('Product updated successfully');
+                router.push('/merchant/product')
             } else {
-                await createProduct(formData).unwrap();
+                const response = await createProduct(formData).unwrap();
+                if (response.status !== 'success') {
+                    return toast.error('Sorry Something went wrong. please try agin.')
+                }
                 toast.success('Product created successfully');
+                form.reset();
+                setFiles([]);
+                router.push('/merchant/product')
+
             }
-
-            // Reset form and state
-            form.reset();
-            setFiles([]);
-
-            // Redirect or refetch if needed
             if (mode === 'register') {
-                // Optionally redirect to edit page or product list
-                // navigate(`/products?rtx=${newProductId}`);
+                form.reset();
+                setFiles([]);
+
             } else {
                 await refetch();
             }
@@ -249,8 +150,10 @@ const AddProduct = () => {
             const errorMessage = getErrorMessage(error);
             toast.error(errorMessage);
         }
+        finally {
+            setIsLoading(false)
+        }
     };
-
     const getErrorMessage = (error) => {
         if (error?.status === 401) return 'Unauthorized - Please login again';
         if (error?.status === 400) return 'Invalid data - Please check your inputs';
@@ -267,17 +170,32 @@ const AddProduct = () => {
         return <div className="p-6 text-center text-red-500">Error loading product data</div>;
     }
 
+    const renderField = (name, label, renderControl, required = true) => (
+        <FormField
+            control={form.control}
+            name={name}
+            render={({ field }) => (
+                <FormItem>
+                    <FormLabel>{label}{required && <span className="text-red-500">*</span>}</FormLabel>
+                    <FormControl>{renderControl(field)}</FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}
+        />
+    );
+
     return (
         <div className="p-6 max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-6 dark:text-white">
                 <h1 className="text-2xl font-bold">
                     {mode === 'edit' ? 'Edit Product' : 'Add New Product'}
                 </h1>
                 {productId && (
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 dark:text-white">
                         <Switch
                             id="edit-mode"
                             checked={mode === 'edit'}
+                            className='dark:text-white dark:bg-white dark:fill-orange-400'
                             onCheckedChange={(checked) => {
                                 setMode(checked ? 'edit' : 'register');
                                 if (!checked) form.reset();
@@ -287,26 +205,136 @@ const AddProduct = () => {
                     </div>
                 )}
             </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
+            <Card className="w-3/4 md:w-1/2 p-6 mx-auto">
                 {mode === 'edit' && (
-                    <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400">
-                        <p className="text-yellow-700">
+                    <div className="mb-4 p-3 bg-yellow-50 dark:bg-amber-600  border-l-4 border-yellow-400">
+                        <p className="text-yellow-700 dark:text-white">
                             <strong>Edit Mode:</strong> Editing product ID: {productId}
                         </p>
                     </div>
                 )}
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                        {renderField("name", "Product Name", field => (
+                            <Input {...field} placeholder='Enter Produt Name' />
+                        ))}
+                        {renderField("description", "Description", field => (
+                            <textarea {...field} className='w-full dark:text-white dark:bg-gray-700' placeholder="here your description" />
+                        ))}
+                        {renderField("price", "price", field => (
+                            <Input {...field} type="number" placeholder='Enter price' className="dark:text-white dark:bg-gray-950" />
+                        ))}
+                        {renderField("discountPrice", "DiscountPrice", field => (
+                            <Input {...field} type="number" placeholder='Enter DiscountPrice' className="dark:text-white dark:bg-gray-950" />
+                        ))}
+                        {renderField("quantity", "Duantity", field => (
+                            <Input {...field} type="number" placeholder='Enter quantity' className="dark:text-white dark:bg-gray-950" />
+                        ))}
 
-                <CustomForm
-                    form={form}
-                    fields={productFormFields}
-                    onSubmit={handleSubmit}
-                    files={files}
-                    setFiles={setFiles}
-                    submitButtonText={mode === 'edit' ? 'Update Product' : 'Add Product'}
-                    disabled={isLoading}
-                />
-            </div>
+                        {renderField("category", "Category", field => (
+                            <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {BUSINESS_CATEGORIES.map(category => (
+                                            <SelectItem
+                                                key={category}
+                                                value={category?.toLowerCase().replace(/ & /g, "-")}
+                                            >
+                                                {category}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        ))}
+                        {renderField("tags", "tags", field => (
+                            <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select tags" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {[
+                                            "new", "sale", "popular", "limited"
+                                        ].map(category => (
+                                            <SelectItem
+                                                key={category}
+                                                value={category.toLowerCase().replace(/ & /g, "-")}
+                                            >
+                                                {category}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        ))}
+                        {renderField("status", "status", field => (
+                            <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {["PENDING", "SUSPENDED", "ACTIVE"].map(category => (
+                                            <SelectItem
+                                                key={category}
+                                                value={category}
+                                            >
+                                                {category}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        ))}
+
+                        <div className="pt-6 space-y-4">
+                            {renderField("brand", "Brand", field => (
+                                <Input {...field} />
+                            ))}
+                            {renderField("videoUrl", "videoUrl", field => (
+                                <Input {...field} />
+                            ))}
+                            {renderField("slug", "slug", field => (
+                                <Input {...field} />
+                            ))}
+                            {renderField("images", " images", ({ onChange }) => (
+                                <Input
+                                    type="file"
+                                    accept="image/*,application/pdf"
+                                    multiple
+                                    onChange={e => onChange(e.target.files?.[0])}
+                                />
+                            ))}
+
+                        </div>
+                        <Button
+                            type="submit"
+                            className="bg-orange-600 flex gap-2 items-center hover:bg-orange-700 w-full"
+                        >
+                            {
+                                isloading &&
+                                <Loader className='w-6 h-6 animate-spin' />
+
+
+                            }
+                            {isloading ? " Upload Product" : 'uploading...'}
+                        </Button>
+                    </form>
+                </Form>
+            </Card>
         </div>
     );
 };

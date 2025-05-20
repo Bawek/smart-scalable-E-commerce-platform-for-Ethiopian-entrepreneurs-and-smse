@@ -1,5 +1,6 @@
 'use client'
 import { Button } from '@/components/ui/button';
+import { useGetShopQuery } from '@/lib/features/shop/shop';
 import { Email } from '@mui/icons-material';
 import {
     Clock,
@@ -9,10 +10,13 @@ import {
     Store,
     Phone,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 const ShopDetailPage = () => {
+    const params = useParams()
     const router = useRouter()
+    const { data, isLoading, isError } = useGetShopQuery(params.shopId)
+    console.log(data, params, isError)
     // Sample shop data (replace with real data)
     const shop = {
         id: 'SHOP-789',
@@ -42,14 +46,28 @@ const ShopDetailPage = () => {
         monthlySales: '$45,320'
     };
 
+    if (isLoading) {
+        return (
+            <div>
+                <h1>loading...</h1>
+            </div>
+        )
+    }
+    if (isError) {
+        return (
+            <div>
+                <h1>sorry Something went wrong. we can not load the shops.</h1>
+            </div>
+        )
+    }
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen dark:text-white pt-3">
             <div className="max-w-6xl mx-auto">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div className="flex items-center gap-4">
                         <Store className="w-8 h-8 text-blue-600" />
-                        <h1 className="text-3xl font-bold text-gray-900">{shop.name}</h1>
+                        <h1 className="text-3xl font-bold">{data?.shop?.name}</h1>
                     </div>
                     <div className="flex gap-2">
                         <Button
@@ -62,15 +80,15 @@ const ShopDetailPage = () => {
                 </div>
                 {/* Status and Basic Info */}
                 <div className="flex flex-wrap gap-4 mb-8 items-center">
-                    <span className={`px-4 py-2 rounded-full text-sm font-medium ${shop.status === 'active'
+                    <span className={`px-4 py-2 rounded-full text-sm font-medium ${data?.shop?.status === 'ACTIVE'
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
                         }`}>
-                        {shop.status.charAt(0).toUpperCase() + shop.status.slice(1)}
+                        {data?.shop?.status.charAt(0).toUpperCase() + data?.shop?.status.slice(1)}
                     </span>
-                    <div className="flex items-center gap-2 text-gray-600">
+                    <div className="flex items-center gap-2">
                         <MapPin className="w-5 h-5" />
-                        <span>{shop.address}</span>
+                        <span>{`${data?.shop?.location?.woreda + " " + data?.shop?.location?.town + " " + data?.shop?.location?.region + " " + data?.shop?.location?.country + " "}`}</span>
                     </div>
                 </div>
 
@@ -79,102 +97,42 @@ const ShopDetailPage = () => {
                     {/* Left Column */}
                     <div className="space-y-8">
                         {/* Basic Information Card */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm">
+                        <div className=" p-6 rounded-xl shadow-sm">
                             <h2 className="text-xl font-semibold mb-4">Shop Information</h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-sm text-gray-500">Shop ID</label>
-                                    <p className="font-medium">{shop.id}</p>
+                                    <label className="text-sm ">Shop ID</label>
+                                    <p className="font-medium">{data?.shop?.id}</p>
                                 </div>
                                 <div>
-                                    <label className="text-sm text-gray-500">Owner</label>
-                                    <p className="font-medium">{shop.owner}</p>
+                                    <label className="text-sm ">Owner</label>
+                                    <p className="font-medium">{data?.shop?.merchant.ownerName}</p>
                                 </div>
                                 <div>
-                                    <label className="text-sm text-gray-500">Registration Date</label>
-                                    <p className="font-medium">{shop.registered}</p>
+                                    <label className="text-sm ">Registration Date</label>
+                                    <p className="font-medium">{data?.shop?.updatedAt}</p>
                                 </div>
                                 <div>
-                                    <label className="text-sm text-gray-500">Last Activity</label>
-                                    <p className="font-medium">{shop.lastActivity}</p>
+                                    <label className="text-sm ">Last Activity</label>
+                                    <p className="font-medium">{data?.shop?.updatedAt}</p>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Staff Members Card */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm">
-                            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                                <Users className="w-6 h-6" />
-                                Staff Members
-                            </h2>
-                            <div className="space-y-3">
-                                {shop.staff.map((member, index) => (
-                                    <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                        <span className="font-medium">{member.name}</span>
-                                        <span className="text-sm text-gray-500">{member.role}</span>
-                                    </div>
-                                ))}
                             </div>
                         </div>
                     </div>
 
                     {/* Right Column */}
                     <div className="space-y-8">
-                        {/* Operating Hours Card */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm">
-                            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                                <Clock className="w-6 h-6" />
-                                Operating Hours
-                            </h2>
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Monday - Friday</span>
-                                    <span className="font-medium">{shop.operatingHours.mon_fri}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Saturday</span>
-                                    <span className="font-medium">{shop.operatingHours.sat}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Sunday</span>
-                                    <span className="font-medium">{shop.operatingHours.sun}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Inventory & Sales Card */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm">
-                            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                                <DollarSign className="w-6 h-6" />
-                                Sales & Inventory
-                            </h2>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="text-center p-4 bg-green-50 rounded-lg">
-                                    <p className="text-2xl font-bold text-green-700">{shop.inventoryStatus.totalItems}</p>
-                                    <p className="text-sm text-gray-600">Total Items</p>
-                                </div>
-                                <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                                    <p className="text-2xl font-bold text-yellow-700">{shop.inventoryStatus.lowStock}</p>
-                                    <p className="text-sm text-gray-600">Low Stock Items</p>
-                                </div>
-                                <div className="col-span-2 p-4 bg-blue-50 rounded-lg">
-                                    <p className="text-2xl font-bold text-blue-700 text-center">{shop.monthlySales}</p>
-                                    <p className="text-sm text-gray-600 text-center">30-Day Sales</p>
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Contact Information Card */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm">
+                        <div className=" p-6 rounded-xl shadow-sm">
                             <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
                             <div className="space-y-3">
                                 <div className="flex items-center gap-3">
-                                    <Email className="w-5 h-5 text-gray-400" />
-                                    <span className="font-medium">{shop.contact.email}</span>
+                                    <Email className="w-5 h-5 " />
+                                    <span className="font-medium">{data?.shop?.merchant?.businessEmail}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <Phone className="w-5 h-5 text-gray-400" />
-                                    <span className="font-medium">{shop.contact.phone}</span>
+                                    <Phone className="w-5 h-5 " />
+                                    <span className="font-medium">{data?.shop?.merchant?.businessPhone}</span>
                                 </div>
                             </div>
                         </div>
@@ -182,7 +140,7 @@ const ShopDetailPage = () => {
                 </div>
 
                 {/* Admin Actions Section */}
-                <div className="mt-8 bg-white p-6 rounded-xl shadow-sm">
+                {/* <div className="mt-8 bg-white p-6 rounded-xl shadow-sm">
                     <h2 className="text-xl font-semibold mb-4">Admin Actions</h2>
                     <div className="flex flex-wrap gap-4">
                         <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
@@ -198,7 +156,7 @@ const ShopDetailPage = () => {
                             Generate Report
                         </button>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

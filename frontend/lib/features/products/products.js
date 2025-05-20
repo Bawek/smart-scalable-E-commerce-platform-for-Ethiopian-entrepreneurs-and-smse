@@ -7,35 +7,33 @@ export const productsApi = createApi({
   tagTypes: ["product"],
   endpoints: (builder) => ({
     getProducts: builder.query({
-      query: (merchant_id) => `product/${merchant_id}/`,
+      query: () => `/products/get-all-products`,
       providesTags: ["product"],
     }),
     getProductsById: builder.query({
-      query: (id) => `/product-get-by-id/${id}/`,
+      query: (id) => `/products/product-get-by-id/${id}/`,
       providesTags: ["product"],
     }),
     getOutOfStockProducts: builder.query({
       query: (merchant_id) => `product/stock/${merchant_id}/`,
       providesTags: ["product"],
     }),
-    // getOutOfStockProducts: builder.query({
-    //   query: (merchant_id) => `product/stock/stream/${merchant_id}/`,
-    //   providesTags: ["product"],
-    // }),
-    createProduct: builder.mutation({
+      createProduct: builder.mutation({
       query: (formData) => ({
-        url: `/product/create`,
+        url: `/products/create`,
         method: "POST",
         body: formData,
       }),
       invalidatesTags: ["product"],
     }),
     updateProduct: builder.mutation({
-      query: ({ data }) => ({
-        url: `/product/update/${data.id}/`,
-        method: "PATCH",
+      query: (data) => {
+        return {
+        url: `/products/update`,
+        method: "PUT",
         body: data // Accepting an array of new products
-      }),
+      }
+      },
       invalidatesTags: ["product"],
     }),
   }),

@@ -18,8 +18,8 @@ const EditTemplate = () => {
         const formData = new FormData()
         formData.append('status', data.status)
         formData.append('name', data.name)
-        formData.append('price', data.price)
-        formData.append('PreviewImage', data.PreviewImage)
+        formData.append('basePrice', data.basePrice)
+        formData.append('previewUrls', data.previewUrls)
         formData.append('description', data.description)
         try {
             const response = await axios.put(`http://localhost:8000/api/templates/update/${templateId}`, formData)

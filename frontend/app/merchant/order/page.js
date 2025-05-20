@@ -136,112 +136,9 @@ const sampleOrders = [
     createdAt: '2025-05-11T18:20:00Z',
   },
 ];
-
-// const sampleOrder = {
-//   id: "order_123456789",
-//   createdAt: "2023-11-15T09:32:00Z",
-//   updatedAt: "2023-11-16T14:45:00Z",
-//   status: "PROCESSING",
-//   paymentMethod: "Credit Card",
-//   paymentStatus: "PAID",
-//   subtotal: 297.97,
-//   shippingCost: 9.99,
-//   tax: 27.78,
-//   total: 335.74,
-
-//   customer: {
-//     id: "cust_987654321",
-//     name: "Alex Johnson",
-//     email: "alex.johnson@example.com",
-//     phone: "+1 (555) 123-4567"
-//   },
-
-//   shippingAddress: {
-//     line1: "123 Main Street",
-//     line2: "Apt 4B",
-//     city: "New York",
-//     state: "NY",
-//     postalCode: "10001",
-//     country: "United States"
-//   },
-
-//   items: [
-//     {
-//       id: "item_001",
-//       quantity: 2,
-//       price: 99.99,
-//       discountPrice: 89.99,
-//       product: {
-//         id: "prod_123",
-//         name: "Wireless Bluetooth Headphones",
-//         description: "Premium noise-cancelling wireless headphones",
-//         images: [
-//           "https://example.com/images/headphones.jpg",
-//           "https://example.com/images/headphones-2.jpg"
-//         ],
-//         category: "Electronics",
-//         brand: "AudioMaster",
-//         slug: "wireless-bluetooth-headphones"
-//       }
-//     },
-//     {
-//       id: "item_002",
-//       quantity: 1,
-//       price: 98.00,
-//       product: {
-//         id: "prod_456",
-//         name: "Organic Cotton T-Shirt",
-//         description: "100% organic cotton unisex t-shirt",
-//         images: [
-//           "https://example.com/images/tshirt.jpg"
-//         ],
-//         category: "Apparel",
-//         brand: "EcoWear",
-//         slug: "organic-cotton-tshirt"
-//       }
-//     }
-//   ],
-
-//   // Optional tracking information
-//   tracking: {
-//     carrier: "UPS",
-//     trackingNumber: "1Z12345E0205271688",
-//     estimatedDelivery: "2023-11-20",
-//     status: "In Transit",
-//     history: [
-//       {
-//         date: "2023-11-16T08:30:00Z",
-//         status: "Shipped",
-//         location: "Brooklyn, NY"
-//       },
-//       {
-//         date: "2023-11-15T16:45:00Z",
-//         status: "Processed",
-//         location: "Brooklyn, NY"
-//       }
-//     ]
-//   },
-
-//   // Payment details (simplified)
-//   payment: {
-//     transactionId: "txn_789456123",
-//     amount: 335.74,
-//     currency: "USD",
-//     method: "VISA **** 4242",
-//     date: "2023-11-15T09:33:12Z"
-//   }
-// };
 const OrdersPage = () => {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState(sampleOrders || []);
   const router = useRouter()
-
-  function showOrderNotification() {
-    toast.success("New Order", {
-      description: "A new order has been placed.",
-      duration: 5000, // Duration of the notification in ms
-    });
-  }
-  consle.log("kkdddddd")
   const orderColumns = [
     {
       id: "select",
@@ -342,7 +239,7 @@ const OrdersPage = () => {
           CANCELLED: { color: "bg-red-100 text-red-800", label: "Cancelled" },
         };
         return (
-          <Badge className={`${statusMap[status]?.color || 'bg-gray-100'} rounded-full px-2.5 py-0.5 text-xs`}>
+          <Badge className={`${statusMap[status]?.color || 'bg-gray-100'} rounded-full hover:bg-amber-100 px-2.5 py-0.5 text-xs`}>
             {statusMap[status]?.label || status}
           </Badge>
         );
@@ -479,9 +376,9 @@ const OrdersPage = () => {
     >
       <div className="flex flex-col flex-wrap">
         <CustomDataTable
-          data={sampleOrders}
+          data={orders}
           columns={orderColumns}
-          searchColumen={"product"}
+          searchColumen={"status"}
         />
         <div className="w-full xl:w-4/12 px-4">
           <CardBarChart />

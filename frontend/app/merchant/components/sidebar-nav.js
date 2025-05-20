@@ -39,9 +39,9 @@ export function MerchantSideNav({ items }) {
                             <Link href={item.url}>
                                 <SidebarMenuButton
                                     className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors
-  ${pathname === item.url
-                                            ? 'border-l-4 border-amber-500 focus:border-none focus:outline-none bg-amber-100 font-semibold'
-                                            : 'hover:bg-muted dark:hover:bg-amber-100'}
+                              ${pathname === item.url
+                                            ? 'border-l-4 border-amber-500 focus:border-none focus:outline-none bg-amber-100 dark:bg-gray-600 font-semibold'
+                                            : 'hover:bg-muted dark:hover:bg-gray-700'}
 `}
                                     tooltip={item.title}>
                                     {item.icon && <item.icon />}

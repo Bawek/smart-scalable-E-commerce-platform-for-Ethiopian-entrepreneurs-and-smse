@@ -222,7 +222,15 @@ const getAllShop = async (req, res, next) => {
 
     try {
         // await prisma.shop.deleteMany()
-        const shops = await prisma.shop.findMany()
+        const shops = await prisma.shop.findMany({
+            include: {
+                merchant: {
+                    select: {
+                        ownerName: true
+                    }
+                }
+            }
+        })
         if (shops.length === 0) {
             return res.status(200).json({
                 status: 'success',
@@ -240,13 +248,22 @@ const getAllShop = async (req, res, next) => {
 const getById = async (req, res, next) => {
     const { shopId } = req.params
     try {
-        const pages = await prisma.basePage.findMany()
         const shop = await prisma.shop.findFirst({
             where: {
                 id: shopId
             },
+            include: {
+                merchant: {
+                    select: {
+                        ownerName: true,
+                        businessEmail: true,
+                        businessPhone: true
+                    }
+                },
+                location: true
+            }
         })
-        res.status(200).json({ shop, pages })
+        res.status(200).json({ shop })
     } catch (error) {
         next(new httpError(error.message, 500))
     }
@@ -279,10 +296,30 @@ const getShopByAccount = async (req, res, next) => {
         next(new httpError(error.message, 500))
     }
 }
+const updateshopById = async (req, res, next) => {
+    const { shopId } = req.params
+    try {
+        const shop = await prisma.shop.update({
+            where: {
+                id: shopId
+            },
+            data: {
+                status: req.body.status
+            }
+        })
+        res.status(200).json({
+            status: 'success',
+            shop: shop ? shop : {}
+        })
+    } catch (error) {
+        next(new httpError(error.message, 500))
+    }
+}
 
 module.exports = {
     registerShop,
     getAllShop,
     getById,
     getShopByAccount,
+    updateshopById
 }

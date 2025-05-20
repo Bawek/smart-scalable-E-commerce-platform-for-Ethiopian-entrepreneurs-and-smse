@@ -1,20 +1,20 @@
 export default function InventoryStats({ inventory }) {
-  const totalItems = inventory.length;
-  const lowStockItems = inventory.filter(item => item.quantity < 10).length;
-  const outOfStockItems = inventory.filter(item => item.quantity === 0).length;
-  const inventoryValue = inventory.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalItems = inventory?.length;
+  const lowStockItems = inventory?.filter(item => item.quantity < 10).length;
+  const outOfStockItems = inventory?.filter(item => item.quantity === 0).length;
+  const inventoryValue = inventory?.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const stats = [
     { name: 'Total Products', value: totalItems },
     { name: 'Low Stock', value: lowStockItems, alert: lowStockItems > 0 },
     { name: 'Out of Stock', value: outOfStockItems, alert: outOfStockItems > 0 },
-    { name: 'Inventory Value', value: `$${inventoryValue.toLocaleString()}` },
+    { name: 'Inventory Value', value: `$${inventoryValue?.toLocaleString()}` },
   ];
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 flex-1 lg:grid-cols-4 mb-6">
       {stats.map((stat) => (
-        <div key={stat.name} className={`bg-white overflow-hidden shadow rounded-lg 
+        <div key={stat.name} className={`overflow-hidden shadow rounded-lg 
           ${stat.alert ? 'border-l-4 border-red-500' : ''}`}>
           <div className="px-4 py-5 sm:p-6">
             <div className="flex items-center">
@@ -25,9 +25,9 @@ export default function InventoryStats({ inventory }) {
                 </svg>
               </div>
               <div className="ml-5 w-0 flex-1">
-                <dt className="text-sm font-medium truncate">{stat.name}</dt>
+                <dt className="text-sm font-medium truncate dark:text-white">{stat.name}</dt>
                 <dd className="flex items-baseline">
-                  <div className="text-2xl font-semibold">{stat.value}</div>
+                  <div className="text-2xl font-semibold dark:text-white">{stat.value}</div>
                 </dd>
               </div>
             </div>

@@ -1,8 +1,6 @@
 // app/merchant/layout.tsx
 import { AppSidebar } from "@/components/ui/my-components/my-appsidebar"
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import Alert from "./components/Alert"
-import { MenuIcon } from "lucide-react"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import React from "react"
 import MerchantNavBar from "./components/nav"
 

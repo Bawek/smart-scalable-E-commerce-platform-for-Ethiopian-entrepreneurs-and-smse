@@ -16,6 +16,7 @@ import {
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { imageViewer } from "@/app/system-admin/lib/imageViewer";
+import { Loader } from "lucide-react";
 
 // Reusable Form Component
 export function CustomForm({ fields, schema, onSubmit, file, setFile, data }) {
@@ -53,7 +54,7 @@ export function CustomForm({ fields, schema, onSubmit, file, setFile, data }) {
                                 <FormControl>
                                     {/* Render the appropriate input type */}
                                     {field.type === "select" ? (
-                                        <select {...formField} className="input-class">
+                                        <select {...formField} className="dark:bg-gray-900">
                                             {field.options?.map((option, idx) => (
                                                 <option key={idx} value={option.value}>
                                                     {option.label}
@@ -92,6 +93,7 @@ export function CustomForm({ fields, schema, onSubmit, file, setFile, data }) {
                                                     {...formField}
                                                     placeholder={field.placeholder || ""}
                                                     type={field.type || "text"}
+                                                    className='dark:bg-gray-900'
                                                 />
                                             )}
                                 </FormControl>
@@ -103,9 +105,18 @@ export function CustomForm({ fields, schema, onSubmit, file, setFile, data }) {
                         )}
                     />
                 ))}
-                {/* Submit Button */}
-                <Button type="submit" className="w-full bg-orange-700">
-                    Submit
+                {/* Submit Button with loading */}
+                <Button type="submit"    
+                className={`w-full bg-orange-700 flex gap-2 items-center hover:bg-orange-300  ${form.formState.isSubmitting ? "":""} `}>
+                   {
+                    form.formState.isSubmitting &&
+                    <Loader className="w-6 h-6 animate-spin" />
+                   }
+                   {
+                    form.formState.isSubmitting ? 
+                    "Submitting" :
+                    'Submit'
+                   }
                 </Button>
             </form>
         </Form>

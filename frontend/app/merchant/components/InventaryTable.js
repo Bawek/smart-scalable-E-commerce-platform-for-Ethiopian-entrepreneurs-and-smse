@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export default function InventoryTable({ data, columns }) {
     return (
-        <div className="bg-white shadow rounded-lg overflow-hidden mb-8">
+        <div className="shadow rounded-lg overflow-hidden mb-8">
             <CustomDataTable
                 data={data || []}
                 columns={columns}
