@@ -162,14 +162,14 @@ exports.getMerchantDashboardStats = async (req, res) => {
 
         const shopId = shop.id;
 
-        const [totalRevenue, totalOrders, totalProducts, totalCustomers,response] = await Promise.all([
+        const [totalRevenue, totalOrders, totalProducts, totalCustomers, response] = await Promise.all([
             getTotalRevenue(shopId),
             getTotalOrders(shopId),
             getTotalProducts(shopId),
             getTotalCustomers(shopId),
-            getMonthlySalesData(req,res,merchant.id)
+            getMonthlySalesData(req, res, merchant.id)
         ]);
- 
+
         res.status(200).json({
             success: true,
             data: {
@@ -178,7 +178,7 @@ exports.getMerchantDashboardStats = async (req, res) => {
                 totalOrders,
                 totalProducts,
                 totalCustomers,
-                chartData:response
+                chartData: response
             },
         });
     } catch (error) {
@@ -187,5 +187,40 @@ exports.getMerchantDashboardStats = async (req, res) => {
             success: false,
             message: "Failed to fetch dashboard stats.",
         });
+    }
+};
+
+
+exports.getAnalytics = async (req, res) => {
+    try {
+        // Fetch all orders (excluding cancelled)
+        const orders = await prisma.order.findMany({
+            where: { status: { not: 'CANCELLED' } },
+            include: { customer: true },
+        });
+
+        // Get all customers
+        const customers = await prisma.customer.findMany({
+            include: { orders: true },
+        });
+
+        const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+        const orderCount = orders.length;
+        const avgOrderValue = orderCount === 0 ? 0 : totalRevenue / orderCount;
+
+        // Calculate returning customers
+        const returningCustomers = customers.filter(c => c.orders.length > 1).length;
+        const returningPercentage = customers.length === 0 ? 0 : (returningCustomers / customers.length) * 100;
+
+        return res.json({
+            totalRevenue,
+            orderCount,
+            avgOrderValue,
+            returningCustomersPercentage: returningPercentage,
+        });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 };

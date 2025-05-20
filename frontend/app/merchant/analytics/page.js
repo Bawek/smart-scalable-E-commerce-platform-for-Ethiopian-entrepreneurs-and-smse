@@ -1,43 +1,58 @@
 'use client'
+
+import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, Download, ShoppingCart, TrendingUp, User } from "lucide-react";
+import { DollarSign, ShoppingCart, TrendingUp, User } from "lucide-react";
 import MetricCard from "../components/cardMatrics";
 import CardLineChart from "@/app/components/Cards/CardLineChart";
-import { Button } from "@/components/ui/button";
 import { RecentSales } from "../components/resentSell";
+
 export default function AnalyticsPage() {
-  // Sample data - replace with your API calls
-  const metrics = [
+  const [metrics, setMetrics] = useState([
     {
       title: "Total Revenue",
-      value: "$45,231.89",
-      change: "+20.1%",
-      trend: "up",
+      value: "$0.00",
       icon: DollarSign
     },
     {
       title: "Orders",
-      value: "1,234",
-      change: "+12%",
-      trend: "up",
+      value: "0",
       icon: ShoppingCart
     },
     {
       title: "Avg. Order Value",
-      value: "$89.34",
-      change: "-2.3%",
-      trend: "down",
+      value: "$0.00",
       icon: TrendingUp
     },
     {
       title: "Returning Customers",
-      value: "32%",
-      change: "+5.1%",
-      trend: "up",
+      value: "0%",
       icon: User
     }
-  ];
+  ]);
+
+  useEffect(() => {
+    async function fetchMetrics() {
+      try {
+        const res = await fetch('http://localhost:5000/api/dashboard/analytics');
+        const data = await res.json();
+
+        if (data && Array.isArray(data)) {
+          setMetrics(data.map((metric, index) => ({
+            ...metrics[index],
+            value: metric?.value ?? metrics[index].value,
+            trend: metric?.trend ?? metrics[index].trend
+          })));
+        }
+      } catch (error) {
+        console.error("Failed to fetch metrics:", error);
+        // fallback remains
+      }
+    }
+
+    fetchMetrics();
+  }, []);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -53,23 +68,19 @@ export default function AnalyticsPage() {
           <TabsTrigger value="inventory">Inventory</TabsTrigger>
         </TabsList>
 
-        {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4">
-          {/* Metric Cards Grid */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric, i) => (
               <MetricCard key={i} {...metric} />
             ))}
           </div>
 
-          {/* Charts Row */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-4">
               <CardHeader>
                 <CardTitle>Revenue Overview</CardTitle>
               </CardHeader>
               <CardContent className="pl-2">
-                {/* <OverviewChart /> */}
                 <CardLineChart />
               </CardContent>
             </Card>
@@ -79,13 +90,10 @@ export default function AnalyticsPage() {
                 <CardTitle>Recent Sales</CardTitle>
               </CardHeader>
               <CardContent>
-                {/* <RecentSales /> */}
                 <RecentSales />
               </CardContent>
             </Card>
           </div>
-
-
         </TabsContent>
       </Tabs>
     </div>
