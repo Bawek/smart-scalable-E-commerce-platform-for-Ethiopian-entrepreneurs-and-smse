@@ -36,7 +36,7 @@ const registerAccount = async (req, res, next) => {
             accountId: newAccount.id,
             role: newAccount.role
         }
-        const refreshToken = await generateRefreshToken(userInfo, next)
+        const refreshToken = await generateRefreshToken(userInfo, next) 
         const accessToken = await generateAccessToken(userInfo, next)
         const updatedAccount = await prisma.account.update({
             where: {
