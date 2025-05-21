@@ -1,153 +1,120 @@
-// 'use client'
-// import Link from 'next/link'
-// import React from 'react'
-// import { Card, CardContent, CardHeader } from "@/components/ui/card";
-// import { Button } from "@/components/ui/button";
-// import { formatCurrency } from '@/util/currency';
-
-// const ProductItem = ({ product }) => {
-//     console.log(product, 'product')
-//     return (
-//         <Link className="no-underline" href={`/customers/products/detail/${product?.id}`}>
-//             <Card key={product.id} className="group relative overflow-hidden transition-shadow hover:shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-[500px] flex flex-col justify-between">
-//                 <div className="relative">
-//                     <img
-//                         src={product.thumbnail}
-//                         alt={product.title}
-//                         className="h-60 w-full object-cover rounded-t-lg transition-transform duration-300 ease-in-out group-hover:scale-105"
-//                     />
-//                     <div className="absolute right-2 top-2 rounded-full bg-gray-400 px-3 py-1 text-sm font-bold text-white">
-//                         20% OFF
-//                     </div>
-//                 </div>
-
-//                 <div>
-//                     <CardHeader className="my-0 py-0">
-//                         <h3 className="text-lg font-bold text-gray-400 dark:text-white truncate">
-//                             {product.title}
-//                         </h3>
-
-//                         <div className="flex items-center mt-2 mb-4">
-//                             {[...Array(5)].map((_, index) => (
-//                                 <svg
-//                                     key={index}
-//                                     xmlns="http://www.w3.org/2000/svg"
-//                                     fill={index < Math.round(product.rating?.rate) ? "#fbbf24" : "none"}
-//                                     viewBox="0 0 24 24"
-//                                     strokeWidth={1.5}
-//                                     stroke="currentColor"
-//                                     className="w-5 h-5 text-yellow-500"
-//                                 >
-//                                     <path
-//                                         strokeLinecap="round"
-//                                         strokeLinejoin="round"
-//                                         d="M12 17.25L18.18 21l-1.64-7.03L22 9.25l-7.19-.61L12 2.25l-2.81 6.39L2 9.25l5.46 4.72L5.82 21z"
-//                                     />
-//                                 </svg>
-//                             ))}
-//                             <span className="ml-2 text-sm text-gray-500">({product.rating?.rate})</span>
-//                         </div>
-//                     </CardHeader>
-
-//                     <CardContent className="p-4 flex flex-col flex-grow justify-between">
-//                         <p className="text-gray-400 text-sm dark:text-gray-300 mb-4 truncate">
-//                             {product.description}
-//                         </p>
-//                         <div className="flex items-center gap-3 mb-4">
-//                             <span className="text-sm font-bold text-orange-600" aria-label="Current price">
-//                                 {formatCurrency(product.price)}
-//                             </span>
-//                             <s className="text-gray-400 text-sm font-bold" aria-label="Original price">
-//                                 {formatCurrency(product.price + 100)}
-//                             </s>
-
-//                         </div>
-//                         <Button className="w-full bg-gray-500 hover:bg-gray-700 text-white transition-colors duration-300">
-//                             Add to Cart
-//                         </Button>
-//                     </CardContent>
-//                 </div>
-//             </Card>
-//         </Link>
-//     )
-// }
-
-// export default ProductItem
-
-
 'use client';
 import Link from 'next/link';
-import React from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/util/currency';
 import { useDispatch } from 'react-redux';
 import { addItemToCart } from '@/lib/features/cart/cartSlice';
+import { ShoppingCart, Eye, Heart } from 'lucide-react';
+import { imageViewer } from '@/app/system-admin/lib/imageViewer';
+
 
 const ProductItem = ({ product }) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch();  
+    const [quantity, setQuantity] = useState(product.quantity)
 
     const handleAddToCart = (e) => {
         e.stopPropagation();
         dispatch(addItemToCart({ ...product }));
+        setQuantity(quantity > 0 ? quantity - 1 : 0)
     };
-
+    const {
+        id,
+        name,
+        description,
+        price,
+        discountPrice,
+        brand,
+        images = []
+    } = product;
     return (
-        <Card key={product.id} className='group relative overflow-hidden transition-shadow hover:shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-[500px] flex flex-col justify-between'>
-            <Link href={`/customers/products/detail/${product?.id}`} className='no-underline flex-1'>
-                <div className='relative'>
+        <div className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg rounded-xl border-2 border-gray-100 bg-white dark:bg-gray-800 h-[300px] flex flex-col hover:border-primary/20 hover:scale-[1.02]">
+            {/* Product Image with Fun Elements */}
+            <Link href={`/products/${id}`} className="no-underline flex-1 flex flex-col">
+                <div className="relative h-16 w-full overflow-hidden rounded-t-lg">
                     <img
-                        src={product.thumbnail}
-                        alt={product.title}
-                        className='h-60 w-full object-cover rounded-t-lg transition-transform duration-300 ease-in-out group-hover:scale-105'
+                        src={imageViewer(images[0]) || '/placeholder-product.jpg'}
+                        alt={name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className='absolute right-2 top-2 rounded-full bg-gray-400 px-3 py-1 text-sm font-bold text-white'>
-                        20% OFF
+
+                    {/* Fun Stock Indicator */}
+                    <div className={`absolute bottom-2 left-2 rounded-full px-2 py-1 text-xs font-bold ${quantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                        {quantity > 0 ? `🚀 ${quantity} available` : '😢 Sold out'}
+                    </div>
+
+                    {/* Playful Discount Tag */}
+                    {discountPrice && (
+                        <div className="absolute top-2 right-2 rotate-12 bg-yellow-400 text-black px-2 py-1 rounded-md text-xs font-extrabold shadow-md">
+                            SAVE {Math.round(((price - discountPrice) / price) * 100)}%
+                        </div>
+                    )}
+                </div>
+
+                {/* Product Info with Fun Typography */}
+                <div className="flex-1 flex flex-col px-3 pt-3 gap-2">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-extrabold text-gray-800 dark:text-white line-clamp-2 font-[Poppins]">
+                            {name}
+                        </h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 italic"> {brand}</p>
+                    </div>
+
+                    {/* Emoji Rating */}
+                    <div className="flex items-center my-2">
+                        {[...Array(5)].map((_, i) => (
+                            <span key={i} className="text-lg">
+                                {i < 4 ? '⭐' : '☆'}
+                            </span>
+                        ))}
+                        <span className="text-xs text-gray-500 ml-1">({Math.floor(Math.random() * 100) + 20})</span>
+                    </div>
+                    {/* Description with Fun Icon */}
+                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 flex items-start">
+                        {description}
+                    </p>
+
+                    {/* Price with Bounce Animation */}
+                    <div className="py-2">
+                        <div className="flex items-center justify-between  gap-2 group-hover:animate-bounce">
+                            <span className="text-xl font-black text-gray-900 dark:text-white">
+                                {formatCurrency(discountPrice || price)}
+                            </span>
+                            {discountPrice && (
+                                <s className="text-sm text-gray-500 dark:text-gray-400">
+                                    {formatCurrency(price)}
+                                </s>
+                            )}
+                        </div>
                     </div>
                 </div>
-                <CardHeader className='my-0 py-0'>
-                    <h3 className='text-lg font-bold text-gray-400 dark:text-white truncate'>
-                        {product.title}
-                    </h3>
-                    <div className='flex items-center mt-2 mb-4'>
-                        {[...Array(5)].map((_, index) => (
-                            <svg
-                                key={index}
-                                xmlns='http://www.w3.org/2000/svg'
-                                fill={index < Math.round(product.rating?.rate) ? '#fbbf24' : 'none'}
-                                viewBox='0 0 24 24'
-                                strokeWidth={1.5}
-                                stroke='currentColor'
-                                className='w-5 h-5 text-yellow-500'
-                            >
-                                <path
-                                    strokeLinecap='round'
-                                    strokeLinejoin='round'
-                                    d='M12 17.25L18.18 21l-1.64-7.03L22 9.25l-7.19-.61L12 2.25l-2.81 6.39L2 9.25l5.46 4.72L5.82 21z'
-                                />
-                            </svg>
-                        ))}
-                        <span className='ml-2 text-sm text-gray-500'>({product.rating?.rate})</span>
-                    </div>
-                </CardHeader>
-                <CardContent className='p-4 flex flex-col flex-grow justify-between'>
-                    <p className='text-gray-400 text-sm dark:text-gray-300 mb-4 truncate'>
-                        {product.description}
-                    </p>
-                    <div className='flex items-center gap-3 mb-4'>
-                        <span className='text-sm font-bold text-orange-600' aria-label='Current price'>
-                            {formatCurrency(product.price)}
-                        </span>
-                        <s className='text-gray-400 text-sm font-bold' aria-label='Original price'>
-                            {formatCurrency(product.price + 100)}
-                        </s>
-                    </div>
-                </CardContent>
             </Link>
-                    <Button onClick={handleAddToCart} className='w-full bg-gray-500 hover:bg-gray-700 text-white transition-colors duration-300'>
-                        Add to Cart
-                    </Button>
-        </Card>
+            {/* Action Buttons - Themed */}
+            <div className="flex gap-1 py-2">
+                {/* Add to Cart Button */}
+                <Button
+                    onClick={handleAddToCart}
+                    disabled={quantity <= 0}
+                    className={`flex-1 transition-all flex items-center justify-center gap-1 
+    }`}
+                >
+                    <ShoppingCart className="w-4 h-4" />
+                    {quantity > 0 ? 'Add to Cart' : 'Sold Out'}
+                </Button>
+
+                {/* Quick View Button */}
+                <Button
+                    className="flex-1  transition-all flex items-center justify-center gap-1
+              "
+                >
+                    <Eye className="w-4 h-4" />
+                    Quick View
+                </Button>
+            </div>
+        </div>
+
     );
 };
 

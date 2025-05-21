@@ -25,7 +25,6 @@ const createProduct = async (req, res, next) => {
                 400
             ));
         }
-
         // Check for images (now using req.files instead of req.file)
         if (!req.files || req.files.length === 0) {
             return next(new httpError("At least one product image is required", 400));
@@ -40,7 +39,6 @@ const createProduct = async (req, res, next) => {
         const merchant = await prisma.merchant.findFirst({
             where: { accountId },
             include: { shops: true },
-            rejectOnNotFound: true
         });
 
         if (!merchant.shops || merchant.shops.length === 0) {
@@ -81,8 +79,6 @@ const createProduct = async (req, res, next) => {
                 images: imageFilenames, // Now storing array of filenames
                 brand,
                 shopId: merchant.shops[0].id,
-                accountId,
-                slug: generateSlug(name),
                 createdAt: new Date(),
                 updatedAt: new Date()
             }

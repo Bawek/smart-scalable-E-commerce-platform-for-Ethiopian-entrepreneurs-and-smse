@@ -9,7 +9,7 @@ const retryRename = async (oldPath, newPath, attempts = 3) => {
         }
         throw error;
     }
-};
+};  
 module.exports = {
     retryRename
 }

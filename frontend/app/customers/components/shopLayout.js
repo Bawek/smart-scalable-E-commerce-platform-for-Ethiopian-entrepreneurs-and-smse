@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Logs } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import axios from 'axios'
+import { useGetProductsForSaleQuery } from '@/lib/features/products/products'
 
 const ShopLayout = ({ children }) => {
     const [products, setProducts] = useState([]);
@@ -13,22 +13,10 @@ const ShopLayout = ({ children }) => {
     const [sortOption, setSortOption] = useState('popularity');
     const [minPrice, setMinPrice] = useState(0);
     const [maxPrice, setMaxPrice] = useState(1000);
-    // const { data,isLoading, isError,error } = useGetProductsForSaleQuery()
+    const { data, isLoading, isError, error } = useGetProductsForSaleQuery()
     const category = useParams();
-    const getAllProducts = async () => {
-        try {
-            const response = await axios.get("http://localhost:8000/api/get-all-products-for-sale");
-            console.log(response, 'response of axios');
-            console.log('Products fetched jsjsjsjjjjjjjjjjjjjjjjjj myeyshh successfully');
-
-            console.log(response.data, 'Products fetched successfully');
-            setProducts(response.data.products);
-        } catch (error) {
-            console.error("Error fetching products:", error);
-        }
-    };
     const [selectedCategory, setSelectedCategory] = useState(category.category);
-
+    console.log(data, error, isError, 'manner of geting the data of mathe')
     const [tempFilters, setTempFilters] = useState({
         categories: [],
         colors: [],
@@ -40,11 +28,7 @@ const ShopLayout = ({ children }) => {
     const [colors, setColors] = useState([]);
     const [sizes, setSizes] = useState([]);
     useEffect(() => {
-
-        // For demo purposes, use sample data
-        // setProducts(sampleProducts);
-        getAllProducts()
-        console.log('Products fetched getting myeyshh successfully');
+        setProducts(data?.products)
         if (products.length === 0) return;
         // Calculate initial price range 
         const prices = products.map(p => p.price);
@@ -94,7 +78,7 @@ const ShopLayout = ({ children }) => {
         }
     }, [products]);
 
-    const filteredProducts = products.filter(product => {
+    const filteredProducts = products && products?.filter(product => {
         // Town filter
         if (selectedTown && product.town !== selectedTown) return false;
 
@@ -118,25 +102,25 @@ const ShopLayout = ({ children }) => {
     });
 
     // Sorting logic
-    const sortedProducts = [...filteredProducts].sort((a, b) => {
+    const sortedProducts = products.length > 0 && [...filteredProducts].sort((a, b) => {
         if (sortOption === 'price_asc') return a.price - b.price;
         if (sortOption === 'price_desc') return b.price - a.price;
         return a.id - b.id; // Default sorting by ID
     });
-    // if (isLoading) {
-    //     return (
-    //         <div>
-    //             loading...
-    //         </div>
-    //     )
-    // }
-    // if (isError) {
-    //     return (
-    //         <div>
-    //             Some thing go wrong
-    //         </div>
-    //     )
-    // }
+    if (isLoading) {
+        return (
+            <div>
+                loading...
+            </div>
+        )
+    }
+    if (isError) {
+        return (
+            <div>
+                Some thing go wrong
+            </div>
+        )
+    }
     return (
         <main className="w-full px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row gap-8">

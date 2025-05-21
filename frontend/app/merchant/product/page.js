@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import InventoryStats from '../components/InventoryStats';
 import SearchFilter from '../components/SearchFilter';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectItem } from "@/components/ui/select";
 import InventoryTable from '../components/InventaryTable';
 import { ArrowUpDown, MoreHorizontal } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -32,10 +33,12 @@ import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import { useGetProductsQuery } from '@/lib/features/products/products';
 import Loader from '@/app/components/Prompt/Loader';
+import axios from 'axios';
+import { imageViewer } from '@/app/system-admin/lib/imageViewer';
 export default function Inventory() {
   const [inventory, setInventory] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const { data: prodcutData, isLoading, isError, error } = useGetProductsQuery()
+  const { data: prodcutData, isLoading, isError, error, refetch } = useGetProductsQuery()
   console.log(prodcutData, 'new pro data', inventory)
   const { deleteItem } = useDelete()
   const router = useRouter()
@@ -93,7 +96,7 @@ export default function Inventory() {
         return (
           <div className="w-12 h-12 rounded-md overflow-hidden border">
             <img
-              src={imageUrl}
+              src={imageViewer(imageUrl)}
               alt="Product"
               className="object-cover w-full h-full"
             // onError={(e) => {
@@ -180,6 +183,70 @@ export default function Inventory() {
         return value.includes(row.getValue(id));
       },
     },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const initialStatus = row.getValue("status");
+        const [currentStatus, setCurrentStatus] = useState(initialStatus);
+
+        const handleChangeStatus = async (newStatus) => {
+          setCurrentStatus(newStatus); // update local UI immediately
+
+          try {
+            const res = await axios.put(
+              `http://localhost:8000/api/products/update`,
+              {
+                status: newStatus,
+                id: row.original.id,
+              }
+            );
+            toast.success("Status updated successfully!");
+            refetch(); // refetch after successful update
+          } catch (error) {
+            console.error("Failed to update status:", error);
+
+            // Revert the status on error
+            setCurrentStatus(initialStatus);
+
+            if (error.response) {
+              toast.error(
+                `Error: ${error.response.data.message || error.response.statusText}`
+              );
+            } else if (error.request) {
+              toast.error("No response from server. Please try again.");
+            } else {
+              toast.error("Something went wrong!");
+            }
+          }
+        };
+
+        return (
+          <Select onValueChange={handleChangeStatus} value={currentStatus}>
+            <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent className="dark:bg-gray-800">
+              <SelectGroup>
+                {["ACTIVE", "SUSPENDED", "PENDING"].map((statuss) => (
+                  <SelectItem
+                    key={statuss}
+                    value={statuss}
+                    className="dark:hover:bg-gray-700"
+                  >
+                    {statuss}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        );
+      },
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id));
+      },
+    }
+    ,
     {
       id: "actions",
       enableHiding: false,
