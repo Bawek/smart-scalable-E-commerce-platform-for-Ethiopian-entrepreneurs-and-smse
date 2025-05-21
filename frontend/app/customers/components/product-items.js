@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/util/currency';
-import { useDispatch } from 'react-redux';
+import { useDispatch,useSelector} from 'react-redux';
 import { addItemToCart } from '@/lib/features/cart/cartSlice';
 import { ShoppingCart, Eye, Heart } from 'lucide-react';
 import { imageViewer } from '@/app/system-admin/lib/imageViewer';
@@ -28,6 +28,34 @@ const ProductItem = ({ product }) => {
         brand,
         images = []
     } = product;
+import axios from 'axios';
+import { toast } from 'react-toastify';
+
+const ProductItem = ({ product }) => {
+    const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cart.items);
+  const totalAmount = useSelector((state) => state.cart.totalAmount);
+  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
+  const account = useSelector((state) => state.account);
+   const handleAddToCart = async (e) => {
+    e.stopPropagation();
+
+    try {
+
+        await axios.post('http://localhost:8000/api/cart/add', {
+            userId: account.id,
+            productId: product.id,
+            quantity: totalQuantity + 1,
+        });
+
+        dispatch(addItemToCart({ ...product, quantity: 1 }));
+        toast.success('Added to cart!');
+    } catch (error) {
+        console.error('Add to cart failed:', error);
+        toast.error('Could not add to cart.');
+    }
+};
+
     return (
         <div className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg rounded-xl border-2 border-gray-100 bg-white dark:bg-gray-800 h-[300px] flex flex-col hover:border-primary/20 hover:scale-[1.02]">
             {/* Product Image with Fun Elements */}

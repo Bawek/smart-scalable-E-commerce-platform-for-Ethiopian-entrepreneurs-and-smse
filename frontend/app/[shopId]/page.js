@@ -1,15 +1,16 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import Loading from "../loading";
 import { useRouter } from "next/navigation";
-import { useGetshopQuery } from "@/lib/features/shop/publicShopSlice";
 import MenuBar from "../components/MenuBar/MenuBar";
+import { useGetShopQuery } from "@/lib/features/shop/shop";
 
 export default function Shop() {
-  const params = useParam()
+  const params = useParams()
   const shopId = params.shopId;
   const [homepage, setHomepage] = useState({});
-  const { data, error, isLoading } = useGetshopQuery(shopId);
+  const { data, error, isLoading } = useGetShopQuery(shopId);
   const router = useRouter();
   const [cart, setCart] = useState(() => {
     // Initialize cart from local storage if available
