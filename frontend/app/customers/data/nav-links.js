@@ -19,19 +19,10 @@ export const profileLinks = [
             <span className="text-green-600">Delivered</span>
           </div>
           <Button className="mt-4" asChild>
-            <Link href="/customers/orders">View All Orders</Link>
+            <Link href="/customers/order">View All Orders</Link>
           </Button>
         </div>
       </div>
     ),
   },
-  {
-    title: "Notifications",
-    dialogContent: (
-      <div className="space-y-4">
-        <p>Unread notifications:</p>
-        <NotificationWidget />
-      </div>
-    ),
-  }
 ];

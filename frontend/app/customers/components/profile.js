@@ -3,13 +3,15 @@ import { useState } from 'react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { profileLinks } from '../data/nav-links';
-import {  useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { imageViewer } from '@/app/system-admin/lib/imageViewer';
 import { useLogout } from '@/util/userLogout';
+import { useRouter } from 'next/navigation';
 
 const ProfileMenu = () => {
   const [openDialog, setOpenDialog] = useState(null);
   const account = useSelector((state) => state.account)
+  const router = useRouter()
   const logout = useLogout()
   console.log(account?.profileUrl, 'url')
   return (
@@ -45,7 +47,7 @@ const ProfileMenu = () => {
             <DropdownMenuItem
               key={link.title}
               className="cursor-pointer"
-              onClick={() => setOpenDialog(link.title)}
+              onClick={() => link.title === 'Orders' ? router.push('/customers/order') : setOpenDialog(link.title)}
             >
               {link.title}
             </DropdownMenuItem>

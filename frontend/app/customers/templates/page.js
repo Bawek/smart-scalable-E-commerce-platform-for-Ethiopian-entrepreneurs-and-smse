@@ -24,6 +24,7 @@ const SelectTheme = () => {
   const { processPayment, isLoading: paymentLoading } = useProcessPayment();
 
   const handlePayment = async (theme) => {
+    console.log(account, 'accoutn')
     if (!account?.email || !account?.firestName) {
       toast({
         title: "Missing Information",
@@ -34,13 +35,22 @@ const SelectTheme = () => {
     }
     localStorage.setItem("ccc_tem", theme?.id);
     const data = {
-      amount: 50,
+      amount: theme.basePrice,
       email: account.email,
       first_name: account.firestName,
       last_name: 'matebie',
       phone_number: "+251943597310",
     };
-
+    const paymentData = {
+      amount: 50,
+      email: account.email,
+      first_name: account.firestName,
+      last_name: 'matebie',
+      phone_number: "+251943597310",
+      orderId: orderResponse?.data?.order?.id,
+      FRONTEND_BASE_URL: `${window.location.origin}/customers/order-confirmation`,
+      callback_url: "http://localhost:8000/api/orders/payment/callback",
+    };
     try {
       const res = await processPayment(data);
     } catch (err) {

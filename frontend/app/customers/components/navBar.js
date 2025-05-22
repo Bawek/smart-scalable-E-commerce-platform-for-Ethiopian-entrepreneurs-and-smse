@@ -43,45 +43,6 @@ const companyLinks = [
     description: "Contact us By using this address list here.",
   },
 ];
-const shopLinks = [
-  {
-    title: "Electronics",
-    href: "/customers/shop/electronics?category=electronics",
-    description: "Browse our selection of electronics including phones, laptops, and accessories",
-  },
-  {
-    title: "Clothing",
-    href: "/customers/shop/clothing?category=clothing",
-    description: "Explore our clothing collection for men, women, and children",
-  },
-  {
-    title: "Books",
-    href: "/customers/shop/books?category=books",
-    description: "Find a variety of books from different genres and authors",
-  },
-  {
-    title: "Furniture",
-    href: "/customers/shop/furniture?category= furniture",
-    description: "Discover stylish and modern furniture for your home or office",
-  },
-  {
-    title: "Groceries",
-    href: "/customers/shop/groceries?category=groceries",
-    description: "Shop for fresh groceries and daily essentials",
-  },
-  {
-    title: "Sports & Fitness",
-    href: "/customers/shop/sports-fitness?category=sports-fitness",
-    description: "Get the latest sports gear and fitness equipment",
-  },
-  {
-    title: "Beauty & Personal Care",
-    href: "/customers/shop/beauty-care?category=beauty-care",
-    description: "Explore beauty products and personal care essentials",
-  },
-];
-
-
 export function CustomerNavigationMenu() {
   const { data, isError, isLoading } = useGetAllShopsQuery()
   const [shops, setShops] = useState([])

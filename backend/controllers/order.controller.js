@@ -123,6 +123,7 @@ exports.verifyOrderPayment = async (req, res) => {
       chapaRes.data.status === "success";
 
     const custom_order_id = chapaRes.data?.meta?.orderId;
+    const paymentReference = chapaRes.data?.meta?.tx_ref;
 
     if (isSuccess) {
       console.log(chapaRes, ' on backend is true')
@@ -130,18 +131,11 @@ exports.verifyOrderPayment = async (req, res) => {
       // 1. Update the order
       await prisma.order.update({
         where: { id: custom_order_id },
-        data: { status: "SHIPPED" },
+        data: {
+          status: "SHIPPED",
+          paymentMethod: paymentReference
+        },
       });
-
-      // 2. Update the payment status
-      // await prisma.payment.updateMany({
-      //   where: {
-      //     orderId: custom_order_id,
-      //   },
-      //   data: {
-      //     status: "ACTIVE",
-      //   },
-      // });
       return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=true&tx_ref=${tx_ref}`);
     }
     await prisma.order.update({
@@ -168,5 +162,60 @@ exports.verifyOrderPaymentForFrontend = async (req, res) => {
   } catch (error) {
     console.error("Error verifying payment:", error.message);
     return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=false`);
+  }
+};
+
+exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await prisma.order.findMany({
+      take: 1,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        customer: true,
+        items: true
+      },
+    });
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders: orders || [],
+    });
+  } catch (error) {
+    console.error('Failed to fetch orders:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while fetching orders',
+    });
+  }
+};
+exports.getOrdersByCustomerId = async (req, res) => {
+  const { accountId } = req.params;
+  try {
+    const orders = await prisma.order.findMany({
+      where: {
+        accountId
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        account: true,
+        items: true,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders: orders || [],
+    });
+  } catch (error) {
+    console.error('Error fetching orders by accountId:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while fetching orders',
+    });
   }
 };

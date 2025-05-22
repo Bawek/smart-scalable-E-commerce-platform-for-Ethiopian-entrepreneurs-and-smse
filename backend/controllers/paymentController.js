@@ -25,7 +25,8 @@ const createPayment = async (req, res) => {
       description: "Order Payment",
     },
     meta: {
-      orderId
+      orderId,
+      tx_ref
     }
   };
 

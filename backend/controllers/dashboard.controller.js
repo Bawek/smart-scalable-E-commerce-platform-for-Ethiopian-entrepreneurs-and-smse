@@ -72,13 +72,19 @@ async function getYearlySalesData(shopIds, year) {
                 lt: new Date(`${year + 1}-01-01`)
             }
         },
-        include: { product: true }
+        include: {
+            shop: {
+                include: {
+                    products: true
+                }
+            }
+        }
     });
 
     // Sum totals by month
     orders.forEach(order => {
         const month = order.createdAt.getMonth(); // 0-11
-        monthlyTotals[month] += order.product.price;
+        monthlyTotals[month] += order.shop.products?.price;
     });
 
     return monthlyTotals;

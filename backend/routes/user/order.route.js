@@ -8,7 +8,8 @@ router.get('/payment/callback', orderController.verifyOrderPayment)
 router.get('/payment/frontend-check', orderController.verifyOrderPaymentForFrontend)
 
 // Get all orders
-// router.get('/', orderController.getAllOrders);
+router.get('/get-all', orderController.getAllOrders);
+router.get('/get-by-account/:accountId', orderController.getOrdersByCustomerId);
 
 // // Get a single order by ID
 // router.get('/:id', orderController.getOrderById);

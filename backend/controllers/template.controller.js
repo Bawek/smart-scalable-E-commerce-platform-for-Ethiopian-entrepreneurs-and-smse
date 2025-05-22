@@ -277,7 +277,57 @@ const getCustomeTemplateById = async (req, res, next) => {
     }
 
 }
+ const verifyTemplatePayment = async (req, res) => {
+  const { tx_ref } = req.query;
+  try {
+    const chapaRes = await verifyPayment(tx_ref);
+    console.log(chapaRes, ' on backend is excusted')
+    const isSuccess =
+      chapaRes.status === "success" &&
+      chapaRes.data.status === "success";
 
+    const custom_order_id = chapaRes.data?.meta?.orderId;
+    const paymentReference = chapaRes.data?.meta?.tx_ref;
+
+    if (isSuccess) {
+      console.log(chapaRes, ' on backend is true')
+
+      // 1. Update the order
+      await prisma.order.update({
+        where: { id: custom_order_id },
+        data: {
+          status: "SHIPPED",
+          paymentMethod: paymentReference
+        },
+      });
+      return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=true&tx_ref=${tx_ref}`);
+    }
+    await prisma.order.update({
+      where: { id: custom_order_id },
+      data: { status: "CANCELLED" },
+    });
+    console.log(chapaRes, ' on backend is false')
+    return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=false`);
+  } catch (error) {
+    console.error("Error verifying payment:", error.message);
+    return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=false`);
+  }
+};
+// payment for frontend back
+const verifyTemplaterPaymentForFrontend = async (req, res) => {
+  const { tx_ref } = req.query;
+  try {
+    const chapaRes = await verifyPayment(tx_ref);
+    console.log(chapaRes, ' on backend is excusted')
+    const isSuccess =
+      chapaRes.status === "success" &&
+      chapaRes.data.status === "success";
+    res.status(200).json(chapaRes)
+  } catch (error) {
+    console.error("Error verifying payment:", error.message);
+    return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=false`);
+  }
+};
 module.exports = {
     registerTemplate,
     getAllTemplate,
@@ -287,5 +337,7 @@ module.exports = {
     buyTemplate,
     getCustomeTemplateById,
     getAllMerchantTemplate,
-    getMerchantTemplateByAccount
+    getMerchantTemplateByAccount,
+    verifyTemplatePayment,
+    verifyTemplaterPaymentForFrontend
 }

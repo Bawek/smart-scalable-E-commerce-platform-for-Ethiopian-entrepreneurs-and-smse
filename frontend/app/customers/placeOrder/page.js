@@ -133,7 +133,6 @@ export default function CheckoutPage() {
           withCredentials: true
         }
       );
-      console.log(orderResponse, 'orignalsjjjjjjjjjjjjjjjjjjjjj')
       // 2. Process payment if order creation succeeded
       const paymentData = {
         amount: totalAmount + shipping,
