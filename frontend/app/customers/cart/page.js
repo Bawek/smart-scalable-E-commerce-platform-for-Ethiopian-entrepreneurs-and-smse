@@ -40,10 +40,8 @@ const ResponsiveCartPage = () => {
   const account = useSelector((state) => state.account);
   const userId = account.id;
 
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter()
-  const userId = account.id; //  Replace with actual user ID,  Important
   console.log(account, 'acccoutn')
   const fetchCart = async () => {
     try {
