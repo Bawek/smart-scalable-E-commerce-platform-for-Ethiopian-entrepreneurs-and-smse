@@ -1,8 +1,10 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 
-// Mock API calls
+// ✅ Simulate fetch call
 const fetchOrderStatus = async (orderId) => {
+    // Simulated API response
     return {
         id: orderId,
         status: 'Processing',
@@ -18,19 +20,27 @@ const fetchOrderStatus = async (orderId) => {
     };
 };
 
+// ✅ Simulate message sender
 const sendMessageToMerchant = async (orderId, message) => {
     return { success: true };
 };
 
 export default function OrderPage() {
-    const [order, setOrder] = useState(null);
+    const [order, setOrder] = useState (null);
     const [message, setMessage] = useState('');
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
 
     useEffect(() => {
-        fetchOrderStatus('12345').then(setOrder);
+        fetchOrderStatus('ORD-12345').then(setOrder);
     }, []);
+
+    useEffect(() => {
+        if (sent) {
+            const timer = setTimeout(() => setSent(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [sent]);
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -41,52 +51,65 @@ export default function OrderPage() {
         setMessage('');
     };
 
-    if (!order) return <div className="text-center text-lg py-10">Loading order details...</div>;
+    if (!order) {
+        return (
+            <div className="flex items-center justify-center min-h-screen text-lg font-medium">
+                🔄 Loading your order...
+            </div>
+        );
+    }
 
     return (
-        <div className="max-w-xl mx-auto px-4 py-8">
-            <h2 className="text-2xl font-semibold mb-4">Order Tracking</h2>
+        <div className="max-w-3xl mx-auto px-6 py-10">
+            <h1 className="text-3xl font-bold text-gray-800 mb-6">📦 Track Your Order</h1>
 
-            <div className="space-y-1 text-gray-700 mb-4">
-                <div><span className="font-medium">Order ID:</span> {order.id}</div>
-                <div><span className="font-medium">Status:</span> {order.status}</div>
-                <div><span className="font-medium">Estimated Delivery:</span> {order.estimatedDelivery}</div>
-            </div>
+            <section className="bg-white shadow rounded-xl p-6 mb-6">
+                <h2 className="text-xl font-semibold text-gray-700 mb-4">Order Details</h2>
+                <div className="space-y-2 text-gray-600">
+                    <p><span className="font-medium">🆔 Order ID:</span> {order.id}</p>
+                    <p><span className="font-medium">📌 Status:</span> {order.status}</p>
+                    <p><span className="font-medium">📅 Estimated Delivery:</span> {order.estimatedDelivery}</p>
+                </div>
+            </section>
 
-            <h3 className="text-xl font-semibold mt-6 mb-2">Items</h3>
-            <ul className="list-disc list-inside space-y-1 mb-4">
-                {order.items.map((item, idx) => (
-                    <li key={idx}>
-                        {item.name} × {item.quantity}
-                    </li>
-                ))}
-            </ul>
+            <section className="bg-white shadow rounded-xl p-6 mb-6">
+                <h2 className="text-xl font-semibold text-gray-700 mb-4">🛒 Items Ordered</h2>
+                <ul className="list-disc list-inside text-gray-700">
+                    {order.items.map((itemy, index) => (
+                        <li key={index}>{item.name} × {item.quantity}</li>
+                    ))}
+                </ul>
+            </section>
 
-            <h3 className="text-xl font-semibold mt-6 mb-2">Merchant</h3>
-            <div className="space-y-1 text-gray-700 mb-4">
-                <div><span className="font-medium">Name:</span> {order.merchant.name}</div>
-                <div><span className="font-medium">Contact:</span> {order.merchant.contact}</div>
-            </div>
+            <section className="bg-white shadow rounded-xl p-6 mb-6">
+                <h2 className="text-xl font-semibold text-gray-700 mb-4">🏪 Merchant Info</h2>
+                <p><span className="font-medium">Name:</span> {order.merchant.name}</p>
+                <p><span className="font-medium">Contact:</span> {order.merchant.contact}</p>
+            </section>
 
-            <h3 className="text-xl font-semibold mt-6 mb-2">Contact Merchant</h3>
-            <form onSubmit={handleSendMessage} className="space-y-4">
-                <textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    rows={3}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Type your message to the merchant..."
-                    required
-                />
-                <button
-                    type="submit"
-                    disabled={sending || !message.trim()}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
-                >
-                    {sending ? 'Sending...' : 'Send Message'}
-                </button>
-                {sent && <div className="text-green-600 text-sm">Message sent!</div>}
-            </form>
+            <section className="bg-white shadow rounded-xl p-6">
+                <h2 className="text-xl font-semibold text-gray-700 mb-4">✉️ Contact Merchant</h2>
+                <form onSubmit={handleSendMessage} className="space-y-4">
+                    <textarea
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows={4}
+                        placeholder="Write your message..."
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        required
+                    />
+                    <button
+                        type="submit"
+                        disabled={sending || !message.trim()}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-all"
+                    >
+                        {sending ? 'Sending...' : 'Send Message'}
+                    </button>
+                    {sent && (
+                        <div className="text-green-600 text-sm">✅ Message sent successfully!</div>
+                    )}
+                </form>
+            </section>
         </div>
     );
 }

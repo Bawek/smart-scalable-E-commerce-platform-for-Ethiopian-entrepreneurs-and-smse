@@ -1,3 +1,7 @@
+import { Facebook, Telegram, YouTube } from "@mui/icons-material";
+import { Twitter } from "lucide-react";
+import { motion } from "framer-motion";
+
 import React from "react";
 
 export default function Footer() {
@@ -28,33 +32,55 @@ export default function Footer() {
             <div className="w-full lg:w-6/12 px-4">
               <h4 className="text-3xl font-semibold">Let's keep in touch!</h4>
               <h5 className="text-lg mt-0 mb-2 text-blueGray-600">
-                Feel free to experiment every feature on our platform.
               </h5>
-              <div className="mt-6 lg:mb-0 mb-6">
-                <button
-                  className="bg-white text-lightBlue-400 shadow-lg font-normal h-10 w-10 items-center justify-center align-center rounded-full outline-none focus:outline-none mr-2"
+              <div className="mt-6 lg:mb-0 mb-6 flex items-center space-x-3">
+                {/* Twitter Button */}
+                <motion.button
+                  whileHover={{ y: -2, scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative group bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl dark:hover:shadow-gray-700/50 h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300"
                   type="button"
+                  aria-label="Twitter"
                 >
-                  <i className="fab fa-twitter"></i>
-                </button>
-                <button
-                  className="bg-white text-lightBlue-600 shadow-lg font-normal h-10 w-10 items-center justify-center align-center rounded-full outline-none focus:outline-none mr-2"
+                  <div className="absolute inset-0 rounded-full bg-blue-400 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                  <Twitter className="text-blue-400 dark:text-blue-300 h-5 w-5 group-hover:h-6 group-hover:w-6 transition-all" />
+                </motion.button>
+
+                {/* Facebook Button */}
+                <motion.button
+                  whileHover={{ y: -2, scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative group bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl dark:hover:shadow-gray-700/50 h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300"
                   type="button"
+                  aria-label="Facebook"
                 >
-                  <i className="fab fa-facebook-square"></i>
-                </button>
-                <button
-                  className="bg-white text-pink-400 shadow-lg font-normal h-10 w-10 items-center justify-center align-center rounded-full outline-none focus:outline-none mr-2"
+                  <div className="absolute inset-0 rounded-full bg-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                  <Facebook className="text-blue-600 dark:text-blue-400 h-5 w-5 group-hover:h-6 group-hover:w-6 transition-all" />
+                </motion.button>
+
+                {/* Telegram Button */}
+                <motion.button
+                  whileHover={{ y: -2, scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative group bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl dark:hover:shadow-gray-700/50 h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300"
                   type="button"
+                  aria-label="Telegram"
                 >
-                  <i className="fab fa-dribbble"></i>
-                </button>
-                <button
-                  className="bg-white text-blueGray-800 shadow-lg font-normal h-10 w-10 items-center justify-center align-center rounded-full outline-none focus:outline-none mr-2"
+                  <div className="absolute inset-0 rounded-full bg-pink-400 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                  <Telegram className="text-pink-400 dark:text-pink-300 h-5 w-5 group-hover:h-6 group-hover:w-6 transition-all" />
+                </motion.button>
+
+                {/* YouTube Button */}
+                <motion.button
+                  whileHover={{ y: -2, scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative group bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl dark:hover:shadow-gray-700/50 h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300"
                   type="button"
+                  aria-label="YouTube"
                 >
-                  <i className="fab fa-github"></i>
-                </button>
+                  <div className="absolute inset-0 rounded-full bg-red-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                  <YouTube className="text-red-600 dark:text-red-400 h-5 w-5 group-hover:h-6 group-hover:w-6 transition-all" />
+                </motion.button>
               </div>
             </div>
             <div className="w-full lg:w-6/12 px-4">
@@ -67,7 +93,7 @@ export default function Footer() {
                     <li>
                       <a
                         className="text-blueGray-600 hover:text-blueGray-800 font-semibold block pb-2 text-sm"
-                        href=""
+                        href="/customers/company/about"
                       >
                         About Us
                       </a>
@@ -75,49 +101,18 @@ export default function Footer() {
                     <li>
                       <a
                         className="text-blueGray-600 hover:text-blueGray-800 font-semibold block pb-2 text-sm"
-                        href=""
+                        href="/customers/company/contact"
                       >
-                        Blog
+                        Contact us
                       </a>
                     </li>
 
                     <li>
                       <a
                         className="text-blueGray-600 hover:text-blueGray-800 font-semibold block pb-2 text-sm"
-                        href=""
+                        href="/customers/company/contact"
                       >
-                        Free Products
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-                <div className="w-full lg:w-4/12 px-4">
-                  <span className="block uppercase text-blueGray-500 text-sm font-semibold mb-2">
-                    Other Resources
-                  </span>
-                  <ul className="list-unstyled">
-                    <li>
-                      <a
-                        className="text-blueGray-600 hover:text-blueGray-800 font-semibold block pb-2 text-sm"
-                        href=""
-                      >
-                        Terms & Conditions
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        className="text-blueGray-600 hover:text-blueGray-800 font-semibold block pb-2 text-sm"
-                        href=""
-                      >
-                        Privacy Policy
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        className="text-blueGray-600 hover:text-blueGray-800 font-semibold block pb-2 text-sm"
-                        href=""
-                      >
-                        Contact Us
+                        support
                       </a>
                     </li>
                   </ul>

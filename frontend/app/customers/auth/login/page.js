@@ -12,12 +12,14 @@ import { accountLoginSchema } from "@/util/validationSchemas";
 import { useLoginMutation } from "@/lib/features/auth/accountApi";
 import { useDispatch } from "react-redux";
 import { setCredential } from "@/lib/features/auth/accountSlice";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 export default function Login() {
   const { toast } = useToast();
   const dispatch = useDispatch();
+  const searchParams = useSearchParams();
+  const ic = searchParams.get('ic'); // “order” or null
   const router = useRouter();
   const [login, { isLoading }] = useLoginMutation();
 
@@ -46,7 +48,9 @@ export default function Login() {
         role: response.role,
         id: response.id
       }));
-
+      if (ic && ic === 'order') {
+     return  router.push('/customers/placeOrder')
+      }
       router.push(response.role === 'ADMIN' ? "/system-admin" : "/merchant");
 
     } catch (error) {

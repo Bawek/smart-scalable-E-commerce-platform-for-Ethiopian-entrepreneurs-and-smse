@@ -1,287 +1,294 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from '@/components/ui/alert-dialog';
-import {
-  addItemToCart,
-  removeItemFromCart,
-  clearCart,
-} from "@/lib/features/cart/cartSlice";
+'use client';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Minus, Plus } from "lucide-react";
-import Link from "next/link";
-import axios from "axios"; // Import Axios
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Minus, Plus, ArrowLeft, LogIn } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import useCart from '@/hooks/use-cart';
+import Loader from '@/app/components/Prompt/Loader';
+import { imageViewer } from '@/app/system-admin/lib/imageViewer';
 
-const ResponsiveCartPage = () => {
-  const dispatch = useDispatch();
-  const cartItems = useSelector((state) => state.cart.items);
-  const totalAmount = useSelector((state) => state.cart.totalAmount);
-  const [isLogin, setIsLogin] = useState(true)
-  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
-  const [loading, setLoading] = useState(true);
+const CartPage = () => {
+  const router = useRouter();
+  const {
+    cart,
+    totalItems,
+    totalPrice,
+    isLoading,
+    error,
+    loadCart,
+    addItemToCart,
+    removeItemFromCart,
+    updateItemQuantity,
+    emptyCart
+  } = useCart();
+
   const account = useSelector((state) => state.account);
-  const userId = account.id;
+  const [isProcessing, setIsProcessing] = useState(false);
+  // Shipping cost (could be dynamic based on location)
+  const shippingCost = 19.0;
+  const estimatedTotal = totalPrice + shippingCost;
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const router = useRouter()
-  const userId = account.id; //  Replace with actual user ID,  Important
-  console.log(account, 'acccoutn')
-  const fetchCart = async () => {
-    try {
-      console.log("message before error")
-      const response = await axios.get(`http://localhost:8000/api/cart/${userId}`);
-      const cartData = response.data;
-      console.log("Fetched cart data:   balemlay", response);
-      dispatch(clearCart());
-
-      cartData.items.forEach((item) => {
-        dispatch(
-          addItemToCart({
-            id: item.productId,
-            title: item.product.title,
-            price: item.product.price,
-            image: item.product.image,
-            quantity: item.quantity,
-            totalPrice: item.totalPrice,
-          })
-        );
-      });
-
-      setLoading(false);
-    } catch (err) {
-      console.error("Fetch Cart Error", err);
-      setError("Failed to fetch cart");
-      setLoading(false);
-    }
-  };
-
+  // Fetch cart data on component mount
   useEffect(() => {
-    if (userId) {
-      fetchCart();
-    } else {
-      setIsLogin(false)
-    }
+    loadCart();
   }, []);
 
-  const handleDecreaseQuantity = async (productId) => {
-    const existingItem = cartItems.find((item) => item.id === productId);
-    if (!existingItem) return;
+  const handleIncreaseQuantity = async (itemId) => {
 
+    setIsProcessing(true);
     try {
-      await axios.delete("http://localhost:8000/api/cart/remove", {
-        data: { userId, productId },
-      });
-      dispatch(removeItemFromCart(productId));
+      const item = cart.find(item => item.id === itemId);
+      if (!item) return;
+      await updateItemQuantity(itemId, item.quantity + 1);
     } catch (err) {
-      console.error("Error decreasing/removing item:", err);
-      setError("Failed to update cart");
+      toast.error('Failed to update quantity');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const handleIncreaseQuantity = async (productId) => {
-    const item = cartItems.find((i) => i.id === productId);
-    if (!item) return;
+  const handleDecreaseQuantity = async (itemId) => {
 
+    setIsProcessing(true);
     try {
-      const response = await axios.post("http://localhost:8000/api/cart/add", {
-        userId,
-        productId: item.id,
-        title: item.title,
-        price: item.price,
-        image: item.image,
-        quantity: 1,
-      });
+      const item = cart.find(item => item.id === itemId);
+      if (!item) return;
 
-      const updatedCart = response.data;
-
-      dispatch(clearCart());
-      updatedCart.items.forEach((item) => {
-        dispatch(
-          addItemToCart({
-            id: item.productId,
-            title: item.product.title,
-            price: item.product.price,
-            image: item.product.image,
-            quantity: item.quantity,
-            totalPrice: item.totalPrice,
-          })
-        );
-      });
+      if (item.quantity <= 1) {
+        await removeItemFromCart(itemId);
+      } else {
+        await updateItemQuantity(itemId, item.quantity - 1);
+      }
     } catch (err) {
-      console.error("Error increasing quantity:", err);
-      setError("Failed to increase quantity");
+      toast.error('Failed to update quantity');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const handleRemoveFromCart = async (productId) => {
+  const handleRemoveFromCart = async (itemId) => {
+
+    setIsProcessing(true);
     try {
-      await axios.delete("http://localhost:8000/api/cart/remove", {
-        data: { userId, productId },
-      });
-      dispatch(removeItemFromCart(productId));
+      await removeItemFromCart(itemId);
+      toast.success('Item removed from cart');
     } catch (err) {
-      console.error("Error removing from cart:", err);
-      setError("Failed to remove from cart");
+      toast.error('Failed to remove item');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const subtotal = totalAmount;
-  const shippingFee = 19;
+  const handleCheckout = () => {
+    if (!account?.id) {
+      localStorage.setItem('linked', 'order')
+      return router.push('/customers/auth/login?ic=order')
+    }
 
-  if (loading) return <p>Loading cart...</p>;
-  if (error) return <p>Error loading cart: {error}</p>;
+    if (cart.length === 0) {
+      toast.warning('Your cart is empty');
+      return;
+    }
+    router.push('/customers/placeOrder');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-semibold text-red-600">Error Loading Cart</h2>
+        <p className="text-gray-600 mt-2">{error}</p>
+        <Button className="mt-4" onClick={() => window.location.reload()}>
+          Try Again
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 md:p-8 lg:p-16 grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Product Details Section */}
-      <div className="lg:col-span-2">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <h1>Your Cart Page</h1>
-            <CardTitle>FedEx Small Delivery</CardTitle>
-            <CardDescription>
-              Expected delivery on or before 03/31/2024
-            </CardDescription>
-            <div className="flex justify-between p-4 border-b font-semibold text-gray-600">
-              <p className="w-3/5 text-xl">Product</p>
-              <p className="w-2/4 text-sm">Price</p>
-              <p className="w-1/5 text-sm">Quantity</p>
-              <p className="w-1/5 text-sm">Total Price</p>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {cartItems.length === 0 ? (
-              <p className="text-center text-xl font-semibold text-gray-600 mt-10">
-                No items in your cart
-              </p>
-            ) : (
-              cartItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col md:flex-row items-center max-h-52 gap-4 p-4 border-b"
-                >
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-24 h-24 rounded"
-                  />
-                  <div className="flex-grow">
-                    <h3 className="font-semibold text-lg">{item.title}</h3>
-                    <p>
-                      Category:{" "}
-                      <span className="text-sm text-gray-400">N/A</span>
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <p className="text-red-600 font-bold">
-                      ${item.price?.toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => handleDecreaseQuantity(item.id)}
-                    >
-                      <Minus size={16} />
-                    </Button>
-                    <p className="text-center py-2 px-3">{item.quantity}</p>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleIncreaseQuantity(item.id)}
-                    >
-                      <Plus size={16} />
-                    </Button>
-                  </div>
-                  <div>${item.totalPrice?.toFixed(2)}</div>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleRemoveFromCart(item.id)}
-                  >
-                    Remove
-                  </Button>
+    <>
+      <div className="p-4 md:p-8 lg:p-16 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Product Details Section */}
+        <div className="lg:col-span-2">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl">Your Shopping Cart</CardTitle>
+              <CardDescription>
+                {cart.length > 0 ? (
+                  <span>Expected delivery within 3-5 business days</span>
+                ) : (
+                  <span>Your cart is currently empty</span>
+                )}
+              </CardDescription>
+
+              {cart.length > 0 && (
+                <div className="hidden md:flex justify-between p-4 border-b font-semibold text-gray-600">
+                  <p className="w-2/5">Product</p>
+                  <p className="w-1/5 text-center">Price</p>
+                  <p className="w-1/5 text-center">Quantity</p>
+                  <p className="w-1/5 text-center">Total</p>
+                  <p className="w-1/5"></p>
                 </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardHeader>
 
-        <div className="mt-4 text-sm text-blue-600 cursor-pointer">
-          &lt;{" "}
-          <Link className="no-underline" href="/customers/products">
-            Continue Shopping
-          </Link>
-        </div>
-      </div>
+            <CardContent className="space-y-4">
+              {cart.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="text-lg font-semibold text-gray-600 mb-4">
+                    No items in your cart
+                  </p>
+                  <Link href="/customers/products">
+                    <Button>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Continue Shopping
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                cart.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex flex-col md:flex-row items-center gap-4 p-4 border-b"
+                  >
+                    <img
+                      src={imageViewer(item.image) || '/placeholder-product.jpg'}
+                      alt={item.name}
+                      className="w-20 h-20 md:w-24 md:h-24 object-cover rounded"
+                    />
 
-      {/* Summary Section */}
-      <div>
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span>Total Items:</span>
-                <span>{totalQuantity}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Subtotal:</span>
-                <span>${subtotal?.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>FedEx Small Delivery:</span>
-                <span>$19.00</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tax:</span>
-                <span>--</span>
-              </div>
-              <div className="flex justify-between font-bold">
-                <span>Estimated Total:</span>
-                <span>${(subtotal + 19)?.toFixed(2)}</span>
-              </div>
-              <Link href="/customers/placeorder">
-                <Button className="w-full mt-4">CHECKOUT</Button>
+                    <div className="flex-grow md:w-2/5">
+                      <h3 className="font-semibold text-lg">{item.name}</h3>
+                      {item.brand && (
+                        <p className="text-sm text-gray-500">Brand: {item.brand}</p>
+                      )}
+                    </div>
+
+                    <div className="md:w-1/5 text-center">
+                      <p className="font-bold">
+                        ${item.price?.toFixed(2)}
+                      </p>
+                    </div>
+
+                    <div className="md:w-1/5 flex items-center justify-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDecreaseQuantity(item.id)}
+                        disabled={isProcessing || item.quantity <= 1}
+                      >
+                        <Minus size={16} />
+                      </Button>
+                      <p className="text-center min-w-[2rem]">{item.quantity}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleIncreaseQuantity(item.id)}
+                        disabled={isProcessing || item.quantity >= (item.stock || 99)}
+                      >
+                        <Plus size={16} />
+                      </Button>
+                    </div>
+
+                    <div className="md:w-1/5 text-center font-bold">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </div>
+
+                    <div className="md:w-1/5 text-center">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRemoveFromCart(item.id)}
+                        disabled={isProcessing}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          {cart.length > 0 && (
+            <div className="mt-4">
+              <Link href="/customers/products" className="flex items-center text-blue-600 hover:text-blue-800">
+                <ArrowLeft className="mr-1 h-4 w-4" />
+                Continue Shopping
               </Link>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
 
-        <Card className="shadow-lg mt-4">
-          <CardContent>
-            <div className="space-y-2">
-              {/* <p>HAVE A PROMO CODE?</p>
-              <div className="flex gap-2">
-                <Input placeholder="PROMO CODE" className="flex-grow" />
-                <Button>Apply</Button>
-              </div> */}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Order Summary Section */}
+        {cart.length > 0 && (
+          <div className="lg:col-span-1">
+            <Card className="shadow-lg sticky top-4">
+              <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span>Items ({totalItems}):</span>
+                    <span>${totalPrice.toFixed(2)}</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span>Shipping:</span>
+                    <span>${shippingCost.toFixed(2)}</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span>Tax:</span>
+                    <span>Calculated at checkout</span>
+                  </div>
+
+                  <div className="border-t pt-4 flex justify-between font-bold text-lg">
+                    <span>Estimated Total:</span>
+                    <span>${estimatedTotal.toFixed(2)}</span>
+                  </div>
+
+                  <Button
+                    className="w-full mt-6 py-6 text-lg"
+                    onClick={handleCheckout}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? 'Processing...' : 'Proceed to Checkout'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 };
 
-export default ResponsiveCartPage;
+export default CartPage;

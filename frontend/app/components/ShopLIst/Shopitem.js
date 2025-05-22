@@ -1,76 +1,117 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-import RatingSet from "./RatingSet";
-// import ReactStars from "react-stars"; // Import the ReactStars component
+import { imageViewer } from "@/app/system-admin/lib/imageViewer";
+import { motion } from "framer-motion";
 
 const ShopItem = ({ shop, fullWidth }) => {
-  console.log(shop?.preview_image);
   const router = useRouter();
-  const rating = 11;
-  console.log("shop", shop);
-  // Function to determine the star rating
-  const getStarRating = (rating) => {
-    if (rating === null || rating === undefined) return 0; // Default to 0 if rating is not provided
-    return rating; // Return the provided rating
-  };
 
   return (
-    <div
-      className={`group transition-transform duration-500 rounded-lg hover:transform hover:scale-105 hover:rounded-xl hover:cursor-pointer hover:shadow-blue-200 transform ${
-        fullWidth ? "w-full" : "md:w-[45%] xl:w-[30%]"
-      } p-4 my-5 mx-5 overflow-hidden`}
-      onClick={() => router.push(`/${shop?.id}`)}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.03 }}
+      transition={{ type: "spring", stiffness: 300 }}
+      className={`relative group rounded-xl overflow-hidden shadow-lg hover:shadow-xl dark:hover:shadow-gray-800/50 transition-all duration-300 ${fullWidth ? "w-full" : "w-full sm:w-[48%] lg:w-[31%]"
+        } m-2`}
+      onClick={() => router.push(`/customers/products?id=${shop?.id}`)}
     >
-      <div className="relative h-80 overflow-hidden">
-        <img
-          className="transition-all duration-1000 hover:scale-105 inset-0 h-full w-full object-cover"
-          src="./electronics.jpg"
-          // src={`http://localhost:8000/${shop?.preview_image}`}
-          alt=""
+      {/* Image Container */}
+      <div className="relative h-72 w-full overflow-hidden">
+        <motion.img
+          initial={{ scale: 1 }}
+          whileHover={{ scale: 1.1 }}
+          transition={{ duration: 0.5 }}
+          className="w-full h-full object-cover"
+          src={imageViewer(shop?.logoImageUrl)}
+          alt={shop?.name || "Shop image"}
+          loading="lazy"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
       </div>
-      <div className="p-4 bg-stone-100 py-5">
-        <div className="flex items-center">
-          <span
-            className="transition-all duration-1000 inline-block px-4 py-3 leading-none bg-[#1E293B] text-white rounded-xl font-bold uppercase tracking-wide text-xl group-hover:bg-slate-200 border group-hover:border-[#1E293B] group-hover:text-[#1E293B] my-3"
-            style={{ transitionDuration: "1s" }}
+
+      {/* Content Container */}
+      <div className="p-5 bg-white dark:bg-gray-800 transition-colors duration-300">
+        {/* Title and Visit Button */}
+        <div className="flex flex-col gap-4 items-center mb-3">
+          <motion.p
+            whileHover={{ x: 5 }}
+            className="inline-block px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white dark:text-gray-100 rounded-lg font-bold text-lg md:text-xl transition-colors duration-300"
           >
-            <p>{shop?.name}</p>
-          </span>
+            {shop?.name || "Shop Name"}
+          </motion.p>
 
           <button
-            className="ml-auto text-white py-1 opacity-0 px-3 text-xl font-bold group-hover:opacity-100 bg-[#1E293B] rounded-lg transition-all"
-            style={{ transitionDuration: "2s" }}
-            onClick={() => router.push(`/${shop?.id}`)}
+   
+            className="ml-auto w-full px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg font-medium opacity-0 group-hover:opacity-100 transition-all duration-300"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/customers/products?id=${shop?.id}`);
+            }}
           >
-            Visit
+            Visit →
           </button>
         </div>
-        <p className="my-4 font-bold md:text-xl sm:text-lg">
-          Lorem ipsum dolor sit amet, consectetur
-        </p>
-        <p className="md:text-xl sm:text-lg">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod
-        </p>
-      </div>
-      <div className="transition-all duration-500 hover:border-stone-500 hover:bg-stone-200 p-4 border-t border-b text-xs bg-stone-300 text-[#1E293B] flex">
-        <span className="hover:ml-2 flex items-center text-xl font-bold transition-all duration-500">
-          {shop?.category || 'Electronics'}
-        </span>
 
-        <span className="font-bold text-xl ml-auto">
-          {/* <ReactStars
-            count={5}
-            value={getStarRating(shop?.rating)} // Set the star rating value here
-            size={24}
-            color2={"#ffd700"} // Gold color for filled stars
-            edit={false} // Set to false since we are displaying the rating
-          /> */}
-        </span>
+        {/* Description */}
+        <p className="text-gray-700 dark:text-gray-300 font-medium mb-4 line-clamp-2">
+          {shop?.description}
+        </p>
+
+        {/* Footer - Category and Rating */}
+        <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+          <span className="text-gray-900 dark:text-gray-100 font-semibold text-lg">
+            {shop?.category}
+          </span>
+
+          {/* Owner Information */}
+          <motion.div
+            className="flex items-center mt-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mr-2">
+              Owned by:
+            </span>
+            <div className="flex items-center group">
+              <div className="relative">
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700 dark:text-gray-200">
+                    {shop?.merchant?.ownerName || "Anonymous Owner"}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 ml-1 text-gray-400 group-hover:text-blue-500 transition-colors"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                {/* Tooltip on hover */}
+                {/* <div className="absolute z-10 invisible group-hover:visible opacity-0 group-hover:opacity-100 bottom-full mb-2 left-0 transform -translate-x-1/4 px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow-sm transition-all duration-200">
+                  Contitnue shoping with this Shop
+                  <div className="absolute w-2 h-2 bg-gray-900 rotate-45 -bottom-1 left-1/4"></div>
+                </div> */}
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </div>
-    </div>
+
+      {/* Glow Effect on Hover */}
+      <div className="absolute inset-0 rounded-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl" />
+      </div>
+    </motion.div>
   );
 };
 
