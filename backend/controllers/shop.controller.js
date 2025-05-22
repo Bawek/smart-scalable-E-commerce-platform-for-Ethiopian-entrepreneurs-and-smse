@@ -96,7 +96,6 @@ const registerShop = async (req, res, next) => {
     const {
         accountId,
         name,
-        slug,
         description,
         merchantTemplateId,
         mode,
@@ -133,7 +132,7 @@ const registerShop = async (req, res, next) => {
                 const shop = await prisma.shop.create({
                     data: {
                         name: merchant.businessName,
-                        slug,
+                        slug:'shop-slug',
                         description,
                         merchantId: merchant.id,
                         logoImageUrl: req.file.filename,
@@ -180,26 +179,25 @@ const registerShop = async (req, res, next) => {
                 return next(new httpError("Shop not found. You need to register it first.", 404));
             }
 
-            // For updates, we only handle folder structure if domain changed
-            const oldPath = path.join(__dirname, '..', '..', 'frontend', 'app', existingShop.domain)
-            const newPath = path.join(__dirname, '..', '..', 'frontend', 'app', domain)
-            if (existingShop.domain) {
-                try {
-                    // First try to close any possible file handles
-                    await fs.access(oldPath);
-                    await fs.rename(oldPath, newPath);
-                } catch (renameError) {
-                    console.error('Failed to rename shop folder:', renameError);
-                    return next(new httpError('Failed to rename shop folder', 500));
-                }
-            }
+            // // For updates, we only handle folder structure if domain changed
+            // const oldPath = path.join(__dirname, '..', '..', 'frontend', 'app', existingShop.domain)
+            // const newPath = path.join(__dirname, '..', '..', 'frontend', 'app', domain)
+            // if (existingShop.domain) {
+            //     try {
+            //         // First try to close any possible file handles
+            //         await fs.access(oldPath);
+            //         await fs.rename(oldPath, newPath);
+            //     } catch (renameError) {
+            //         console.error('Failed to rename shop folder:', renameError);
+            //         return next(new httpError('Failed to rename shop folder', 500));
+            //     }
+            // }
 
             // Update other shop details
             const updatedShop = await prisma.shop.update({
                 where: { id: existingShop.id },
                 data: {
                     name: name || existingShop.name,
-                    slug: slug || existingShop.slug,
                     description: description || existingShop.description,
                     merchantTemplateId: merchantTemplateId || existingShop.merchantTemplateId,
                     logoImageUrl: req.file ? req.file.filename : existingShop.logoImageUrl

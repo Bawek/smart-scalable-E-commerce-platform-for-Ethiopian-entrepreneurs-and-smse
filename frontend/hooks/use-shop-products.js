@@ -19,7 +19,6 @@ const useShopProducts = () => {
         skip: !shopId, // Avoid calling API if shopId is not available
         refetchOnMountOrArgChange: true,
     });
-console.log(productsData,'jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj')
     return {
         shopId,
         productsData,

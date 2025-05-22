@@ -6,6 +6,9 @@ export const accountApi = appApi.injectEndpoints({
         getMerchants: builder.query({
             query: () => `/merchants/`,
         }),
+        getAccountAndLocation: builder.query({
+            query: (id) => `/accounts/get-account-location/${id}`,
+        }),
         getMerchant: builder.query({
             query: (unique_id) => `Account/merchant/${unique_id}/`, // Ensure this endpoint matches your backend
             // providesTags: ["Account"],
@@ -45,7 +48,7 @@ export const accountApi = appApi.injectEndpoints({
         // update Accout mutation
         updateAccount: builder.mutation({
             query: (formData) => {
-                console.log(formData,'form data se')
+                console.log(formData, 'form data se')
                 return {
                     url: `/accounts/update/${formData.id}`,
                     method: "POST",
@@ -64,5 +67,6 @@ export const {
     useGetMerchantsQuery,
     useGetAllOrdersQuery,
     useLogoutMutation,
-    useUpdateAccountMutation
+    useUpdateAccountMutation,
+    useGetAccountAndLocationQuery
 } = accountApi;

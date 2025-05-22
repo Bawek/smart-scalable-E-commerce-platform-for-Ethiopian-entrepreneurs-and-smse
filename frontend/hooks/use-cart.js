@@ -60,7 +60,6 @@ const useCart = () => {
       await removeItemFromCart(itemId);
       return;
     }
-
     const userId = getUserId();
     try {
       await dispatch(updateCartItem({ userId, itemId, quantity })).unwrap();

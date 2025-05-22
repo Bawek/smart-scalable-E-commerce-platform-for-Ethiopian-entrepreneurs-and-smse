@@ -24,10 +24,13 @@ const REGIONS = [
 ];
 
 const BUSINESS_CATEGORIES = [
-    "Retail & Wholesale", "Food & Beverage", "Technology", "Healthcare",
-    "Construction", "Transportation", "Education", "Entertainment"
+  "Books",
+  "Clothing",
+  "Cosmetics",
+  "Electronics",
+  "Food & Beverage",
+  "Shoes"
 ];
-
 const phoneSchema = z.string().regex(/\+2519\d{8}/, "Invalid Ethiopian phone number");
 const cbeAccountSchema = z.string().regex(/^1000\d{9}$/, "CBE account must start with 1000");
 
@@ -149,8 +152,7 @@ export default function MerchantFullRegistration({ existingData, onSuccess, mSta
             <Tabs defaultValue="general">
                 <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="general">Business Info</TabsTrigger>
-                    <TabsTrigger value="security" disabled={mStatus !== "ACTIVE"}>Shop Info</TabsTrigger>
-                    <TabsTrigger value="api" disabled>Previews</TabsTrigger>
+                    <TabsTrigger value="shopInfo" disabled={mStatus !== "ACTIVE"}>Shop Info</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="general">
@@ -272,7 +274,7 @@ export default function MerchantFullRegistration({ existingData, onSuccess, mSta
                         </Card>
                     )}
                 </TabsContent>
-                <TabsContent value='security'>
+                <TabsContent value='shopInfo'>
                     <ShopRegistration
                         accountId={accountId}
                         editMode={editMode}

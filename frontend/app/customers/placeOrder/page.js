@@ -3,11 +3,12 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { FaMoneyCheckAlt } from "react-icons/fa";
 import { useProcessPayment } from "@/service/payment.service";
-import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/util/currency";
 import { baseUrl } from "@/lib/features/cart/cartSlice";
+import { useGetAccountAndLocationQuery } from "@/lib/features/auth/accountApi";
+import { toast } from "react-toastify";
 
 // Validation utility functions
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -20,9 +21,9 @@ export default function CheckoutPage() {
   const account = useSelector((state) => state.account)
   const { items, totalPrice: totalAmount, totalItems: totalQuantity } = useSelector((state) => state.cart);
   const { processPayment, isLoading: paymentLoading } = useProcessPayment();
-  const { toast } = useToast();
+  const { data: accountData } = useGetAccountAndLocationQuery(account.id)
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  console.log(accountData, 'accountData')
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -34,6 +35,21 @@ export default function CheckoutPage() {
     kebele: "",
     woreda: ""
   });
+  // Populate form when accountData is available
+  useEffect(() => {
+    if (accountData?.account) {
+      setForm((prev) => ({
+        ...prev,
+        firstName: accountData.account.firstName || "",
+        lastName: accountData.account.lastName || "",
+        email: accountData.account.email || "",
+        phone: "",
+        town: "",
+        country: "",
+        region: ""
+      }));
+    }
+  }, [accountData]);
 
   const [errors, setErrors] = useState({});
   const [paymentMethod, setPaymentMethod] = useState("chapa");
@@ -41,11 +57,7 @@ export default function CheckoutPage() {
   // Validate form on mount and when cart changes
   useEffect(() => {
     if (items.length === 0) {
-      toast({
-        title: "Empty Cart",
-        description: "Your cart is empty. Please add items before checkout.",
-        variant: "destructive",
-      });
+      toast.warn('Your cart is empty. Please add items before checkout.')
       router.push("/customers/cart");
     }
   }, [items, router, toast]);
@@ -101,6 +113,7 @@ export default function CheckoutPage() {
       const orderPayload = {
         ...form,
         accountId: account.id,
+        shopId: localStorage.getItem('shopId'),
         items: items.map(item => ({
           productId: item.id,
           quantity: item.quantity,
@@ -129,34 +142,28 @@ export default function CheckoutPage() {
         last_name: form.lastName,
         phone_number: form.phone,
         town: form.town,
-        country: form.country, 
+        country: form.country,
         region: form.region,
         kebele: form.kebele,
         woreda: form.woreda,
         orderId: orderResponse?.data?.order?.id,
         FRONTEND_BASE_URL: `${window.location.origin}/customers/order-confirmation`,
         callback_url: "http://localhost:8000/api/orders/payment/callback",
-      }; 
+      };
 
       const paymentResponse = await processPayment(paymentData);
       if (paymentResponse?.data?.success) {
         // Redirect user to Chapa's payment page
         window.location.href = paymentResponse.checkout_url;
       }
-      } catch (error) {
+    } catch (error) {
       console.error("Checkout Error:", error);
 
       let errorMessage = "An error occurred during checkout";
       if (error.response) {
         errorMessage = error.response.data.message || errorMessage;
       }
-
-      toast({
-        title: "Checkout Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-
+      toast.error(errorMessage || 'Sorry something went wrong try agian')
     } finally {
       setIsSubmitting(false);
     }

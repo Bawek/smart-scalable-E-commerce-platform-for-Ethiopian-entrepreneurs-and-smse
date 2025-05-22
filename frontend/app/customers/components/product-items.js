@@ -1,14 +1,15 @@
 'use client';
 import Link from 'next/link';
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/util/currency';
-import { ShoppingCart, Eye, Minus, Plus } from 'lucide-react';
+import { ShoppingCart, Eye, Minus, Plus, Loader2 } from 'lucide-react';
 import { imageViewer } from '@/app/system-admin/lib/imageViewer';
 import { toast } from 'react-toastify';
 import useCart from '@/hooks/use-cart';
 import Rating from './Rating';
 import { Badge } from '@/components/ui/badge';
+import { useSearchParams } from 'next/navigation';
 
 const ProductItem = ({ product }) => {
     const {
@@ -21,14 +22,20 @@ const ProductItem = ({ product }) => {
         images = [],
         quantity: stockQuantity
     } = product;
+    const searchParams = useSearchParams();
 
+    const shopId = useMemo(() => searchParams.get('id'), [searchParams]);
     const {
         cart,
         isLoading,
         addItemToCart,
         updateItemQuantity,
-        removeItemFromCart
+        removeItemFromCart,
+        loadCart
     } = useCart();
+    useEffect(() => {
+        loadCart();
+    }, []);
 
     // Find the cart item if it exists
     const cartItem = cart.find(item => item.productId === id);
@@ -37,7 +44,7 @@ const ProductItem = ({ product }) => {
 
     const handleAddToCart = async (e) => {
         e.stopPropagation();
-
+        localStorage.setItem('shopId', shopId)
         if (stockQuantity <= 0) {
             toast.warning('This product is out of stock');
             return;
@@ -47,8 +54,9 @@ const ProductItem = ({ product }) => {
             await addItemToCart({
                 productId: id,
                 name,
-                price: discountPrice || price,
+                price: price,
                 quantity: 1,
+                discountPrice,
                 image: images[0],
                 stock: stockQuantity
             });
@@ -58,16 +66,14 @@ const ProductItem = ({ product }) => {
         }
     };
 
-    const handleIncreaseQuantity = async (e) => {
-        e.stopPropagation();
-
+    const handleIncreaseQuantity = async () => {
         if (currentQuantity >= stockQuantity) {
             toast.warning(`Only ${stockQuantity} items available`);
             return;
         }
 
         try {
-            await updateItemQuantity(id, currentQuantity + 1);
+            await updateItemQuantity(cartItem?.id, currentQuantity + 1);
         } catch (error) {
             console.error('Failed to increase quantity:', error);
             toast.error('Failed to update quantity');
@@ -80,7 +86,7 @@ const ProductItem = ({ product }) => {
         if (currentQuantity <= 1) {
             console.log('current id less', id)
             try {
-                await removeItemFromCart(id);
+                await removeItemFromCart(cartItem?.id);
             } catch (error) {
                 console.error('Failed to remove item:', error);
                 toast.error('Failed to remove item');
@@ -89,7 +95,7 @@ const ProductItem = ({ product }) => {
         }
 
         try {
-            await updateItemQuantity(id, currentQuantity - 1);
+            await updateItemQuantity(cartItem?.id, currentQuantity - 1);
         } catch (error) {
             console.error('Failed to decrease quantity:', error);
             toast.error('Failed to update quantity');
@@ -97,23 +103,25 @@ const ProductItem = ({ product }) => {
     };
 
     return (
-        <div className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg rounded-xl border-2 border-gray-100 bg-white dark:bg-gray-800 h-[300px] flex flex-col hover:border-primary/20 hover:scale-[1.02]">
+        <div className="group relative transition-all duration-300 hover:shadow-lg rounded-xl border-2 border-gray-100 bg-white dark:bg-gray-800 h-[400px] flex flex-col hover:border-primary/20 hover:scale-[1.02]">
             <div className="no-underline flex-1 flex flex-col">
-                <div className="relative h-16 w-full overflow-hidden rounded-t-lg">
-                    <img
-                        src={imageViewer(images[0]) || '/placeholder-product.jpg'}
-                        alt={name}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className={`absolute bottom-2 left-2 rounded-full px-2 py-1 text-xs font-bold ${stockQuantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {stockQuantity > 0 ? `🚀 ${stockQuantity} available` : '😢 Sold out'}
+                <Link href={`/customers/products/detail/${id}`} className="flex-1 flex items-center flex-nowrap hover:text-orange-600 hover:underline justify-center gap-1 transition-all text-sm font-medium">
+                    <div className="relative h-32 w-full overflow-hidden rounded-t-lg">
+                        <img
+                            src={imageViewer(images[0]) || '/placeholder-product.jpg'}
+                            alt={name}
+                            className="h-full w-full object-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                        />
+                        {/* <div className={`absolute bottom-2 left-2 rounded-full px-2 py-1 text-xs font-bold ${stockQuantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            {stockQuantity > 0 ? `🚀 ${stockQuantity} available` : '😢 Sold out'}
+                        </div> */}
+                        {Math.round(discountPrice) > 0 && (
+                            <div className="absolute top-2 right-2 rotate-12 bg-yellow-400 text-black px-2 py-1 rounded-md text-xs font-extrabold shadow-md">
+                                {Math.round(discountPrice)}% TAKEOFF
+                            </div>
+                        )}
                     </div>
-                    {discountPrice && (
-                        <div className="absolute top-2 right-2 rotate-12 bg-yellow-400 text-black px-2 py-1 rounded-md text-xs font-extrabold shadow-md">
-                            {Math.round(((price - discountPrice) / price) * 100)}% TAKEOFF
-                        </div>
-                    )}
-                </div>
+                </Link>
 
                 <div className="flex-1 flex flex-col px-3 pt-3 gap-2">
                     <div className="flex justify-between items-center">
@@ -128,16 +136,16 @@ const ProductItem = ({ product }) => {
                         <span className="text-xs text-gray-500 ml-1">({Math.floor(Math.random() * 100) + 20})</span>
                     </div>
 
-                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 flex items-start">
+                    <p className="text-sm text-gray-600 dark:text-gray-300  line-clamp-1 truncate flex items-start">
                         {description}
                     </p>
 
                     <div className="py-2">
                         <div className="flex items-center justify-between gap-2 group-hover:animate-bounce">
                             <span className="text-xl font-black text-gray-900 dark:text-white">
-                                {formatCurrency(discountPrice || price)}
+                                {formatCurrency(Math.round(discountPrice) > 0 ? price - ((price * Math.round(discountPrice)) / 100) : price)}
                             </span>
-                            {discountPrice && (
+                            {Math.round(discountPrice) > 0 && (
                                 <s className="text-sm text-gray-500 dark:text-gray-400">
                                     {formatCurrency(price)}
                                 </s>
@@ -159,7 +167,7 @@ const ProductItem = ({ product }) => {
                             <Minus className="h-4 w-4 text-orange-600" />
                         </Badge>
                         <p className="flex-1 text-center font-medium  dark:text-white">
-                            {currentQuantity}
+                            {isLoading ? <Loader2 className='w-4 h-4 animate-spin' /> : currentQuantity}
                         </p>
                         <Badge
                             size="sm"
@@ -174,16 +182,12 @@ const ProductItem = ({ product }) => {
                     <Button
                         onClick={handleAddToCart}
                         disabled={stockQuantity <= 0 || isLoading}
-                        className="flex-1 transition-all flex items-center justify-center gap-1 w-32 bg-slate-400 h-10"
+                        className="flex-1 transition-all flex items-center justify-center gap-1 w-full bg-slate-400 h-10"
                     >
                         <ShoppingCart className="w-4 h-4" />
                         {stockQuantity <= 0 ? 'Sold Out' : isLoading ? 'Adding...' : 'Add to Cart'}
                     </Button>
                 )}
-
-                <Link href={`/customers/products/detail/${id}`} className="flex-1 flex items-center flex-nowrap hover:text-orange-600 hover:underline justify-center gap-1 transition-all text-sm font-medium">
-                    Detail about
-                </Link>
             </div>
 
         </div>

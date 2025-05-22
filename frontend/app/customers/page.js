@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { useSelector } from "react-redux"
 export default function Home() {
   const router = useRouter()
-  const user = useSelector(selectAll)
+  const user = useSelector((state) => state.account)
   const handleClick = () => {
     if (user && user.role === "MERCHANT") {
       router.push('/merchant')
@@ -34,7 +34,7 @@ export default function Home() {
               offering a rich array of products and services.
             </p>
             <div className="mt-8 flex justify-center gap-4">
-              <Button className="hover:opacity-90 hover:bg-orange-800 bg-orange-700" size="lg">Explore Shops</Button>
+              <Button onClick={() => router.push('/customers/explore-shops')} className="hover:opacity-90 hover:bg-orange-800 bg-orange-700" size="lg">Explore Shops</Button>
               <Button onClick={handleClick} className="hover:opacity-90 hover:bg-orange-800 bg-orange-700" size="lg">
                 {
                   user.role === "MERCHANT" ?

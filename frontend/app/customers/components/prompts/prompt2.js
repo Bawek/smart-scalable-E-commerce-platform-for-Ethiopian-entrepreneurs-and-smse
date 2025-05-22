@@ -17,19 +17,7 @@ import { toast } from "react-toastify";
 
 // Validation schema
 const shopSchema = z.object({
-  slug: z.string()
-    .min(3, "Shop slug must be at least 3 characters")
-    .max(30, "Shop slug must be less than 30 characters"),
-  description: z.string().max(500, "Description must be less than 500 characters").optional(),
-  businessHours: z.string()
-    .refine(val => {
-      try {
-        const parsed = JSON.parse(val);
-        return typeof parsed === 'object' && !Array.isArray(parsed);
-      } catch {
-        return false;
-      }
-    }, "Invalid business hours format. Please use valid JSON object format"),
+  description: z.string().max(500, "description must be less than 500 characters").optional(),
   domain: z.string()
     .min(3, "shop domain must be at least 3 characters")
     .max(15, "shop domain must be less than 15 characters"),
@@ -58,22 +46,18 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
   const form = useForm({
     resolver: zodResolver(shopSchema),
     defaultValues: {
-      slug: shop.slug || "",
       domain: shop.domain || "",
       description: shop.description || "",
-      businessHours: shop.businessHours ? JSON.stringify(shop.businessHours, null, 2) : "{}",
       logoImageUrl: undefined
     }
   });
 
   // Reset form when shop data changes
   React.useEffect(() => {
-    if (shop.slug) {
+    if (shop.domain) {
       form.reset({
-        slug: shop.slug,
         domain: shop.domain,
         description: shop.description,
-        businessHours: shop.businessHours ? JSON.stringify(shop.businessHours, null, 2) : "{}",
         logoImageUrl: undefined
       });
     }
@@ -102,33 +86,24 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
     setImagePreview(URL.createObjectURL(file));
   };
 
-  const processBusinessHours = (businessHoursString) => {
-    try {
-      return JSON.parse(businessHoursString);
-    } catch (err) {
-      throw new Error("Invalid business hours format");
+const prepareFormData = (data) => {
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (value instanceof File) {
+      formData.append(key, value); // only once for files
+    } else {
+      formData.append(key, value); // only once for other values
     }
-  };
+  });
 
-  const prepareFormData = (data) => {
-    const formData = new FormData();
+  formData.append('merchantTemplateId', customTemplate?.merchantTemplate?.id);
+  formData.append('accountId', accountId);
+  formData.append('mode', mode);
 
-    Object.entries(data).forEach(([key, value]) => {
-      if (value instanceof File) {
-        formData.append(key, value);
-      } else if (key === 'businessHours') {
-        formData.append(key, JSON.stringify(processBusinessHours(value)));
-      } else if (value) {
-        formData.append(key, value);
-      }
-    });
+  return formData;
+};
 
-    formData.append('merchantTemplateId', customTemplate?.merchantTemplate?.id);
-    formData.append('accountId', accountId);
-    formData.append('mode', mode)
-
-    return formData;
-  };
 
   const handleSubmit = async (formData) => {
     setIsSubmitting(true);
@@ -210,7 +185,7 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
+                {/* <FormField
                   control={form.control}
                   name="slug"
                   render={({ field }) => (
@@ -226,12 +201,14 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
                       <FormMessage />
                     </FormItem>
                   )}
-                />
+                /> */}
                 <FormField
                   control={form.control}
                   name="domain"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem
+                    className={`${editMode ? 'hidden' :""}`}
+                    >
                       <FormLabel>Shop Domain <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input
@@ -267,7 +244,7 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
                   )}
                 />
 
-                <FormField
+                {/* <FormField
                   control={form.control}
                   name="businessHours"
                   render={({ field }) => (
@@ -290,7 +267,7 @@ export default function ShopRegistration({ accountId, editMode, setEditMode }) {
                       </div>
                     </FormItem>
                   )}
-                />
+                /> */}
 
                 <FormField
                   control={form.control}

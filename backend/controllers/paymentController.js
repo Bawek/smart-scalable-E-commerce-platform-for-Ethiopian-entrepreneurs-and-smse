@@ -5,7 +5,7 @@ const generateTxRef = () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
 const createPayment = async (req, res) => {
   console.log('hi ihs ', 'payment data');
-  const { amount, email, first_name, last_name, phone_number, currency, FRONTEND_BASE_URL, callback_url } = req.body;
+  const { amount, email, first_name, last_name, phone_number, currency, FRONTEND_BASE_URL, callback_url, orderId } = req.body;
 
   // Generate tx_ref manually
   const tx_ref = generateTxRef();
@@ -18,13 +18,15 @@ const createPayment = async (req, res) => {
     last_name,
     phone_number: parseInt(phone_number),
     tx_ref,
-    callback_url: callback_url,
+    callback_url: `${callback_url}?tx_ref=${tx_ref}`,
     return_url: `${FRONTEND_BASE_URL}?tx_ref=${tx_ref}`,
-
     customization: {
       title: "E-Commerce",
       description: "Order Payment",
     },
+    meta: {
+      orderId
+    }
   };
 
   try {

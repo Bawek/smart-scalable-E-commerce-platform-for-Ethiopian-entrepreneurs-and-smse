@@ -36,7 +36,7 @@ exports.getCart = async (req, res) => {
       name: item.product.name,
       price: item.price,
       quantity: item.quantity,
-      image: item.product.image
+      image: item.product.images
     }));
 
     const { totalItems, totalPrice } = calculateCartTotals(cart.items);
@@ -196,7 +196,6 @@ exports.updateCartItem = async (req, res) => {
   try {
     const { userId, itemId } = req.params;
     const { quantity } = req.body;
-    console.log(userId, itemId,'second one')
     // Verify cart exists
     const cart = await prisma.cart.findUnique({
       where: { userId: userId },
@@ -209,10 +208,10 @@ exports.updateCartItem = async (req, res) => {
 
     // Verify item exists in cart
     const itemToUpdate = cart.items.find(item => item.id === itemId);
+    console.log(itemToUpdate,'update')
     if (!itemToUpdate) {
       return res.status(404).json({ message: 'Item not found in cart' });
     }
-
     // Update quantity
     const updatedItem = await prisma.cartItem.update({
       where: { id: itemId },

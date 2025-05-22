@@ -12,7 +12,22 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
-import { Minus, Plus } from "lucide-react";
+import {
+  Check,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  Loader2,
+  MessageSquare,
+  Minus,
+  Plus,
+  RefreshCw,
+  Shield,
+  ShoppingCart,
+  Truck,
+  XCircle
+} from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useWindowSize } from "@uidotdev/usehooks";
@@ -183,71 +198,104 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 md:px-6 py-6 md:py-8">
-      <div className={`${isMobile ? "max-w-[70%]" : "w-full"} grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8`}>
-        {/* Product Images */}
-        <div className="flex flex-col md:flex-row gap-3 md:gap-2">
-          {/* Thumbnails */}
-          <div className="flex md:flex-col overflow-x-auto md:overflow-visible gap-2 order-1 md:order-1">
-            {product.images?.map((img, index) => (
-              <div
-                key={index}
-                className={`relative aspect-square min-w-[80px] md:min-w-[100px] cursor-pointer border-2 ${current === index ? 'border-primary' : 'border-transparent'
-                  }`}
-                onClick={() => handleThumbnailClick(index)}
-              >
-                <img
-                  src={imageViewer(img) || '/placeholder-product.jpg'}
-                  alt={`${product.name} thumbnail ${index + 1}`}
-                  fill
-                  className="rounded-md object-cover"
-                  sizes="(max-width: 768px) 20vw, 10vw"
-                  loading="lazy"
-                />
-              </div>
-            ))}
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
+      {/* Main Product Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        {/* Media Gallery Section */}
+        <div className="relative">
+          {/* Mobile Thumbnail Carousel */}
+          <div className="lg:hidden mb-4 overflow-x-auto pb-2">
+            <div className="flex gap-2 w-max">
+              {product.images?.map((img, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleThumbnailClick(index)}
+                  className={`relative w-20 h-20 rounded-md overflow-hidden border-2 transition-all ${current === index ? 'border-primary ring-2 ring-primary/50' : 'border-transparent'}`}
+                >
+                  <Image
+                    src={imageViewer(img) || '/placeholder-product.jpg'}
+                    alt={`${product.name} thumbnail ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                    loading="lazy"
+                  />
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Main Carousel */}
-          <Carousel
-            className="w-full h-full relative group order-1 md:order-2"
-            setApi={setApi}
-          >
-            <CarouselContent>
-              {product.images?.map((img, index) => (
-                <CarouselItem key={index}>
-                  <div className="relative aspect-square">
-                    <Image
-                      src={imageViewer(img) || '/placeholder-product.jpg'}
-                      alt={`${product.name} view ${index + 1}`}
-                      fill
-                      className="rounded-lg object-cover"
-                      priority={index === 0}
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
+          <div className="relative aspect-square w-full rounded-xl overflow-hidden shadow-lg bg-gray-50 dark:bg-gray-800">
+            <Carousel
+              className="w-full h-full"
+              setApi={setApi}
+              opts={{ startIndex: current }}
+            >
+              <CarouselContent>
+                {product.images?.map((img, index) => (
+                  <CarouselItem key={index}>
+                    <div className="relative aspect-square">
+                      <Image
+                        src={imageViewer(img) || '/placeholder-product.jpg'}
+                        alt={`${product.name} view ${index + 1}`}
+                        fill
+                        className="object-contain"
+                        priority={index === 0}
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
 
-            <div className="absolute top-1/2 -translate-y-1/2 w-full px-2 md:px-4 flex justify-between">
-              <CarouselPrevious
-                onClick={() => api?.scrollPrev()}
-                className="static transform-none bg-white/80 hover:bg-white shadow-lg hover:shadow-xl h-8 w-8 md:h-10 md:w-10"
-              />
-              <CarouselNext
-                onClick={() => api?.scrollNext()}
-                className="static transform-none bg-white/80 hover:bg-white shadow-lg hover:shadow-xl h-8 w-8 md:h-10 md:w-10"
-              />
+              {/* Desktop Controls */}
+              <div className="absolute top-1/2 -translate-y-1/2 w-full px-4 hidden lg:flex justify-between">
+                <CarouselPrevious className="h-10 w-10 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl" />
+                <CarouselNext className="h-10 w-10 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl" />
+              </div>
+            </Carousel>
+
+            {/* Mobile Controls */}
+            <div className="lg:hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+              {product.images?.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => api?.scrollTo(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${current === index ? 'bg-primary w-4' : 'bg-gray-300'}`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
             </div>
-          </Carousel>
+          </div>
+
+          {/* Desktop Thumbnail Grid */}
+          <div className="hidden lg:grid grid-cols-4 gap-3 mt-4">
+            {product.images?.map((img, index) => (
+              <button
+                key={index}
+                onClick={() => handleThumbnailClick(index)}
+                className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${current === index ? 'border-primary ring-2 ring-primary/50' : 'border-transparent hover:border-gray-300'}`}
+              >
+                <Image
+                  src={imageViewer(img) || '/placeholder-product.jpg'}
+                  alt={`${product.name} thumbnail ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="100px"
+                  loading="lazy"
+                />
+              </button>
+            ))}
+          </div>
         </div>
 
+        {/* Product Details Section */}
         {/* Product Details */}
         <div className="space-y-4 md:space-y-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">{product.name}</h1>
-            <div className="flex items-center gap-2 mt-1 md:mt-2">
+            <div className="flex items-center gap-2 mt-2">
               <Rating rating={product.rating || 4.2} />
               <Link href="#reviews" className="text-sm text-gray-600">
                 ({product.reviewCount || 0} reviews)
@@ -256,26 +304,22 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <p className="text-xl md:text-2xl font-bold">
-              {formatCurrency(product.discountPrice || product.price)}
-            </p>
+            <p className="text-xl md:text-2xl font-bold">{formatCurrency(product.discountPrice || product.price)}</p>
             {product.discountPrice && (
-              <s className="text-sm text-gray-500">
-                {formatCurrency(product.price)}
-              </s>
-            )}
-            {product.discountPrice && (
-              <Badge className="bg-orange-600 text-white">
-                {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
-              </Badge>
+              <>
+                <s className="text-sm text-gray-500">{formatCurrency(product.price)}</s>
+                <Badge className="bg-orange-600 text-white">
+                  {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                </Badge>
+              </>
             )}
           </div>
 
-          <div className="space-y-3 md:space-y-4">
+          <div className="space-y-4">
             {product.colors?.length > 0 && (
               <div>
-                <p className="font-medium mb-1 md:mb-2">Color</p>
-                <div className="flex gap-2 flex-wrap">
+                <p className="font-medium mb-2">Color</p>
+                <div className="flex flex-wrap gap-2">
                   {product.colors.map((color) => (
                     <Button
                       key={color}
@@ -292,7 +336,7 @@ export default function ProductDetailPage() {
 
             {product.sizes?.length > 0 && (
               <div>
-                <p className="font-medium mb-1 md:mb-2">Size</p>
+                <p className="font-medium mb-2">Size</p>
                 <div className="grid grid-cols-3 gap-2">
                   {product.sizes.map((size) => (
                     <Button
@@ -305,7 +349,7 @@ export default function ProductDetailPage() {
                     </Button>
                   ))}
                 </div>
-                <Link href="#" className="text-sm text-gray-600 mt-1 md:mt-2 inline-block underline">
+                <Link href="#" className="text-sm text-gray-600 mt-1 inline-block underline">
                   Size Guide
                 </Link>
               </div>
@@ -313,11 +357,7 @@ export default function ProductDetailPage() {
 
             <div className="space-y-2">
               {product.quantity <= 0 ? (
-                <Button
-                  className="w-full py-4 md:py-6 text-md md:text-lg"
-                  variant="outline"
-                  disabled
-                >
+                <Button className="w-full py-4 md:py-6 text-md md:text-lg" variant="outline" disabled>
                   Sold Out
                 </Button>
               ) : isInCart ? (
@@ -331,9 +371,7 @@ export default function ProductDetailPage() {
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <div className="flex-1 text-center font-medium text-lg">
-                    {cartQuantity}
-                  </div>
+                  <div className="flex-1 text-center font-medium text-lg">{cartQuantity}</div>
                   <Button
                     variant="outline"
                     size="lg"
@@ -357,126 +395,90 @@ export default function ProductDetailPage() {
                 <p className="text-sm text-red-600 text-center">This product is currently out of stock</p>
               )}
             </div>
-            <div className="pt-3 md:pt-4 border-t">
-              <div className="flex flex-col gap-1 md:gap-2">
-                <div className="flex flex-wrap gap-2">
-                  <Badge className="bg-orange-700 text-xs md:text-sm">✓ 19 ETB for Shipping</Badge>
-                  <Badge className="bg-orange-700 text-xs md:text-sm">⏱️ Maximum 2-Day Delivery</Badge>
-                  {product.discountPrice && (
-                    <Badge className="bg-orange-700 text-xs md:text-sm">
-                      {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-sm text-gray-600">
-                  Free returns and 100-day return policy
-                </p>
+
+            <div className="pt-4 border-t space-y-2">
+              <div className="flex flex-wrap gap-2">
+                <Badge className="bg-orange-700 text-xs md:text-sm">✓ 19 ETB for Shipping</Badge>
+                <Badge className="bg-orange-700 text-xs md:text-sm">⏱️ Maximum 2-Day Delivery</Badge>
+                {product.discountPrice && (
+                  <Badge className="bg-orange-700 text-xs md:text-sm">
+                    {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                  </Badge>
+                )}
               </div>
+              <p className="text-sm text-gray-600">Free returns and 100-day return policy</p>
             </div>
           </div>
         </div>
       </div>
 
-      <Tabs defaultValue="description" className="mt-8 md:mt-12">
-        <TabsList className="flex overflow-x-auto">
-          <TabsTrigger value="description" className="text-sm md:text-base px-3 md:px-4">
-            Description
-          </TabsTrigger>
-          <TabsTrigger value="features" className="text-sm md:text-base px-3 md:px-4">
-            Features
-          </TabsTrigger>
-          <TabsTrigger value="reviews" className="text-sm md:text-base px-3 md:px-4">
-            Reviews ({product.reviewCount || 0})
-          </TabsTrigger>
-        </TabsList>
+      {/* Product Tabs */}
+      <div className="mt-12 lg:mt-16">
+        <Tabs defaultValue="description" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
+            <TabsTrigger value="description">Description</TabsTrigger>
+            <TabsTrigger value="features">Features</TabsTrigger>
+            <TabsTrigger value="reviews">Reviews ({product.reviewCount || 0})</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="description" className="mt-4">
-          <p>{product.description || 'No description available'}</p>
-        </TabsContent>
-        <TabsContent value="features" className="mt-4">
-          <ul className="list-disc pl-5 space-y-2">
-            {product.features?.length > 0 ? (
-              product.features.map((feature, index) => (
-                <li key={index}>{feature}</li>
-              ))
+          <TabsContent value="description" className="mt-6">
+            <div className="prose max-w-none dark:prose-invert">
+              {product.description || 'No description available'}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="features" className="mt-6">
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {product.features?.length > 0 ? (
+                product.features.map((feature, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))
+              ) : (
+                <li>No features listed</li>
+              )}
+            </ul>
+          </TabsContent>
+
+          <TabsContent value="reviews" className="mt-6">
+            {product.reviews?.length > 0 ? (
+              <div className="space-y-6">
+                {product.reviews.map((review) => (
+                  <div key={review.id} className="border-b pb-6 last:border-b-0">
+                    <div className="flex items-center gap-2">
+                      <Rating rating={review.rating} size="sm" />
+                      <span className="text-sm text-gray-500">{formatDate(review.date)}</span>
+                    </div>
+                    <h3 className="font-medium mt-2">{review.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">{review.comment}</p>
+                    <p className="text-sm text-gray-500 mt-2">- {review.userName}</p>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <li>No features listed</li>
+              <div className="text-center py-8">
+                <MessageSquare className="h-10 w-10 mx-auto text-gray-400" />
+                <p className="mt-2 text-gray-500">No reviews yet</p>
+                <Button variant="outline" className="mt-4">
+                  Write a Review
+                </Button>
+              </div>
             )}
-          </ul>
-        </TabsContent>
-        <TabsContent value="reviews" className="mt-4">
-          {product.reviews?.length > 0 ? (
-            <div className="space-y-4">
-              {product.reviews.map((review) => (
-                <div key={review.id} className="border-b pb-4">
-                  <Rating rating={review.rating} />
-                  <p className="font-medium mt-1">{review.title}</p>
-                  <p className="text-gray-600">{review.comment}</p>
-                  <p className="text-sm text-gray-500 mt-1">- {review.userName}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p>No reviews yet</p>
-          )}
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+        </Tabs>
+      </div>
 
-      {/* Related Products Section */}
+      {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <section className="mt-12 md:mt-16">
-          <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Related Products</h2>
-          {isRelatedLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
-              {[...Array(4)].map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="p-3 md:p-4">
-                    <Skeleton className="aspect-square w-full mb-3 md:mb-4" />
-                    <Skeleton className="h-5 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : isRelatedError ? (
-            <p className="text-gray-600">Failed to load related products</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
-              {relatedProducts.map((product) => (
-                <Card key={product.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-3 md:p-4">
-                    <Link href={`/products/${product.id}`} className="block">
-                      <div className="relative aspect-square mb-3 md:mb-4">
-                        <Image
-                          src={imageViewer(product.images?.[0]) || '/placeholder-product.jpg'}
-                          alt={product.name}
-                          fill
-                          className="rounded-lg object-cover"
-                          sizes="(max-width: 640px) 50vw, 25vw"
-                        />
-                      </div>
-                      <h3 className="font-semibold text-sm md:text-base mb-1">{product.name}</h3>
-                      <div className="flex items-center gap-2">
-                        <p className="text-base md:text-lg font-bold">
-                          {formatCurrency(product.discountPrice || product.price)}
-                        </p>
-                        {product.discountPrice && (
-                          <s className="text-sm text-gray-500">
-                            {formatCurrency(product.price)}
-                          </s>
-                        )}
-                      </div>
-                    </Link>
-                  </CardContent>
-                  <CardFooter className="p-3 md:p-4 pt-0">
-                    <Button className="w-full text-sm md:text-base" variant="outline">
-                      Quick Add
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          )}
+        <section className="mt-16">
+          <h2 className="text-2xl font-bold mb-6 text-center">You May Also Like</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {relatedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
         </section>
       )}
     </div>

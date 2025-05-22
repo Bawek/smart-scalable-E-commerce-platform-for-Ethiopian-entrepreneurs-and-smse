@@ -3,7 +3,7 @@ import React from "react";
 const Banner = () => {
   return (
     <div
-      className="relative w-full h-[40vh] min-h-[500px] max-h-[800px] flex items-center justify-center text-white bg-cover bg-center bg-no-repeat"
+      className="relative w-full h-[300px] min-h-[200px]  max-h-[400px] flex items-center justify-center text-white bg-cover bg-center bg-no-repeat"
       style={{
         backgroundImage: `
           linear-gradient(0deg, 

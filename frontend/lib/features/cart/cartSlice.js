@@ -28,10 +28,11 @@ export const removeFromCart = createAsyncThunk('cart/removeFromCart', async ({ u
 });
 
 export const updateCartItem = createAsyncThunk('cart/updateCartItem', async ({ userId, itemId, quantity }) => {
-  console.log(userId, itemId, quantity, 'see it')
+  console.log(userId, quantity, itemId, 'seekkk it')
   if (userId) {
     const response = await axios.post(`${baseUrl}/cart/${userId}/update/${itemId}`, { quantity });
-    return response.data;
+    console.log(response, 'on the update')
+    return { itemId: response.data.id ,quantity:response.data.quantity};
   }
   return {
     itemId,
@@ -41,7 +42,7 @@ export const updateCartItem = createAsyncThunk('cart/updateCartItem', async ({ u
 
 const cartSlice = createSlice({
   name: 'cart',
-  initialState: { 
+  initialState: {
     items: [],
     totalItems: 0,
     totalPrice: 0,
@@ -91,7 +92,7 @@ const cartSlice = createSlice({
 
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
-        const item = state.items.find(item => item.id === action.payload.id);
+        const item = state.items.find(item => item.id === action.payload.itemId);
         if (item) {
           state.totalItems += action.payload.quantity - item.quantity;
           state.totalPrice += (action.payload.quantity - item.quantity) * item.price;

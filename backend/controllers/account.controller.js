@@ -28,7 +28,7 @@ const registerAccount = async (req, res, next) => {
             data: {
                 email,
                 password: hashedPassword,
-                firstName:firestName,
+                firstName: firestName,
                 lastName,
             }
         });
@@ -36,7 +36,7 @@ const registerAccount = async (req, res, next) => {
             accountId: newAccount.id,
             role: newAccount.role
         }
-        const refreshToken = await generateRefreshToken(userInfo, next) 
+        const refreshToken = await generateRefreshToken(userInfo, next)
         const accessToken = await generateAccessToken(userInfo, next)
         const updatedAccount = await prisma.account.update({
             where: {
@@ -117,6 +117,24 @@ const getAllAccounts = async (req, res, next) => {
     try {
         const accounts = await prisma.account.findMany()
         res.status(200).json({ status: 'success', accounts })
+    } catch (error) {
+        console.log(error)
+        next(new httpError(error.message, 500))
+    }
+
+}
+const getAccountAndLocation = async (req, res, next) => {
+    const { id } = req.params
+    try {
+        const account = await prisma.account.findUnique({
+            where: {
+                id
+            },
+        })
+        if (!account) {
+            return next(new httpError('Sorry something went wrong', 404))
+        }
+        res.status(200).json({ status: 'success', account })
     } catch (error) {
         console.log(error)
         next(new httpError(error.message, 500))
@@ -270,5 +288,6 @@ module.exports = {
     login,
     logout,
     updateById,
-    updateAccount
+    updateAccount,
+    getAccountAndLocation
 }

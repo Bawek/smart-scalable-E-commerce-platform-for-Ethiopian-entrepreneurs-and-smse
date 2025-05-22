@@ -16,7 +16,6 @@ const ShopLayout = ({ children }) => {
     const categoryParam = params?.category || ''
 
     // State management
-    console.log(productsData,shopId, 'this is the product data that it comes ')
     const [selectedTown, setSelectedTown] = useState('')
     const [sortOption, setSortOption] = useState('popularity')
     const [filters, setFilters] = useState({

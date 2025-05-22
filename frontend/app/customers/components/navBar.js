@@ -87,12 +87,10 @@ export function CustomerNavigationMenu() {
   const [shops, setShops] = useState([])
   const cart = useSelector((state) => state.cart)
   const cartItems = cart?.totalQuantity || 0;
-  console.log(cartItems, 'cartItems')
   React.useEffect(() => {
     if (!isLoading && data && !isError) {
       setShops(data?.shops)
     }
-    console.log(data,'data of man')
   }, [data])
   const [isOpen, setIsOpen] = React.useState(false);
   const [open, setOpen] = useState(false);
@@ -101,7 +99,6 @@ export function CustomerNavigationMenu() {
   const account = useSelector((state) => state.account)
   const isMobile = (width || 0) < 768;
 
-  console.log(shops, isError, 'this the shops of man')
   const [hasScrolled, setHasScrolled] = React.useState(false);
 
   React.useEffect(() => {
@@ -166,8 +163,8 @@ function DesktopMenu({ account, cartItems, shops }) {
               <NavigationMenuTrigger className="text-sm">shops</NavigationMenuTrigger>
               <NavigationMenuContent className="absolute left-0 w-[400px] md:w-[500px] lg:w-[500px] p-4">
                 <ul className="grid gap-3 md:grid-cols-2">
-                  { shops.length > 0 && shops?.map((link) => (
-                    <ListItem key={link.name} title={link.name} href={'/man'}>
+                  {shops.length > 0 && shops?.map((link) => (
+                    <ListItem key={link.name} title={link.name} href={`/customers/products?id=${link?.id}`}>
                       {link.name}
                     </ListItem>
                   ))}

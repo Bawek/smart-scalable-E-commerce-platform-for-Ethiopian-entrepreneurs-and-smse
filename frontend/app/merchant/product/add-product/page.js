@@ -102,6 +102,16 @@ const AddProduct = () => {
             deletedImages: []
         }
     });
+    function calculateDiscountPercentage(originalPrice, discountPrice) {
+        const original = parseFloat(originalPrice);
+        const discount = parseFloat(discountPrice);
+
+        if (!original || original <= 0 || discount >= original) return 0;
+
+        const percentage = ((original - discount) / original) * 100;
+        return Math.round(percentage);
+    }
+
 
     useEffect(() => {
         if (productId && productData?.product) {
@@ -109,12 +119,11 @@ const AddProduct = () => {
             form.reset({
                 ...product,
                 price: String(product.price),
-                discountPrice: String(product.discountPrice || '0'),
+                discountPrice: String(calculateDiscountPercentage(product.price, product.discountPrice) || '0'),
                 quantity: String(product.quantity),
                 images: product.images || [],
                 deletedImages: []
             });
-            // No need to set previews for existing images
         }
     }, [productId, productData, form]);
 

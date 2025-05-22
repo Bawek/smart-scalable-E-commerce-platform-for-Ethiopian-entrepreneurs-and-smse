@@ -5,6 +5,7 @@ const orderController = require('../../controllers/order.controller');
 // Create a new order
 router.post('/', orderController.createOrder);
 router.get('/payment/callback', orderController.verifyOrderPayment)
+router.get('/payment/frontend-check', orderController.verifyOrderPaymentForFrontend)
 
 // Get all orders
 // router.get('/', orderController.getAllOrders);

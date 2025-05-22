@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
   Card,
   CardContent,
@@ -9,18 +9,10 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Minus, Plus, ArrowLeft, LogIn } from 'lucide-react';
+import { Minus, Plus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import useCart from '@/hooks/use-cart';
 import Loader from '@/app/components/Prompt/Loader';
 import { imageViewer } from '@/app/system-admin/lib/imageViewer';
@@ -34,18 +26,14 @@ const CartPage = () => {
     isLoading,
     error,
     loadCart,
-    addItemToCart,
     removeItemFromCart,
-    updateItemQuantity,
-    emptyCart
-  } = useCart();
+    updateItemQuantity } = useCart();
 
   const account = useSelector((state) => state.account);
   const [isProcessing, setIsProcessing] = useState(false);
   // Shipping cost (could be dynamic based on location)
   const shippingCost = 19.0;
   const estimatedTotal = totalPrice + shippingCost;
-
   // Fetch cart data on component mount
   useEffect(() => {
     loadCart();
@@ -163,7 +151,7 @@ const CartPage = () => {
                   <p className="text-lg font-semibold text-gray-600 mb-4">
                     No items in your cart
                   </p>
-                  <Link href="/customers/products">
+                  <Link href={`/customers/explore-shops`}>
                     <Button>
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       Continue Shopping
@@ -176,11 +164,14 @@ const CartPage = () => {
                     key={item.id}
                     className="flex flex-col md:flex-row items-center gap-4 p-4 border-b"
                   >
-                    <img
-                      src={imageViewer(item.image) || '/placeholder-product.jpg'}
-                      alt={item.name}
-                      className="w-20 h-20 md:w-24 md:h-24 object-cover rounded"
-                    />
+                    {
+                      item.image &&
+                      <img
+                        src={imageViewer(item?.image[0]) || '/placeholder-product.jpg'}
+                        alt={item.name}
+                        className="w-20 h-20 md:w-24 md:h-24 object-cover rounded"
+                      />
+                    }
 
                     <div className="flex-grow md:w-2/5">
                       <h3 className="font-semibold text-lg">{item.name}</h3>
@@ -237,7 +228,7 @@ const CartPage = () => {
 
           {cart.length > 0 && (
             <div className="mt-4">
-              <Link href="/customers/products" className="flex items-center text-blue-600 hover:text-blue-800">
+              <Link href={`/customers/explore-shops`} className="flex items-center text-blue-600 hover:text-blue-800">
                 <ArrowLeft className="mr-1 h-4 w-4" />
                 Continue Shopping
               </Link>
@@ -262,11 +253,6 @@ const CartPage = () => {
                   <div className="flex justify-between">
                     <span>Shipping:</span>
                     <span>${shippingCost.toFixed(2)}</span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span>Tax:</span>
-                    <span>Calculated at checkout</span>
                   </div>
 
                   <div className="border-t pt-4 flex justify-between font-bold text-lg">

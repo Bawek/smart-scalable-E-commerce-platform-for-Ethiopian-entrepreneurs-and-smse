@@ -55,12 +55,12 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen flex flex-col m-0 dark:bg-gray-900 transition-colors duration-300">
       <div className="flex-grow">
         <Banner />
 
         {/* Search Section */}
-        <div className="max-w-[90vw] mx-auto mt-14">
+        <div className="max-w-[90vw] mx-auto">
           <div className="w-full">
             <Searchbox 
               shops={data?.shops} 
@@ -71,7 +71,7 @@ useEffect(() => {
         </div>
 
         {/* Divider */}
-        <div className="group flex md:text-2xl items-center justify-center my-10 text-gray-800 dark:text-gray-200 sm:text-xl font-normal">
+        <div className="group flex md:text-2xl items-center justify-center text-gray-800 dark:text-gray-200 sm:text-xl font-normal">
           <span className="w-[30%] border-gray-300 dark:border-gray-600 border-t-[1px]">
             <hr className="border-none" />
           </span>
