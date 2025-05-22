@@ -218,23 +218,41 @@ model CustomPage {
 }
 
 model Order {
-  id         String      @id @default(uuid())
-  customerId String
-  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  shopId     String
-  shop       Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  productId  String
-  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  locationId String
-  location   Location    @relation(fields: [locationId], references: [id])
-  status     OrderStatus @default(PENDING)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  Payment    Payment[]
-  Account    Account?    @relation(fields: [accountId], references: [id])
-  accountId  String?
+  id            String      @id @default(uuid())
+  customer      Customer    @relation(fields: [customerId], references: [id])
+  customerId    String
+  shop          Shop        @relation(fields: [shopId], references: [id])
+  shopId        String
+  items         OrderItem[]
+  location      Location    @relation(fields: [locationId], references: [id])
+  locationId    String
+  status        OrderStatus @default(PENDING)
+  totalAmount   Float
+  paymentMethod String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  account       Account?    @relation(fields: [accountId], references: [id])
+  accountId     String?
+  payments      Payment[]
+  Product       Product?    @relation(fields: [productId], references: [id])
+  productId     String?
 
-  @@map("orders")
+  @@index([customerId])
+  @@index([shopId])
+  @@index([status])
+  @@index([createdAt])
+}
+model OrderItem {
+  id        String @id @default(uuid())
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  productId String
+  name      String
+  price     Float
+  quantity  Int
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model Product {
@@ -262,6 +280,7 @@ model Product {
 model Notification {
   id      String @id @default(uuid())
   message String
+
   @@map("notifications")
 }
 
@@ -291,7 +310,7 @@ model Cart {
   items     CartItem[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  expiresAt DateTime?  @default(dbgenerated("NOW() + INTERVAL '30 days'")) // Auto-cart cleanup
+  expiresAt DateTime?  @default(dbgenerated("NOW() + INTERVAL '30 days'"))
 
   // Optimized for frequent cart lookup
   @@index([userId, updatedAt])

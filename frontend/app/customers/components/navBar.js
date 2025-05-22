@@ -18,6 +18,8 @@ import ProfileMenu from "./profile";
 import { useState } from "react";
 import Logo from "@/components/ui/my-components/logo";
 import { useSelector } from "react-redux";
+import CartIcon from "./nav-cart-icon";
+import { useGetAllShopsQuery } from "@/lib/features/shop/shop";
 // Platform information remains the same...
 const companyLinks = [
   {
@@ -81,12 +83,17 @@ const shopLinks = [
 
 
 export function CustomerNavigationMenu() {
+  const { data, isError, isLoading } = useGetAllShopsQuery()
+  const [shops, setShops] = useState([])
   const cart = useSelector((state) => state.cart)
-  console.log(cart, 'cart')
-
   const cartItems = cart?.totalQuantity || 0;
   console.log(cartItems, 'cartItems')
-
+  React.useEffect(() => {
+    if (!isLoading && data && !isError) {
+      setShops(data?.shops)
+    }
+    console.log(data,'data of man')
+  }, [data])
   const [isOpen, setIsOpen] = React.useState(false);
   const [open, setOpen] = useState(false);
   const closeDrawer = () => setOpen(false);
@@ -94,6 +101,7 @@ export function CustomerNavigationMenu() {
   const account = useSelector((state) => state.account)
   const isMobile = (width || 0) < 768;
 
+  console.log(shops, isError, 'this the shops of man')
   const [hasScrolled, setHasScrolled] = React.useState(false);
 
   React.useEffect(() => {
@@ -114,7 +122,7 @@ export function CustomerNavigationMenu() {
         <Logo />
         {/* mobile navbar */}
         {!isMobile ? (
-          <DesktopMenu account={account} cartItems={cartItems} />
+          <DesktopMenu account={account} cartItems={cartItems} shops={shops} />
         ) : (
           <MobileMenu
             account={account}
@@ -122,6 +130,7 @@ export function CustomerNavigationMenu() {
             setOpen={setOpen}
             closeDrawer={closeDrawer}
             cartItems={cartItems}
+            shops={shops}
           />
 
         )}
@@ -130,7 +139,7 @@ export function CustomerNavigationMenu() {
   );
 }
 
-function DesktopMenu({ account, cartItems }) {
+function DesktopMenu({ account, cartItems, shops }) {
   return (
     <div className="container flex items-center h-16 gap-6">
       <div className="container flex items-center h-16 gap-6">
@@ -157,9 +166,9 @@ function DesktopMenu({ account, cartItems }) {
               <NavigationMenuTrigger className="text-sm">shops</NavigationMenuTrigger>
               <NavigationMenuContent className="absolute left-0 w-[400px] md:w-[500px] lg:w-[500px] p-4">
                 <ul className="grid gap-3 md:grid-cols-2">
-                  {shopLinks.map((link) => (
-                    <ListItem key={link.title} title={link.title} href={link.href}>
-                      {link.description}
+                  { shops.length > 0 && shops?.map((link) => (
+                    <ListItem key={link.name} title={link.name} href={'/man'}>
+                      {link.name}
                     </ListItem>
                   ))}
                 </ul>
@@ -179,17 +188,7 @@ function DesktopMenu({ account, cartItems }) {
         ))}
         <div className="flex-1"></div>
         {/* Cart Button */}
-
-        <Link href="/customers/cart" className="relative flex items-center text-sm no-underline text-black dark:text-white">
-
-          <ShoppingCart className="h-8 w-8 mr-2" />
-          {cartItems > 0 && (
-            <span className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center bg-red-600 text-white text-xs font-bold rounded-full">
-              {cartItems}
-            </span>
-          )}
-        </Link>
-
+        <CartIcon />
         {/* Right Section - User Profile / Authentication */}
         <div className="ml-auto flex items-center gap-2">
           {
@@ -220,7 +219,7 @@ function DesktopMenu({ account, cartItems }) {
   );
 }
 
-function MobileMenu({ account, open, setOpen, closeDrawer, cartItems }) {
+function MobileMenu({ account, open, setOpen, closeDrawer, cartItems, shops }) {
   return (
     <Sheet aria-describedby={'mobile menu'} open={open} onOpenChange={setOpen}>
       <SheetTitle
@@ -272,18 +271,17 @@ function MobileMenu({ account, open, setOpen, closeDrawer, cartItems }) {
                   ))}
                 </ul>
               </div>
-
               {/* Shop Links */}
               <div className="space-y-2">
                 <h3 className="px-2 text-sm font-semibold text-muted-foreground">Shop</h3>
                 <div className="space-y-1">
-                  {shopLinks.map((platform) => (
+                  {shops.length > 0 && shops?.map((platform) => (
                     <MobileLink
-                      key={platform.title}
-                      href={platform.href}
+                      key={platform.name}
+                      href={`/customers/procucts?id=${platform.id}`}
                       onClick={closeDrawer}
                     >
-                      {platform.title}
+                      {platform.name}
                     </MobileLink>
                   ))}
                 </div>

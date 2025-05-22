@@ -90,10 +90,16 @@ async function getTotalRevenue(shopId) {
             shopId,
             status: { not: 'CANCELLED' },
         },
-        include: { product: true }, // Include the linked product
+        include: {
+            shop: {
+                include: {
+                    products: true
+                }
+            }
+        }, // Include the linked product
     });
 
-    return orders.reduce((sum, order) => sum + order.product.price, 0);
+    return orders.reduce((sum, order) => sum + order.shop.products.price, 0);
 }
 
 // Get total orders count (excluding cancelled)

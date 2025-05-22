@@ -1,126 +1,155 @@
 'use client'
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Logs } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import { useGetProductsForSaleQuery } from '@/lib/features/products/products'
+import Loader from '@/app/components/Prompt/Loader'
+import { toast } from 'react-toastify'
+import useShopProducts from '@/hooks/use-shop-products'
 
 const ShopLayout = ({ children }) => {
-    const [products, setProducts] = useState([]);
-    const [selectedTown, setSelectedTown] = useState('');
-    const [sortOption, setSortOption] = useState('popularity');
-    const [minPrice, setMinPrice] = useState(0);
-    const [maxPrice, setMaxPrice] = useState(1000);
-    const { data, isLoading, isError, error } = useGetProductsForSaleQuery()
-    const category = useParams();
-    const [selectedCategory, setSelectedCategory] = useState(category.category);
-    console.log(data, error, isError, 'manner of geting the data of mathe')
-    const [tempFilters, setTempFilters] = useState({
-        categories: [],
+    const { shopId, productsData, isLoading, isError, error } = useShopProducts();
+
+    const params = useParams()
+    const categoryParam = params?.category || ''
+
+    // State management
+    console.log(productsData,shopId, 'this is the product data that it comes ')
+    const [selectedTown, setSelectedTown] = useState('')
+    const [sortOption, setSortOption] = useState('popularity')
+    const [filters, setFilters] = useState({
+        categories: categoryParam ? [categoryParam] : [],
         colors: [],
         sizes: [],
         priceRange: [0, 1000]
-    });
-    // Dynamic filter options
-    const [categories, setCategories] = useState([]);
-    const [colors, setColors] = useState([]);
-    const [sizes, setSizes] = useState([]);
-    useEffect(() => {
-        setProducts(data?.products)
-        if (products.length === 0) return;
-        // Calculate initial price range 
-        const prices = products.map(p => p.price);
-        const min = Math.floor(Math.min(...prices));
-        const max = Math.ceil(Math.max(...prices));
+    })
 
-        setMinPrice(min);
-        setMaxPrice(max);
-        setTempFilters(prev => ({ ...prev, priceRange: [min, max] }));
-        if (selectedCategory) {
-            setTempFilters(prev => ({ ...prev, categories: [selectedCategory] }));
-        }
-    }, [selectedCategory, products]);
-    console.log(products, 'products are here listed')
+    // Derived state
+    const products = productsData?.products || []
+    const [minPrice, maxPrice] = useMemo(() => {
+        if (products.length === 0) return [0, 1000]
+        const prices = products.map(p => p.price)
+        return [Math.floor(Math.min(...prices)), Math.ceil(Math.max(...prices))]
+    }, [products])
 
+    // Filter options
+    const { categories, colors, sizes } = useMemo(() => {
+        const initial = { categories: [], colors: [], sizes: [] }
+
+        if (products.length === 0) return initial
+
+        return products.reduce((acc, product) => {
+            // Categories
+            acc.categories[product.category] = (acc.categories[product.category] || 0) + 1
+
+            // Colors
+            if (product.color) {
+                acc.colors[product.color] = (acc.colors[product.color] || 0) + 1
+            }
+
+            // Sizes
+            if (product.size) {
+                acc.sizes[product.size] = (acc.sizes[product.size] || 0) + 1
+            }
+
+            return acc
+        }, { categories: {}, colors: {}, sizes: {} })
+    }, [products])
+
+    // Format filter options for display
+    const formattedCategories = useMemo(() => (
+        Object.entries(categories).map(([value, count]) => ({
+            label: value,
+            value,
+            count
+        }))
+    ), [categories])
+
+    const formattedColors = useMemo(() => (
+        Object.entries(colors).map(([value, count]) => ({
+            label: value.charAt(0).toUpperCase() + value.slice(1),
+            value,
+            count
+        }))
+    ), [colors])
+
+    const formattedSizes = useMemo(() => (
+        Object.entries(sizes).map(([value, count]) => ({
+            label: value.charAt(0).toUpperCase() + value.slice(1),
+            value,
+            count
+        }))
+    ), [sizes])
+
+    // Filter and sort products
+    const filteredProducts = useMemo(() => {
+        if (!products.length) return []
+
+        return products.filter(product => {
+            // Town filter
+            if (selectedTown && product.town !== selectedTown) return false
+
+            // Category filter
+            if (filters.categories.length > 0 &&
+                !filters.categories.includes(product.category)) return false
+
+            // Color filter
+            if (filters.colors.length > 0 &&
+                (!product.color || !filters.colors.includes(product.color))) return false
+
+            // Size filter
+            if (filters.sizes.length > 0 &&
+                (!product.size || !filters.sizes.includes(product.size))) return false
+
+            // Price filter
+            if (product.price < filters.priceRange[0] ||
+                product.price > filters.priceRange[1]) return false
+
+            return true
+        })
+    }, [products, selectedTown, filters])
+
+    const sortedProducts = useMemo(() => {
+        if (!filteredProducts.length) return []
+
+        return [...filteredProducts].sort((a, b) => {
+            if (sortOption === 'price_asc') return a.price - b.price
+            if (sortOption === 'price_desc') return b.price - a.price
+            return a.id - b.id // Default sorting
+        })
+    }, [filteredProducts, sortOption])
+
+    // Reset price range when products change
     useEffect(() => {
         if (products.length > 0) {
-            const categoryCounts = products.reduce((acc, product) => {
-                acc[product.category] = (acc[product.category] || 0) + 1;
-                return acc;
-            }, {});
-            setCategories(Object.entries(categoryCounts).map(([value, count]) => ({
-                label: value,
-                value,
-                count
-            })));
-
-            const colorCounts = products.reduce((acc, product) => {
-                acc[product.color] = (acc[product.color] || 0) + 1;
-                return acc;
-            }, {});
-            setColors(Object.entries(colorCounts).map(([value, count]) => ({
-                label: value.charAt(0).toUpperCase() + value.slice(1),
-                value,
-                count
-            })));
-
-            const sizeCounts = products.reduce((acc, product) => {
-                acc[product.size] = (acc[product.size] || 0) + 1;
-                return acc;
-            }, {});
-            setSizes(Object.entries(sizeCounts).map(([value, count]) => ({
-                label: value.charAt(0).toUpperCase() + value.slice(1),
-                value,
-                count
-            })));
+            setFilters(prev => ({
+                ...prev,
+                priceRange: [minPrice, maxPrice]
+            }))
         }
-    }, [products]);
+    }, [minPrice, maxPrice, products])
 
-    const filteredProducts = products && products?.filter(product => {
-        // Town filter
-        if (selectedTown && product.town !== selectedTown) return false;
+    // Handle category param changes
+    useEffect(() => {
+        if (categoryParam) {
+            setFilters(prev => ({
+                ...prev,
+                categories: [categoryParam]
+            }))
+        }
+    }, [categoryParam])
 
-        // Category filter
-        if (tempFilters.categories.length > 0 &&
-            !tempFilters.categories.includes(product.category)) return false;
-
-        // Color filter
-        if (tempFilters.colors.length > 0 &&
-            !tempFilters.colors.includes(product.color)) return false;
-
-        // Size filter
-        if (tempFilters.sizes.length > 0 &&
-            !tempFilters.sizes.includes(product.size)) return false;
-
-        // Price filter
-        if (product.price < tempFilters.priceRange[0] ||
-            product.price > tempFilters.priceRange[1]) return false;
-
-        return true;
-    });
-
-    // Sorting logic
-    const sortedProducts = products.length > 0 && [...filteredProducts].sort((a, b) => {
-        if (sortOption === 'price_asc') return a.price - b.price;
-        if (sortOption === 'price_desc') return b.price - a.price;
-        return a.id - b.id; // Default sorting by ID
-    });
     if (isLoading) {
-        return (
-            <div>
-                loading...
-            </div>
-        )
+        return <Loader />
     }
+
     if (isError) {
-        return (
-            <div>
-                Some thing go wrong
-            </div>
-        )
+        console.log(error, 'product download error')
+        return toast.error(error?.message || 'Sorry We can not load the products. please refresh the page')
     }
+
     return (
         <main className="w-full px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row gap-8">
@@ -137,7 +166,7 @@ const ShopLayout = ({ children }) => {
                             value={selectedTown}
                         >
                             <option value="">All Towns</option>
-                            {[...new Set(products.map(p => p.town))].map(town => (
+                            {[...new Set(products.map(p => p.town).filter(Boolean))].map(town => (
                                 <option key={town} value={town}>{town}</option>
                             ))}
                         </select>
@@ -147,13 +176,13 @@ const ShopLayout = ({ children }) => {
                     <div className="space-y-3">
                         <h3 className="font-semibold">Categories</h3>
                         <div className="space-y-2">
-                            {categories.map((category) => (
+                            {formattedCategories.map((category) => (
                                 <div key={category.value} className="flex items-center space-x-2">
                                     <Checkbox
                                         id={`cat-${category.value}`}
-                                        checked={tempFilters.categories.includes(category.value)}
+                                        checked={filters.categories.includes(category.value)}
                                         onCheckedChange={(checked) => {
-                                            setTempFilters(prev => ({
+                                            setFilters(prev => ({
                                                 ...prev,
                                                 categories: checked
                                                     ? [...prev.categories, category.value]
@@ -170,64 +199,68 @@ const ShopLayout = ({ children }) => {
                     </div>
 
                     {/* Color Filter */}
-                    <div className="space-y-3">
-                        <h3 className="font-semibold">Colors</h3>
-                        <div className="space-y-2">
-                            {colors.map((color) => (
-                                <div key={color.value} className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id={`color-${color.value}`}
-                                        checked={tempFilters.colors.includes(color.value)}
-                                        onCheckedChange={(checked) => {
-                                            setTempFilters(prev => ({
-                                                ...prev,
-                                                colors: checked
-                                                    ? [...prev.colors, color.value]
-                                                    : prev.colors.filter(v => v !== color.value)
-                                            }))
-                                        }}
-                                    />
-                                    <Label htmlFor={`color-${color.value}`} className="text-sm">
-                                        {color.label} ({color.count})
-                                    </Label>
-                                </div>
-                            ))}
+                    {formattedColors.length > 0 && (
+                        <div className="space-y-3">
+                            <h3 className="font-semibold">Colors</h3>
+                            <div className="space-y-2">
+                                {formattedColors.map((color) => (
+                                    <div key={color.value} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`color-${color.value}`}
+                                            checked={filters.colors.includes(color.value)}
+                                            onCheckedChange={(checked) => {
+                                                setFilters(prev => ({
+                                                    ...prev,
+                                                    colors: checked
+                                                        ? [...prev.colors, color.value]
+                                                        : prev.colors.filter(v => v !== color.value)
+                                                }))
+                                            }}
+                                        />
+                                        <Label htmlFor={`color-${color.value}`} className="text-sm">
+                                            {color.label} ({color.count})
+                                        </Label>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Size Filter */}
-                    <div className="space-y-3">
-                        <h3 className="font-semibold">Sizes</h3>
-                        <div className="space-y-2">
-                            {sizes.map((size) => (
-                                <div key={size.value} className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id={`size-${size.value}`}
-                                        checked={tempFilters.sizes.includes(size.value)}
-                                        onCheckedChange={(checked) => {
-                                            setTempFilters(prev => ({
-                                                ...prev,
-                                                sizes: checked
-                                                    ? [...prev.sizes, size.value]
-                                                    : prev.sizes.filter(v => v !== size.value)
-                                            }))
-                                        }}
-                                    />
-                                    <Label htmlFor={`size-${size.value}`} className="text-sm">
-                                        {size.label} ({size.count})
-                                    </Label>
-                                </div>
-                            ))}
+                    {formattedSizes.length > 0 && (
+                        <div className="space-y-3">
+                            <h3 className="font-semibold">Sizes</h3>
+                            <div className="space-y-2">
+                                {formattedSizes.map((size) => (
+                                    <div key={size.value} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`size-${size.value}`}
+                                            checked={filters.sizes.includes(size.value)}
+                                            onCheckedChange={(checked) => {
+                                                setFilters(prev => ({
+                                                    ...prev,
+                                                    sizes: checked
+                                                        ? [...prev.sizes, size.value]
+                                                        : prev.sizes.filter(v => v !== size.value)
+                                                }))
+                                            }}
+                                        />
+                                        <Label htmlFor={`size-${size.value}`} className="text-sm">
+                                            {size.label} ({size.count})
+                                        </Label>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Price Filter */}
                     <div className="space-y-3">
                         <h3 className="font-semibold">Price Range</h3>
                         <div className="space-y-4 px-2">
                             <Slider
-                                value={tempFilters.priceRange}
-                                onValueChange={(value) => setTempFilters(prev => ({
+                                value={filters.priceRange}
+                                onValueChange={(value) => setFilters(prev => ({
                                     ...prev,
                                     priceRange: value
                                 }))}
@@ -236,8 +269,8 @@ const ShopLayout = ({ children }) => {
                                 step={1}
                             />
                             <div className="flex justify-between text-sm text-muted-foreground">
-                                <span>ETB{tempFilters.priceRange[0]}</span>
-                                <span>ETB{tempFilters.priceRange[1]}</span>
+                                <span>ETB{filters.priceRange[0]}</span>
+                                <span>ETB{filters.priceRange[1]}</span>
                             </div>
                         </div>
                     </div>
@@ -264,16 +297,14 @@ const ShopLayout = ({ children }) => {
                     </div>
 
                     <section>
-                        {
-                            React.Children.map(children, child => {
-                                if (React.isValidElement(child)) {
-                                    return React.cloneElement(child, {
-                                        products: sortedProducts
-                                    })
-                                }
-                                return child
-                            })
-                        }
+                        {React.Children.map(children, child => {
+                            if (React.isValidElement(child)) {
+                                return React.cloneElement(child, {
+                                    products: sortedProducts
+                                })
+                            }
+                            return child
+                        })}
                     </section>
                 </div>
             </div>
@@ -281,4 +312,4 @@ const ShopLayout = ({ children }) => {
     )
 }
 
-export default ShopLayout;
+export default ShopLayout

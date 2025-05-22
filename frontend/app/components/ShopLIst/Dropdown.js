@@ -7,11 +7,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useGetshopCategoryQuery } from "@/lib/features/shop/publicShopSlice";
+import { useGetAllShopsQuery, useGetShopQuery } from "@/lib/features/shop/shop";
 const { useRouter } = require("next/navigation");
 
 const Dropdown = ({ name, shops }) => {
-  const { data: categoryData, error: categoryError, isLoading: categoryLoading } = useGetshopCategoryQuery();
+  const { data: categoryData, error: categoryError, isLoading: categoryLoading } = useGetAllShopsQuery();
+  console.log()
   const router = useRouter();
   return (
     <DropdownMenu className="focus:outline-none">
@@ -34,15 +35,17 @@ const Dropdown = ({ name, shops }) => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="bg-[#FCD34D] min-w-52 px-9 mt-1 border-[#78350F]  text-[#78350F] font-light">
-        {categoryData?.map((category, index) => (
-          <React.Fragment key={index}>
-            {/* <DropdownMenuLabel className="text-xl">{shop.id}</DropdownMenuLabel> */}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-xl transition-all duration-700 bg-[#FCD34D] hover:text-white hover:bg-transparent ease-in-out font-bold ">
-              {category.catagory_name}
-            </DropdownMenuItem>
-          </React.Fragment>
-        ))}
+        {categoryData?.shops &&
+
+          categoryData?.shops?.map((category, index) => (
+            <React.Fragment key={index}>
+              {/* <DropdownMenuLabel className="text-xl">{shop.id}</DropdownMenuLabel> */}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-xl transition-all duration-700 bg-[#FCD34D] hover:text-white hover:bg-transparent ease-in-out font-bold ">
+                {category.category}
+              </DropdownMenuItem>
+            </React.Fragment>
+          ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );
