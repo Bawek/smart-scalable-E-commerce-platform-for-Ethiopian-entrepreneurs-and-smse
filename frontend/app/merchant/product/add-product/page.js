@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState, useCallback } from 'react';
-import { ImageIcon, Loader, Video } from 'lucide-react';
+import { Loader, X } from 'lucide-react';
 import { z } from 'zod';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -16,9 +16,7 @@ import { Input } from '@/components/ui/input';
 import { useSelector } from 'react-redux';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { imageViewer } from '@/app/system-admin/lib/imageViewer';
-import dynamic from 'next/dynamic';
 
-// Constants
 const BUSINESS_CATEGORIES = [
     "Clothing", "Food & Beverage", "Electronics",
     "Cosmetics", "Books", "Shoes"
@@ -26,7 +24,6 @@ const BUSINESS_CATEGORIES = [
 
 const PRODUCT_STATUSES = ["PENDING", "SUSPENDED", "ACTIVE"];
 
-// Define product schema with enhanced validation
 const productSchema = z.object({
     name: z.string()
         .min(3, "Name must be at least 3 characters")
@@ -47,15 +44,15 @@ const productSchema = z.object({
     category: z.string().min(1, "Category is required"),
     status: z.enum(["PENDING", "SUSPENDED", "ACTIVE"]),
     images: z.union([
-        z.instanceof(File, { message: "Image is required" }),
-        z.string().min(1, "Image is required")
+        z.array(z.instanceof(File)).min(1, "At least one image is required"),
+        z.array(z.string()).min(1, "At least one image is required")
     ]),
     brand: z.string()
         .max(50, "Brand must be less than 50 characters")
         .optional(),
+    deletedImages: z.array(z.string()).optional()
 });
 
-// Helper components
 const LoadingIndicator = () => (
     <div className="flex justify-center items-center p-6">
         <Loader className="w-6 h-6 animate-spin" />
@@ -69,19 +66,17 @@ const ErrorMessage = ({ message }) => (
     </div>
 );
 
-// Main component
 const AddProduct = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const productId = searchParams.get('rtx');
     const account = useSelector((state) => state.account);
 
-    // State management
     const [mode, setMode] = useState(productId ? 'edit' : 'register');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [previewImage, setPreviewImage] = useState(null);
+    const [previewImages, setPreviewImages] = useState([]);
+    const [deletedImages, setDeletedImages] = useState([]);
 
-    // API Hooks
     const {
         data: productData,
         isLoading: isProductLoading,
@@ -92,7 +87,6 @@ const AddProduct = () => {
     const [createProduct] = useCreateProductMutation();
     const [updateProduct] = useUpdateProductMutation();
 
-    // Form initialization
     const form = useForm({
         resolver: zodResolver(productSchema),
         defaultValues: {
@@ -103,12 +97,12 @@ const AddProduct = () => {
             quantity: '0',
             category: '',
             status: 'PENDING',
-            images: null,
+            images: [],
             brand: '',
+            deletedImages: []
         }
     });
 
-    // Set form values when product data is available
     useEffect(() => {
         if (productId && productData?.product) {
             const product = productData.product;
@@ -117,38 +111,80 @@ const AddProduct = () => {
                 price: String(product.price),
                 discountPrice: String(product.discountPrice || '0'),
                 quantity: String(product.quantity),
-                images: product.images?.[0] || null
+                images: product.images || [],
+                deletedImages: []
             });
-            setPreviewImage(product.images?.[0]);
+            // No need to set previews for existing images
         }
     }, [productId, productData, form]);
 
-    // Handle image preview
     const handleImageChange = useCallback((e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            form.setValue('images', file);
-            const reader = new FileReader();
-            reader.onload = () => {
-                setPreviewImage(reader.result);
-            };
-            reader.readAsDataURL(file);
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            const currentImages = form.getValues('images') || [];
+            const newImages = [...currentImages, ...files];
+            form.setValue('images', newImages);
+
+            const newPreviews = [];
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    newPreviews.push(reader.result);
+                    if (newPreviews.length === files.length) {
+                        setPreviewImages(prev => [...prev, ...newPreviews]);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
         }
     }, [form]);
 
-    // Prepare form data for submission
+    const removeImage = useCallback((index) => {
+        const currentImages = [...form.getValues('images')];
+        const removedImage = currentImages.splice(index, 1);
+        form.setValue('images', currentImages);
+
+        if (typeof removedImage[0] === 'string') {
+            // Existing image being removed
+            setDeletedImages(prev => [...prev, removedImage[0]]);
+            form.setValue('deletedImages', [...deletedImages, removedImage[0]]);
+        } else {
+            // New image being removed
+            setPreviewImages(prev => {
+                const newPreviews = [...prev];
+                newPreviews.splice(index - (form.getValues('images').length - previewImages.length), 1);
+                return newPreviews;
+            });
+        }
+    }, [form, deletedImages, previewImages]);
+
     const prepareFormData = useCallback((data) => {
         const formData = new FormData();
 
+        // Append all non-image fields
         Object.entries(data).forEach(([key, value]) => {
-            if (value !== undefined && value !== null) {
-                if (key === 'images' && value instanceof File) {
-                    formData.append(key, value);
-                } else if (typeof value === 'string' || typeof value === 'number') {
-                    formData.append(key, String(value));
-                }
+            if (key !== 'images' && key !== 'deletedImages' && value !== undefined && value !== null) {
+                formData.append(key, String(value));
             }
         });
+
+        // Handle images - separate new files and existing image URLs
+        if (Array.isArray(data.images)) {
+            data.images.forEach((img, index) => {
+                if (img instanceof File) {
+                    formData.append(`images`, img); // Append each file directly
+                } else {
+                    formData.append(`existingImages[${index}]`, img);
+                }
+            });
+        }
+
+        // Handle deleted images
+        if (Array.isArray(data.deletedImages)) {
+            data.deletedImages.forEach((img, index) => {
+                formData.append(`deletedImages[${index}]`, img);
+            });
+        }
 
         formData.append('accountId', account.id);
         if (mode === 'edit' && productId) {
@@ -158,7 +194,6 @@ const AddProduct = () => {
         return formData;
     }, [account.id, mode, productId]);
 
-    // Form submission handler
     const onSubmit = useCallback(async (values) => {
         setIsSubmitting(true);
         try {
@@ -176,7 +211,8 @@ const AddProduct = () => {
 
             if (mode === 'register') {
                 form.reset();
-                setPreviewImage(null);
+                setPreviewImages([]);
+                setDeletedImages([]);
             }
         } catch (error) {
             console.error("Submission error:", error);
@@ -186,16 +222,9 @@ const AddProduct = () => {
         }
     }, [form, mode, prepareFormData, updateProduct, createProduct, router]);
 
-    // Loading and error states
-    if (productId && isProductLoading) {
-        return <LoadingIndicator />;
-    }
+    if (productId && isProductLoading) return <LoadingIndicator />;
+    if (productId && isProductError) return <ErrorMessage message={productError?.data?.message} />;
 
-    if (productId && isProductError) {
-        return <ErrorMessage message={productError?.data?.message || "Failed to load product"} />;
-    }
-
-    // Form field render helper
     const renderField = (name, label, renderControl, required = true) => (
         <FormField
             control={form.control}
@@ -249,6 +278,7 @@ const AddProduct = () => {
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        {/* Other form fields remain the same */}
                         {renderField("name", "Product Name", (field) => (
                             <Input
                                 {...field}
@@ -351,24 +381,54 @@ const AddProduct = () => {
                                 className="dark:bg-gray-800 dark:border-gray-700"
                             />
                         ))}
-
-                        {renderField("images", "Product Image", () => (
+                        {renderField("images", "Product Images", () => (
                             <div className="space-y-2">
                                 <Input
                                     type="file"
                                     accept="image/*"
+                                    multiple
                                     onChange={handleImageChange}
                                     className="dark:bg-gray-800 dark:border-gray-700"
                                 />
-                                {(previewImage || (mode === 'edit' && productData?.product?.images?.[0])) && (
-                                    <div className="mt-2">
-                                        <img
-                                            src={previewImage || imageViewer(productData?.product?.images?.[0])}
-                                            alt="Product preview"
-                                            className="h-40 object-contain border rounded"
-                                        />
-                                    </div>
-                                )}
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {/* Existing images (edit mode) */}
+                                    {mode === 'edit' && productData?.product?.images?.map((img, index) => (
+                                        !deletedImages.includes(img) && (
+                                            <div key={`existing-${index}`} className="relative group">
+                                                <img
+                                                    src={imageViewer(img)}
+                                                    alt={`Product image ${index + 1}`}
+                                                    className="h-24 w-24 object-cover border rounded"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeImage(index)}
+                                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        )
+                                    ))}
+
+                                    {/* New image previews */}
+                                    {previewImages.map((img, index) => (
+                                        <div key={`preview-${index}`} className="relative group">
+                                            <img
+                                                src={img}
+                                                alt={`New image preview ${index + 1}`}
+                                                className="h-24 w-24 object-cover border rounded"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeImage(index + (productData?.product?.images?.length || 0) - deletedImages.length)}
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         ))}
 

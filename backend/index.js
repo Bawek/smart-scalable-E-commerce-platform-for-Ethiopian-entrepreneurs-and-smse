@@ -22,6 +22,7 @@ const cartRouter = require('./routes/user/cart.route.js')
 const orderRouter = require('./routes/user/order.route.js')
 const analyticsRoutes = require('./routes/dashboardRoutes');
 const contactRoute = require('./routes/contact.route');
+const adminRoutes = require('./routes/admin.route.js');
 
 // constants  
 const PORT = process.env.PORT || 8000
@@ -47,6 +48,9 @@ app.use('/api/merchant', merchantRouter)
 
 app.use('/api/cart', cartRouter);// Accounts route
 app.use('/api/orders', orderRouter);// Accounts route
+
+
+app.use('/api/admin', adminRoutes);   // admin Routes
 
 
 

@@ -25,7 +25,6 @@ const createProduct = async (req, res, next) => {
                 400
             ));
         }
-
         // Check for images (now using req.files instead of req.file)
         if (!req.files || req.files.length === 0) {
             return next(new httpError("At least one product image is required", 400));
@@ -40,7 +39,6 @@ const createProduct = async (req, res, next) => {
         const merchant = await prisma.merchant.findFirst({
             where: { accountId },
             include: { shops: true },
-            rejectOnNotFound: true
         });
 
         if (!merchant.shops || merchant.shops.length === 0) {
@@ -81,8 +79,6 @@ const createProduct = async (req, res, next) => {
                 images: imageFilenames, // Now storing array of filenames
                 brand,
                 shopId: merchant.shops[0].id,
-                accountId,
-                slug: generateSlug(name),
                 createdAt: new Date(),
                 updatedAt: new Date()
             }
@@ -150,6 +146,7 @@ const getAllProductsForSale = async (req, res, next) => {
 }
 const getProductById = async (req, res, next) => {
     const { id } = req.params
+    console.log(id, 'product id')
     try {
         const product = await prisma.product.findUnique({
             where: {
@@ -169,6 +166,38 @@ const getProductById = async (req, res, next) => {
     }
 
 }
+const getProductByShopId = async (req, res, next) => {
+    const { shopId } = req.params;
+
+    try {
+        if (!shopId) {
+            return res.status(400).json({
+                status: "fail",
+                message: "Shop ID is required.",
+            });
+        }
+
+        const products = await prisma.product.findMany({
+            where: {
+                shopId,
+                status: 'ACTIVE',
+            },
+            include: {
+                shop: true
+            },
+        });
+
+        return res.status(200).json({
+            status: "success",
+            count: products.length,
+            products,
+        });
+    } catch (error) {
+        console.error('Get Products Error:', error);
+        next(new httpError("Internal server error while fetching products.", 500));
+    }
+};
+
 const deleteProductById = async (req, res, next) => {
     const { id } = req.params
     try {
@@ -285,5 +314,6 @@ module.exports = {
     getProductById,
     updateProductById,
     deleteProductById,
-    getAllProductsForSale
+    getAllProductsForSale,
+    getProductByShopId
 }

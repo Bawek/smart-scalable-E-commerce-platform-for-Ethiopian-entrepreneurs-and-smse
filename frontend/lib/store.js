@@ -26,6 +26,7 @@ import { templateApi } from "./features/templates/templateApi";
 import storage from "./storage";
 import { merchantTemplateApi } from "./features/merchantTemplates/buyedTemplateApi";
 import cartReducer from './features/cart/cartSlice';
+import { orderApi } from "./features/orders/ordersApi";
 
 
 
@@ -45,6 +46,7 @@ const rootReducer = combineReducers({
 	[accountApi.reducerPath]: accountApi.reducer,
 	[authSlice.reducerPath]: authSlice.reducer,
 	[shopApi.reducerPath]: shopApi.reducer,
+	[orderApi.reducerPath]: orderApi.reducer,
 	[templateApi.reducerPath]: templateApi.reducer,
 	[merchantTemplateApi.reducerPath]: merchantTemplateApi.reducer,
 	// [publicShopSlice.reducerPath]: publicShopSlice.reducer,
@@ -56,12 +58,12 @@ const rootReducer = combineReducers({
 	notification: notificationSlice,
 	currentPage,
 	currentIdPage,
-	account: persistedAccountReducer,
+	account: persistedAccountReducer,  
 	AdminEditor,
 	status,
 	editor: editorReducer,
 	prompt: promptSlice,
-	cart:cartReducer,
+	cart: cartReducer,
 
 });
 
@@ -80,6 +82,7 @@ export const makeStore = () =>
 				templateApi.middleware,
 				merchantTemplateApi.middleware,
 				accountApi.middleware,
+				orderApi.middleware,
 				// publicShopSlice.middleware
 			),
 	});

@@ -1,172 +1,192 @@
-// 'use client'
-// import Link from 'next/link'
-// import React from 'react'
-// import { Card, CardContent, CardHeader } from "@/components/ui/card";
-// import { Button } from "@/components/ui/button";
-// import { formatCurrency } from '@/util/currency';
-
-// const ProductItem = ({ product }) => {
-//     console.log(product, 'product')
-//     return (
-//         <Link className="no-underline" href={`/customers/products/detail/${product?.id}`}>
-//             <Card key={product.id} className="group relative overflow-hidden transition-shadow hover:shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-[500px] flex flex-col justify-between">
-//                 <div className="relative">
-//                     <img
-//                         src={product.thumbnail}
-//                         alt={product.title}
-//                         className="h-60 w-full object-cover rounded-t-lg transition-transform duration-300 ease-in-out group-hover:scale-105"
-//                     />
-//                     <div className="absolute right-2 top-2 rounded-full bg-gray-400 px-3 py-1 text-sm font-bold text-white">
-//                         20% OFF
-//                     </div>
-//                 </div>
-
-//                 <div>
-//                     <CardHeader className="my-0 py-0">
-//                         <h3 className="text-lg font-bold text-gray-400 dark:text-white truncate">
-//                             {product.title}
-//                         </h3>
-
-//                         <div className="flex items-center mt-2 mb-4">
-//                             {[...Array(5)].map((_, index) => (
-//                                 <svg
-//                                     key={index}
-//                                     xmlns="http://www.w3.org/2000/svg"
-//                                     fill={index < Math.round(product.rating?.rate) ? "#fbbf24" : "none"}
-//                                     viewBox="0 0 24 24"
-//                                     strokeWidth={1.5}
-//                                     stroke="currentColor"
-//                                     className="w-5 h-5 text-yellow-500"
-//                                 >
-//                                     <path
-//                                         strokeLinecap="round"
-//                                         strokeLinejoin="round"
-//                                         d="M12 17.25L18.18 21l-1.64-7.03L22 9.25l-7.19-.61L12 2.25l-2.81 6.39L2 9.25l5.46 4.72L5.82 21z"
-//                                     />
-//                                 </svg>
-//                             ))}
-//                             <span className="ml-2 text-sm text-gray-500">({product.rating?.rate})</span>
-//                         </div>
-//                     </CardHeader>
-
-//                     <CardContent className="p-4 flex flex-col flex-grow justify-between">
-//                         <p className="text-gray-400 text-sm dark:text-gray-300 mb-4 truncate">
-//                             {product.description}
-//                         </p>
-//                         <div className="flex items-center gap-3 mb-4">
-//                             <span className="text-sm font-bold text-orange-600" aria-label="Current price">
-//                                 {formatCurrency(product.price)}
-//                             </span>
-//                             <s className="text-gray-400 text-sm font-bold" aria-label="Original price">
-//                                 {formatCurrency(product.price + 100)}
-//                             </s>
-
-//                         </div>
-//                         <Button className="w-full bg-gray-500 hover:bg-gray-700 text-white transition-colors duration-300">
-//                             Add to Cart
-//                         </Button>
-//                     </CardContent>
-//                 </div>
-//             </Card>
-//         </Link>
-//     )
-// }
-
-// export default ProductItem
-
-
 'use client';
 import Link from 'next/link';
 import React from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/util/currency';
-import { useDispatch,useSelector} from 'react-redux';
-import { addItemToCart } from '@/lib/features/cart/cartSlice';
-import axios from 'axios';
+import { ShoppingCart, Eye, Minus, Plus } from 'lucide-react';
+import { imageViewer } from '@/app/system-admin/lib/imageViewer';
 import { toast } from 'react-toastify';
+import useCart from '@/hooks/use-cart';
+import Rating from './Rating';
+import { Badge } from '@/components/ui/badge';
 
 const ProductItem = ({ product }) => {
-    const dispatch = useDispatch();
-  const cartItems = useSelector((state) => state.cart.items);
-  const totalAmount = useSelector((state) => state.cart.totalAmount);
-  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
-  const account = useSelector((state) => state.account);
-   const handleAddToCart = async (e) => {
-    e.stopPropagation();
+    const {
+        id,
+        name,
+        description,
+        price,
+        discountPrice,
+        brand,
+        images = [],
+        quantity: stockQuantity
+    } = product;
 
-    try {
+    const {
+        cart,
+        isLoading,
+        addItemToCart,
+        updateItemQuantity,
+        removeItemFromCart
+    } = useCart();
 
-        await axios.post('http://localhost:8000/api/cart/add', {
-            userId: account.id,
-            productId: product.id,
-            quantity: totalQuantity + 1,
-        });
+    // Find the cart item if it exists
+    const cartItem = cart.find(item => item.productId === id);
+    const currentQuantity = cartItem?.quantity || 0;
+    const isInCart = currentQuantity > 0;
 
-        dispatch(addItemToCart({ ...product, quantity: 1 }));
-        toast.success('Added to cart!');
-    } catch (error) {
-        console.error('Add to cart failed:', error);
-        toast.error('Could not add to cart.');
-    }
-};
+    const handleAddToCart = async (e) => {
+        e.stopPropagation();
+
+        if (stockQuantity <= 0) {
+            toast.warning('This product is out of stock');
+            return;
+        }
+
+        try {
+            await addItemToCart({
+                productId: id,
+                name,
+                price: discountPrice || price,
+                quantity: 1,
+                image: images[0],
+                stock: stockQuantity
+            });
+        } catch (error) {
+            console.error('Add to cart failed:', error);
+            toast.error(error.message || 'Could not add to cart.');
+        }
+    };
+
+    const handleIncreaseQuantity = async (e) => {
+        e.stopPropagation();
+
+        if (currentQuantity >= stockQuantity) {
+            toast.warning(`Only ${stockQuantity} items available`);
+            return;
+        }
+
+        try {
+            await updateItemQuantity(id, currentQuantity + 1);
+        } catch (error) {
+            console.error('Failed to increase quantity:', error);
+            toast.error('Failed to update quantity');
+        }
+    };
+
+    const handleDecreaseQuantity = async (e) => {
+        e.stopPropagation();
+        console.log(id, 'id of the items')
+        if (currentQuantity <= 1) {
+            console.log('current id less', id)
+            try {
+                await removeItemFromCart(id);
+            } catch (error) {
+                console.error('Failed to remove item:', error);
+                toast.error('Failed to remove item');
+            }
+            return;
+        }
+
+        try {
+            await updateItemQuantity(id, currentQuantity - 1);
+        } catch (error) {
+            console.error('Failed to decrease quantity:', error);
+            toast.error('Failed to update quantity');
+        }
+    };
 
     return (
-        <Card key={product.id} className='group relative overflow-hidden transition-shadow hover:shadow-lg rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-[500px] flex flex-col justify-between'>
-            <Link href={`/customers/products/detail/${product?.id}`} className='no-underline flex-1'>
-                <div className='relative'>
+        <div className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg rounded-xl border-2 border-gray-100 bg-white dark:bg-gray-800 h-[300px] flex flex-col hover:border-primary/20 hover:scale-[1.02]">
+            <div className="no-underline flex-1 flex flex-col">
+                <div className="relative h-16 w-full overflow-hidden rounded-t-lg">
                     <img
-                        src={product.thumbnail}
-                        alt={product.title}
-                        className='h-60 w-full object-cover rounded-t-lg transition-transform duration-300 ease-in-out group-hover:scale-105'
+                        src={imageViewer(images[0]) || '/placeholder-product.jpg'}
+                        alt={name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className='absolute right-2 top-2 rounded-full bg-gray-400 px-3 py-1 text-sm font-bold text-white'>
-                        20% OFF
+                    <div className={`absolute bottom-2 left-2 rounded-full px-2 py-1 text-xs font-bold ${stockQuantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {stockQuantity > 0 ? `🚀 ${stockQuantity} available` : '😢 Sold out'}
+                    </div>
+                    {discountPrice && (
+                        <div className="absolute top-2 right-2 rotate-12 bg-yellow-400 text-black px-2 py-1 rounded-md text-xs font-extrabold shadow-md">
+                            {Math.round(((price - discountPrice) / price) * 100)}% TAKEOFF
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex-1 flex flex-col px-3 pt-3 gap-2">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-extrabold text-gray-800 dark:text-white line-clamp-2 font-[Poppins]">
+                            {name}
+                        </h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 italic"> {brand}</p>
+                    </div>
+
+                    <div className="flex items-center my-2">
+                        <Rating />
+                        <span className="text-xs text-gray-500 ml-1">({Math.floor(Math.random() * 100) + 20})</span>
+                    </div>
+
+                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 flex items-start">
+                        {description}
+                    </p>
+
+                    <div className="py-2">
+                        <div className="flex items-center justify-between gap-2 group-hover:animate-bounce">
+                            <span className="text-xl font-black text-gray-900 dark:text-white">
+                                {formatCurrency(discountPrice || price)}
+                            </span>
+                            {discountPrice && (
+                                <s className="text-sm text-gray-500 dark:text-gray-400">
+                                    {formatCurrency(price)}
+                                </s>
+                            )}
+                        </div>
                     </div>
                 </div>
-                <CardHeader className='my-0 py-0'>
-                    <h3 className='text-lg font-bold text-gray-400 dark:text-white truncate'>
-                        {product.title}
-                    </h3>
-                    <div className='flex items-center mt-2 mb-4'>
-                        {[...Array(5)].map((_, index) => (
-                            <svg
-                                key={index}
-                                xmlns='http://www.w3.org/2000/svg'
-                                fill={index < Math.round(product.rating?.rate) ? '#fbbf24' : 'none'}
-                                viewBox='0 0 24 24'
-                                strokeWidth={1.5}
-                                stroke='currentColor'
-                                className='w-5 h-5 text-yellow-500'
-                            >
-                                <path
-                                    strokeLinecap='round'
-                                    strokeLinejoin='round'
-                                    d='M12 17.25L18.18 21l-1.64-7.03L22 9.25l-7.19-.61L12 2.25l-2.81 6.39L2 9.25l5.46 4.72L5.82 21z'
-                                />
-                            </svg>
-                        ))}
-                        <span className='ml-2 text-sm text-gray-500'>({product.rating?.rate})</span>
+            </div>
+
+            <div className="flex gap-1 py-2 px-2 justify-between items-center">
+                {isInCart ? (
+                    <div className="flex items-center justify-center gap-2">
+                        <Badge
+                            size="sm"
+                            onClick={handleDecreaseQuantity}
+                            disabled={isLoading}
+                            className="cursor-pointer bg-secondary hover:bg-slate-300 rounded-md"
+                        >
+                            <Minus className="h-4 w-4 text-orange-600" />
+                        </Badge>
+                        <p className="flex-1 text-center font-medium  dark:text-white">
+                            {currentQuantity}
+                        </p>
+                        <Badge
+                            size="sm"
+                            onClick={handleIncreaseQuantity}
+                            disabled={isLoading || currentQuantity >= stockQuantity}
+                            className="cursor-pointer bg-secondary hover:bg-slate-300 rounded-full"
+                        >
+                            <Plus className="h-4 w-4 text-orange-600" />
+                        </Badge>
                     </div>
-                </CardHeader>
-                <CardContent className='p-4 flex flex-col flex-grow justify-between'>
-                    <p className='text-gray-400 text-sm dark:text-gray-300 mb-4 truncate'>
-                        {product.description}
-                    </p>
-                    <div className='flex items-center gap-3 mb-4'>
-                        <span className='text-sm font-bold text-orange-600' aria-label='Current price'>
-                            {formatCurrency(product.price)}
-                        </span>
-                        <s className='text-gray-400 text-sm font-bold' aria-label='Original price'>
-                            {formatCurrency(product.price + 100)}
-                        </s>
-                    </div>
-                </CardContent>
-            </Link>
-                    <Button onClick={handleAddToCart} className='w-full bg-gray-500 hover:bg-gray-700 text-white transition-colors duration-300'>
-                        Add to Cart
+                ) : (
+                    <Button
+                        onClick={handleAddToCart}
+                        disabled={stockQuantity <= 0 || isLoading}
+                        className="flex-1 transition-all flex items-center justify-center gap-1 w-32 bg-slate-400 h-10"
+                    >
+                        <ShoppingCart className="w-4 h-4" />
+                        {stockQuantity <= 0 ? 'Sold Out' : isLoading ? 'Adding...' : 'Add to Cart'}
                     </Button>
-        </Card>
+                )}
+
+                <Link href={`/customers/products/detail/${id}`} className="flex-1 flex items-center flex-nowrap hover:text-orange-600 hover:underline justify-center gap-1 transition-all text-sm font-medium">
+                    Detail about
+                </Link>
+            </div>
+
+        </div>
     );
 };
 

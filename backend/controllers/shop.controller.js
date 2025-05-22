@@ -224,11 +224,7 @@ const getAllShop = async (req, res, next) => {
         // await prisma.shop.deleteMany()
         const shops = await prisma.shop.findMany({
             include: {
-                merchant: {
-                    select: {
-                        ownerName: true
-                    }
-                }
+                merchant:true
             }
         })
         if (shops.length === 0) {

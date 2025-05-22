@@ -1,113 +1,137 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require("../config/db");
+const { verifyPayment } = require("../services/chapaService");
 
-// Create a new order
 exports.createOrder = async (req, res) => {
   try {
-    const { firstName, lastName, email, phone, street, city, state, zipcode, country, shopId, productId } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      town,
+      country,
+      region,
+      kebele,
+      woreda,
+      accountId,
+      items,
+      totalAmount,
+      paymentMethod
+    } = req.body;
 
-    // Step 1: Create or find Customer
-    const customer = await prisma.customer.upsert({
-      where: { email },
-      update: { firstName, lastName, phone },
-      create: { firstName, lastName, email, phone },
+    // Transaction: Create location, order, and order items
+    const newOrder = await prisma.$transaction(async (tx) => {
+      // 1. Create the location from form fields
+      const location = await tx.location.create({
+        data: {
+          town,
+          country,
+          region,
+          kebele,
+          woreda,
+        },
+      });
+
+      // 2. Create the order and items
+      const order = await tx.order.create({
+        data: {
+          customer: {
+            connect: { accountId }, // assuming Customer is linked to Account
+          },
+          shop: {
+            connect: { id: '510776b6-1e6a-47aa-ac90-bc4f0da3a04f' }, // or use another way to get shopId if needed
+          },
+          account: {
+            connect: { id: accountId }
+          },
+          location: {
+            connect: { id: location.id }
+          },
+          totalAmount,
+          paymentMethod,
+          status: "PENDING",
+          items: {
+            create: items.map((item) => ({
+              productId: item.productId,
+              price: item.price,
+              quantity: item.quantity,
+              name: `Product ${item.productId}`
+            })),
+          },
+        },
+        include: {
+          items: true,
+          location: true
+        }
+      });
+
+      return order;
     });
 
-    // Step 2: Create location
-    const location = await prisma.location.create({
-      data: { street, city, state, zipcode, country },
+    res.status(201).json({
+      success: true,
+      message: "Order placed successfully.",
+      order: newOrder
     });
-
-    // Step 3: Create Order
-    const order = await prisma.order.create({
-      data: {
-        customerId: customer.id,
-        shopId,
-        productId,
-        locationId: location.id,
-        status: 'pending', // optional
-      },
-    });
-
-    res.status(201).json({ message: 'Order created successfully', order });
   } catch (error) {
-    console.error('Error creating order:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Create Order Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Order creation failed.",
+      error: error.message
+    });
   }
 };
 
-// Get all orders
-exports.getAllOrders = async (req, res) => {
+// payment call back
+exports.verifyOrderPayment = async (req, res) => {
+  const { tx_ref } = req.query;
   try {
-    const orders = await prisma.order.findMany({
-      include: {
-        customer: true,
-        shop: true,
-        product: true,
-        location: true,
-      },
-    });
-    res.status(200).json(orders);
-  } catch (error) {
-    console.error('Error fetching orders:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
+    const chapaRes = await verifyPayment(tx_ref);
+    console.log(chapaRes, ' on backend is excusted')
+    const isSuccess =
+      chapaRes.status === "success" &&
+      chapaRes.data.status === "success";
 
-// Get order by ID
-exports.getOrderById = async (req, res) => {
-  try {
-    const { id } = req.params;
+    const custom_order_id = chapaRes.data?.meta?.orderId;
 
-    const order = await prisma.order.findUnique({
-      where: { id },
-      include: {
-        customer: true,
-        shop: true,
-        product: true,
-        location: true,
-      },
-    });
+    if (isSuccess) {
+      console.log(chapaRes, ' on backend is true')
 
-    if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
+      // 1. Update the order
+      await prisma.order.update({
+        where: { id: custom_order_id },
+        data: { status: "SHIPPED" },
+      });
+
+      // 2. Update the payment status
+      // await prisma.payment.updateMany({
+      //   where: {
+      //     orderId: custom_order_id,
+      //   },
+      //   data: {
+      //     status: "ACTIVE",
+      //   },
+      // });
+      return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=true&tx_ref=${tx_ref}`);
     }
-
-    res.status(200).json(order);
-  } catch (error) {
-    console.error('Error fetching order:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
-
-// Update order status
-exports.updateOrderStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-
-    const updatedOrder = await prisma.order.update({
-      where: { id },
-      data: { status },
+    await prisma.order.update({
+      where: { id: custom_order_id },
+      data: { status: "CANCELLED" },
     });
+    console.log(chapaRes, ' on backend is false')
 
-    res.status(200).json({ message: 'Order status updated', order: updatedOrder });
+    // await prisma.payment.updateMany({
+    //   where: {
+    //     orderId: custom_order_id,
+    //   },
+    //   data: {
+    //     status: 'FAILED',
+    //   },
+    // });
+    return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=false`);
   } catch (error) {
-    console.error('Error updating order status:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
-
-// Delete order
-exports.deleteOrder = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    await prisma.order.delete({ where: { id } });
-
-    res.status(200).json({ message: 'Order deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting order:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error verifying payment:", error.message);
+    return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=false`);
   }
 };

@@ -18,6 +18,10 @@ export const productsApi = createApi({
       query: (id) => `/products/product-get-by-id/${id}/`,
       providesTags: ["product"],
     }),
+    getProductsByShopId: builder.query({
+      query: (id) => `/products/product-get-by-ShopId/${id}/`,
+      providesTags: ["product"],
+    }),
     getOutOfStockProducts: builder.query({
       query: (merchant_id) => `product/stock/${merchant_id}/`,
       providesTags: ["product"],
@@ -51,5 +55,6 @@ export const {
   useCreateProductMutation,
   useGetOutOfStockProductsQuery,
   useGetProductsByIdQuery,
-  useGetProductsForSaleQuery
+  useGetProductsForSaleQuery,
+  useGetProductsByShopIdQuery
 } = productsApi;

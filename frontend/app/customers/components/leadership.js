@@ -38,32 +38,32 @@ const avatarHover = {
 const myteam = [
     {
         name: 'Amare Zewudie',
-        role: 'CEO & Founder',
-        bio: 'Visionary leader driving digital transformation',
+        role: 'Admin',
+        bio: 'Software Enginner',
         initials: 'AZ',
-        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr7-KnN6YFT_m8dHeRsqR1YZvf2BV1PZTtJw&s'
+        image: '/images/about/amare.jpg'
     },
     {
         name: 'Mebrat Matebie',
-        role: 'CTO',
-        bio: 'Tech architect behind our platform',
+        role: 'Team Member',
+        bio: 'Software Enginner',
         initials: 'MM'
         ,
-        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr7-KnN6YFT_m8dHeRsqR1YZvf2BV1PZTtJw&s'
+   image: '/images/about/mebrat.jpg'
     },
     {
         name: 'Baweke Mekonnen',
-        role: 'COO',
-        bio: 'Operations excellence strategist',
+        role: 'Team Member',
+        bio: 'Software Enginner',
         initials: 'BM',
-        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr7-KnN6YFT_m8dHeRsqR1YZvf2BV1PZTtJw&s'
+   image: '/images/about/baweke.jpg'
     },
     {
         name: 'Birihanu Tadele',
-        role: 'CFO',
-        bio: 'Financial stewardship expert',
+        role: 'Team Member',
+        bio: 'Software Enginner',
         initials: 'BT',
-        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr7-KnN6YFT_m8dHeRsqR1YZvf2BV1PZTtJw&s'
+   image: '/images/about/birihanu.jpg'
     }
 ];
 

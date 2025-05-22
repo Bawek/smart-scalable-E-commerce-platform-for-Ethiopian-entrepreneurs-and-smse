@@ -1,7 +1,7 @@
 import React from "react";
-import ShopCategory from "../components/ShopLIst/ShopCategory";
-const ShopList = () => {
-  return <ShopCategory />;
+import ShopList from "../components/ShopLIst/ShopCategory";
+const AllShops = () => {
+  return <ShopList />;
 };
 
-export default ShopList;
+export default AllShops;
