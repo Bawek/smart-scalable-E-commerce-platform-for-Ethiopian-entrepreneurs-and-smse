@@ -1,26 +1,25 @@
-'use client'
-import { useState } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { BellIcon, Menu, Search } from 'lucide-react';
 import { NavUser } from '@/components/ui/my-components/nav-user';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useLogout } from '@/util/userLogout';
 import { ModeToggle } from '@/app/components/ModeToggle';
 import { useRouter } from 'next/navigation';
 import { useSidebar } from "@/components/ui/sidebar";
-import { selectNotifications } from '@/lib/features/notification/notificationSlice';
+import { addNotification, selectNotifications } from '@/lib/features/notification/notificationSlice'; // Assume you have this action
+import { baseUrl } from '@/lib/features/cart/cartSlice';
 
 export default function AdminTopNav() {
     const [searchQuery, setSearchQuery] = useState('');
-    const notifications = useSelector(selectNotifications)
-
-    const {
-        isMobile,
-        toggleSidebar,
-    } = useSidebar();
-
-    const router = useRouter();
+    const notifications = useSelector(selectNotifications);
     const user = useSelector((state) => state.account);
+    const dispatch = useDispatch();
+    const { isMobile, toggleSidebar } = useSidebar();
+    const router = useRouter();
     const logout = useLogout();
+    const [maynot, setMynot] = useState(null)
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -32,7 +31,6 @@ export default function AdminTopNav() {
             <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
 
                 <Menu onClick={toggleSidebar} className="w-6 h-6 text-muted-foreground md:hidden cursor-pointer hover:text-primary hover:bg-amber-100" />
-
 
                 {/* Center: Search Input */}
                 <div className="flex-1">
@@ -60,11 +58,9 @@ export default function AdminTopNav() {
                     >
                         <BellIcon className="h-6 w-6 dark:text-white" />
                         <span className="absolute top-0 right-0 text-xs font-semibold text-amber-600 rounded-full">
-
                             {notifications?.length || 0}
                         </span>
-
-                           </button>
+                    </button>
 
                     <NavUser user={user} logout={logout} />
                 </div>

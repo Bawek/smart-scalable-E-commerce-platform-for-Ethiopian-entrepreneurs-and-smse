@@ -102,7 +102,7 @@ const registerMerchant = async (req, res, next) => {
                 // Create admin notification 
                 await prisma.notification.create({
                     data: {
-                        userId:accountId , // Or your admin account ID
+                        userId: accountId, // Or your admin account ID
                         type: 'NEW_MERCHANT_REGISTRATION',
                         message: `New merchant registration: ${newMerchant.businessName}`,
                         metadata: JSON.stringify({
@@ -165,7 +165,7 @@ const registerMerchant = async (req, res, next) => {
                 // Create admin notification for update
                 await prisma.notification.create({
                     data: {
-                        userId: 'admin',
+                        userId: accountId,
                         type: 'MERCHANT_UPDATE',
                         message: `Merchant profile updated: ${updatedMerchant.businessName}`,
                         metadata: JSON.stringify({

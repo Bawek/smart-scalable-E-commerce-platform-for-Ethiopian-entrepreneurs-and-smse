@@ -1,38 +1,55 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Button } from '@/components/ui/button'
-import { CheckCircle2, Trash2, Bell } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { useNotifications } from '@/hooks/useNotifications'
-import NotificationWidget from '@/app/components/systemAdmin/Notification'
+import { Bell } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectNotifications } from '@/lib/features/notification/notificationSlice'
+import {
+  selectNotifications,
+  selectUnreadCount,
+  selectNotificationLoading,
+  selectNotificationError
+} from '@/lib/features/notification/notificationSlice'
+import NotificationWidget from '@/app/components/systemAdmin/Notification'
+import NotificationService from '@/util/notificationServices'
 
 const AdminNotificationList = () => {
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const dispatch = useDispatch();
-  const notifications = useSelector(selectNotifications) || [];
+  const dispatch = useDispatch()
+  const notifications = useSelector(selectNotifications)
+  const unreadCount = useSelector(selectUnreadCount)
+  const isLoading = useSelector(selectNotificationLoading)
+  const error = useSelector(selectNotificationError)
+  const user = useSelector(state => state.account)
+  console.log(user, 'user in admin notification list')
   useEffect(() => {
-    const loadNotifications = async () => {
+    const fetchNotifications = async () => {
       try {
-        // Simulated API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setIsLoading(false)
+        if (user?.id) {
+          const data = await NotificationService.fetchNotifications(user.id, 'admin')
+          console.log('Fetched notifications:', data)
+        }
       } catch (err) {
-        setError(err.message)
-        setIsLoading(false)
+        console.error('Failed to fetch notifications:', err)
       }
     }
 
-    loadNotifications()
-  }, [])
+    fetchNotifications()
+
+    // Optional: Set up real-time updates with WebSocket or polling
+    const interval = setInterval(fetchNotifications, 60000) // Refresh every minute
+
+    return () => clearInterval(interval)
+  }, [user?.id])
 
   if (error) {
     return (
       <div className="p-4 text-red-500 bg-red-50 rounded-lg">
         Error loading notifications: {error}
+        <button
+          onClick={() => NotificationService.fetchNotifications(user?.id, 'admin')}
+          className="ml-2 text-blue-500 hover:underline"
+        >
+          Retry
+        </button>
       </div>
     )
   }
@@ -44,7 +61,7 @@ const AdminNotificationList = () => {
           <Bell className="h-5 w-5 text-blue-600" />
           Notifications
           <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-            {notifications?.admin?.filter(n => !n.read).length} unread
+            {unreadCount} unread
           </span>
         </h2>
       </div>
@@ -58,13 +75,17 @@ const AdminNotificationList = () => {
               <Skeleton className="h-3 w-[150px]" />
             </div>
           ))
-        ) : notifications.length === 0 ? (
+        ) : notifications?.length === 0 ? (
           <div className="p-6 text-center text-gray-500">
             No notifications available
           </div>
         ) : (
           <div className='w-1/2 mx-auto'>
-            <NotificationWidget />
+            <NotificationWidget
+              notifications={notifications}
+              onMarkAsRead={(id) => NotificationService.markAsRead(id)}
+              onDelete={(id) => NotificationService.deleteNotification(id)}
+            />
           </div>
         )}
       </div>

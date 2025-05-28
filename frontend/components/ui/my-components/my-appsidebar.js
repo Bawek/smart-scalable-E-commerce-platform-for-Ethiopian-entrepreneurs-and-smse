@@ -71,7 +71,7 @@ const data = {
 export function AppSidebar(props) {
   const { open, toggleSidebar } = useSidebar();
   return (
-    <Sidebar onOpenChange={toggleSidebar} collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

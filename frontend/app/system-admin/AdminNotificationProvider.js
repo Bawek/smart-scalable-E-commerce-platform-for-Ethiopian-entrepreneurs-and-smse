@@ -22,8 +22,8 @@ const AdminNotificationProvider = ({ children }) => {
     const userRole = 'admin'
     const showBrowserNotification = (title, options) => {
         if (typeof window === 'undefined' || !('Notification' in window)) return;
-  
-        if (Notification.permission === 'granted') { 
+
+        if (Notification.permission === 'granted') {
             console.log('notification is graneteed and working yes')
             const notification = new Notification(title, options);
             notification.onclick = () => {

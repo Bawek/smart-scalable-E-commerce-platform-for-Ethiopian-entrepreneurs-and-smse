@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useGetAllTemplatesQuery } from "@/lib/features/templates/templateApi";
 import { Card } from "@/components/ui/card";
 import { imageViewer } from "../../system-admin/lib/imageViewer";
-import { useSelector } from "react-redux";
+import { useSelector,useDispatch } from "react-redux";
 import { ShoppingBag } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -25,7 +25,6 @@ const SelectTheme = () => {
   useCheckUnauthorized(error);
   const { toast } = useToast()
   const { processPayment, isLoading: paymentLoading } = useProcessPayment();
-
   const handlePayment = async (theme) => {
     console.log(account, 'accoutn')
     if (!account?.email || !account?.firestName) {

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,8 @@ export default function Register() {
   const { toast } = useToast();
   const dispatch = useDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const ic = searchParams.get('ic');
 
   const form = useForm({
     resolver: zodResolver(accountRegistrationSchema),
@@ -58,7 +60,7 @@ export default function Register() {
       dispatch(
         setCredential({
           accessToken: response.accessToken,
-          firstName: response.firestName, 
+          firstName: response.firestName,
           email: response.email,
           role: response.role,
           id: response.id,
@@ -71,7 +73,11 @@ export default function Register() {
         variant: "default",
       });
 
-      router.push(`/merchant?merchant=${response.id}`);
+      const redirectPath = ic === 'order'
+        ? '/customers/placeOrder'
+        : "/merchant/business-setting";
+
+      router.push(redirectPath);
     } catch (error) {
       console.error("Registration error:", error);
       toast({

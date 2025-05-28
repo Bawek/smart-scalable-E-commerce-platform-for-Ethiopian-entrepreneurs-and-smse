@@ -53,7 +53,7 @@ const NotificationWidget = () => {
             <div className="rounded-lg border">
                 {/* Notifications List */}
                 <div className="max-h-[70vh] overflow-y-auto">
-                    {(notifications &&  notifications.length > 0) ?
+                    {(notifications && notifications.length > 0) ?
                         notifications.map((notif) => (
                             <div
                                 key={notif.id}
