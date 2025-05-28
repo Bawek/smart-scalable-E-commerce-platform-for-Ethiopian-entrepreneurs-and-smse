@@ -44,6 +44,7 @@ const ProductItem = ({ product }) => {
 
     const handleAddToCart = async (e) => {
         e.stopPropagation();
+        console.log(cart, 'this id')
         localStorage.setItem('shopId', shopId)
         if (stockQuantity <= 0) {
             toast.warning('This product is out of stock');
@@ -54,12 +55,14 @@ const ProductItem = ({ product }) => {
             await addItemToCart({
                 productId: id,
                 name,
-                price: price,
+                price: discountPrice > 0 ? price - (price * Math.round(discountPrice)) / 100 : price,
                 quantity: 1,
                 discountPrice,
                 image: images[0],
                 stock: stockQuantity
             });
+            console.log(cart, 'this id')
+
         } catch (error) {
             console.error('Add to cart failed:', error);
             toast.error(error.message || 'Could not add to cart.');
@@ -103,47 +106,54 @@ const ProductItem = ({ product }) => {
     };
 
     return (
-        <div className="group relative transition-all duration-300 hover:shadow-lg rounded-xl border-2 border-gray-100 bg-white dark:bg-gray-800 h-[400px] flex flex-col hover:border-primary/20 hover:scale-[1.02]">
-            <div className="no-underline flex-1 flex flex-col">
-                <Link href={`/customers/products/detail/${id}`} className="flex-1 flex items-center flex-nowrap hover:text-orange-600 hover:underline justify-center gap-1 transition-all text-sm font-medium">
-                    <div className="relative h-32 w-full overflow-hidden rounded-t-lg">
-                        <img
-                            src={imageViewer(images[0]) || '/placeholder-product.jpg'}
-                            alt={name}
-                            className="h-full w-full object-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                        />
-                        {/* <div className={`absolute bottom-2 left-2 rounded-full px-2 py-1 text-xs font-bold ${stockQuantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                            {stockQuantity > 0 ? `🚀 ${stockQuantity} available` : '😢 Sold out'}
-                        </div> */}
-                        {Math.round(discountPrice) > 0 && (
-                            <div className="absolute top-2 right-2 rotate-12 bg-yellow-400 text-black px-2 py-1 rounded-md text-xs font-extrabold shadow-md">
-                                {Math.round(discountPrice)}% TAKEOFF
-                            </div>
-                        )}
-                    </div>
-                </Link>
+        <div className="group relative transition-all duration-300 hover:shadow-xl rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-[420px] flex flex-col hover:border-primary/30 hover:scale-[1.02] overflow-hidden">
+            {/* Product Image with Hover Effect */}
+            <Link
+                href={`/customers/products/detail/${id}`}
+                className="flex-1 flex items-center justify-center relative overflow-hidden"
+            >
+                <div className="relative h-48 w-full overflow-hidden">
+                    <img
+                        src={imageViewer(images[0]) || '/placeholder-product.jpg'}
+                        alt={name}
+                        className="h-full w-full object-cover transition-all duration-500 group-hover:scale-110"
+                    />
+                    {Math.round(discountPrice) > 0 && (
+                        <div className="absolute top-3 right-3 rotate-0 bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg transform transition-all group-hover:-translate-y-1">
+                            {Math.round(discountPrice)}% OFF
+                        </div>
+                    )}
+                </div>
+            </Link>
 
-                <div className="flex-1 flex flex-col px-3 pt-3 gap-2">
-                    <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-extrabold text-gray-800 dark:text-white line-clamp-2 font-[Poppins]">
-                            {name}
-                        </h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 italic"> {brand}</p>
-                    </div>
+            {/* Product Info */}
+            <div className="flex-1 flex flex-col px-4 pt-4 pb-2 gap-2">
+                {/* Brand and Name */}
+                <div className="flex justify-between items-start">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">
+                        {name}
+                    </h3>
+                    {brand && (
+                        <span className="text-xs font-medium px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300">
+                            {brand}
+                        </span>
+                    )}
+                </div>
 
-                    <div className="flex items-center my-2">
-                        <Rating />
-                        <span className="text-xs text-gray-500 ml-1">({Math.floor(Math.random() * 100) + 20})</span>
-                    </div>
-
-                    <p className="text-sm text-gray-600 dark:text-gray-300  line-clamp-1 truncate flex items-start">
-                        {description}
-                    </p>
-
-                    <div className="py-2">
-                        <div className="flex items-center justify-between gap-2 group-hover:animate-bounce">
-                            <span className="text-xl font-black text-gray-900 dark:text-white">
-                                {formatCurrency(Math.round(discountPrice) > 0 ? price - ((price * Math.round(discountPrice)) / 100) : price)}
+                {/* Description */}
+                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 min-h-[40px]">
+                    {description}
+                </p>
+                {/* Price Section */}
+                <div className="">
+                    <div className="flex items-end justify-between gap-2">
+                        <div className="flex flex-col">
+                            <span className="text-xl font-extrabold text-gray-900 dark:text-white">
+                                {formatCurrency(
+                                    Math.round(discountPrice) > 0
+                                        ? price - (price * Math.round(discountPrice)) / 100
+                                        : price
+                                )}
                             </span>
                             {Math.round(discountPrice) > 0 && (
                                 <s className="text-sm text-gray-500 dark:text-gray-400">
@@ -151,45 +161,62 @@ const ProductItem = ({ product }) => {
                                 </s>
                             )}
                         </div>
+
+                        {Math.round(discountPrice) > 0 ? (
+                            <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                You save {formatCurrency((price * Math.round(discountPrice)) / 100)}
+                            </span>
+                        ) : (
+                            <span className="text-xs text-gray-500">Standard price</span>
+                        )}
                     </div>
                 </div>
             </div>
 
-            <div className="flex gap-1 py-2 px-2 justify-between items-center">
+            {/* Add to Cart Section */}
+            <div className="px-4 pb-4">
                 {isInCart ? (
-                    <div className="flex items-center justify-center gap-2">
-                        <Badge
-                            size="sm"
+                    <div className="flex items-center justify-between gap-2 bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
+                        <button
                             onClick={handleDecreaseQuantity}
                             disabled={isLoading}
-                            className="cursor-pointer bg-secondary hover:bg-slate-300 rounded-md"
+                            className="p-2 rounded-full bg-white dark:bg-gray-600 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors disabled:opacity-50"
                         >
                             <Minus className="h-4 w-4 text-orange-600" />
-                        </Badge>
-                        <p className="flex-1 text-center font-medium  dark:text-white">
-                            {isLoading ? <Loader2 className='w-4 h-4 animate-spin' /> : currentQuantity}
+                        </button>
+                        <p className="flex-1 text-center font-medium text-gray-900 dark:text-white">
+                            {isLoading ? (
+                                <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                            ) : (
+                                `${currentQuantity} in cart`
+                            )}
                         </p>
-                        <Badge
-                            size="sm"
+                        <button
                             onClick={handleIncreaseQuantity}
                             disabled={isLoading || currentQuantity >= stockQuantity}
-                            className="cursor-pointer bg-secondary hover:bg-slate-300 rounded-full"
+                            className="p-2 rounded-full bg-white dark:bg-gray-600 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors disabled:opacity-50"
                         >
                             <Plus className="h-4 w-4 text-orange-600" />
-                        </Badge>
+                        </button>
                     </div>
                 ) : (
-                    <Button
+                    <button
                         onClick={handleAddToCart}
                         disabled={stockQuantity <= 0 || isLoading}
-                        className="flex-1 transition-all flex items-center justify-center gap-1 w-full bg-slate-400 h-10"
+                        className={`w-full py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${stockQuantity <= 0
+                            ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-md hover:shadow-lg'
+                            }`}
                     >
-                        <ShoppingCart className="w-4 h-4" />
-                        {stockQuantity <= 0 ? 'Sold Out' : isLoading ? 'Adding...' : 'Add to Cart'}
-                    </Button>
+                        <ShoppingCart className="w-5 h-5" />
+                        {stockQuantity <= 0
+                            ? 'Sold Out'
+                            : isLoading
+                                ? 'Adding...'
+                                : 'Add to Cart'}
+                    </button>
                 )}
             </div>
-
         </div>
     );
 };

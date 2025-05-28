@@ -93,7 +93,14 @@ const MerchantDetailPage = () => {
 
                             <div>
                                 <label className="text-sm ">Registration Date</label>
-                                <p className="font-medium">{merchant.registrationDate}</p>
+                                <p className="font-medium">{new Date(merchant.registrationDate).toLocaleString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: true, // optional: for AM/PM
+                                })}</p>
                             </div>
 
                             <div>
@@ -144,14 +151,11 @@ const MerchantDetailPage = () => {
                         <select
                             onChange={(e) => handleChange(e)}
                             value={currentStatus || 'select status'}
-                            className="rounded-md w-full border border-gray-400 focus:outline-none dark:bg-gray-800">
+                            className="rounded-md border w-1/4 border-gray-400 focus:outline-none dark:bg-gray-800">
                             <option className="hover:bg-gray-400" value={'ACTIVE'}>ACTIVE</option>
                             <option className="hover:bg-gray-400" value={'SUSPENDED'}>SUSPENDED</option>
                             <option className="hover:bg-gray-400" value="PENDING">PENDING</option>
                         </select>
-                        <Button className="w-full dark:bg-gray-800 dark:text-white">
-                            Delete Merchant
-                        </Button>
                     </div>
                 </div>
             </div>

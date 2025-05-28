@@ -15,7 +15,9 @@ import {
     ArrowUpRight,
     MoreVertical,
     XCircle,
-    XCircleIcon
+    XCircleIcon,
+    User,
+    Delete
 } from 'lucide-react'
 import { format } from 'date-fns'
 // import { toast } from '@/components/ui/use-toast'
@@ -37,6 +39,9 @@ import {
 } from '@/components/ui/alert-dialog'
 // import { StatusIndicator } from './status-indicator' // Your custom component
 import { useToast } from '@/hooks/use-toast'
+import { baseUrl } from '@/lib/features/cart/cartSlice'
+import { imageViewer } from '@/app/system-admin/lib/imageViewer'
+import { formatCurrency } from '@/util/currency'
 XCircle
 const sampleOrder = {
     id: 'ORD12345',
@@ -92,14 +97,16 @@ export default function OrderDetailPage() {
     const [newStatus, setNewStatus] = useState('')
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
     const { toast } = useToast()
+    console.log(order, 'orders of matter')
     // Fetch order data
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                const response = await fetch(`/api/orders/${orderId}`)
+                const response = await fetch(`${baseUrl}/orders/get/${orderId}`)
                 const data = await response.json()
-                setOrder(data)
-                setNewStatus(data.status)
+                console.log(data, 'order data')
+                setOrder(data.order)
+                setNewStatus(data.order.status)
             } catch (error) {
                 toast({
                     title: 'Error',
@@ -122,7 +129,7 @@ export default function OrderDetailPage() {
 
     const handleStatusUpdate = async () => {
         try {
-            const response = await fetch(`/api/orders/${orderId}/status`, {
+            const response = await fetch(`${baseUrl}/orders/update/${orderId}/status`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -150,21 +157,21 @@ export default function OrderDetailPage() {
 
     const handleCancelOrder = async () => {
         try {
-            const response = await fetch(`/api/orders/${orderId}/cancel`, {
-                method: 'POST',
+            const response = await fetch(`${baseUrl}/orders/delete/${orderId}`, {
+                method: 'DELETE',
             })
 
             if (response.ok) {
-                setOrder({ ...order, status: 'CANCELLED' })
+                window.history.back()
                 toast({
                     title: 'Success',
-                    description: 'Order cancelled successfully',
+                    description: 'Order Deleted successfully',
                 })
             }
         } catch (error) {
             toast({
                 title: 'Error',
-                description: 'Failed to cancel order',
+                description: 'Failed to delete order',
                 variant: 'destructive'
             })
         } finally {
@@ -197,14 +204,10 @@ export default function OrderDetailPage() {
                 </Button>
 
                 <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4 mr-2" />
-                        Export
-                    </Button>
-                    <Button variant="outline" size="sm">
+                    {/* <Button variant="outline" size="sm">
                         <Printer className="h-4 w-4 mr-2" />
                         Print
-                    </Button>
+                    </Button> */}
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -217,16 +220,12 @@ export default function OrderDetailPage() {
                                 <RefreshCw className="h-4 w-4 mr-2" />
                                 Update Status
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Mail className="h-4 w-4 mr-2" />
-                                Resend Confirmation
-                            </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => setCancelDialogOpen(true)}
                                 className="text-red-600"
                             >
-                                <XCircleIcon className="h-4 w-4 mr-2" />
-                                Cancel Order
+                                <Delete className="h-4 w-4 mr-2" />
+                                Delete Order
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -281,7 +280,7 @@ export default function OrderDetailPage() {
                                     <div key={item.id} className="flex items-start gap-4">
                                         <div className="w-16 h-16 rounded-md overflow-hidden border">
                                             <img
-                                                src={item.product.images[0] || '/placeholder-product.png'}
+                                                src={imageViewer(item.product.images[0]) || '/placeholder-product.png'}
                                                 alt={item.product.name}
                                                 className="object-cover w-full h-full"
                                             />
@@ -289,16 +288,16 @@ export default function OrderDetailPage() {
                                         <div className="flex-1">
                                             <div className="font-medium">{item.product.name}</div>
                                             <div className="text-sm text-muted-foreground">
-                                                {item.quantity} × ${item.price.toFixed(2)}
+                                                {item.quantity} × {formatCurrency(item.price)}
                                             </div>
                                             {item.discountPrice && (
                                                 <div className="text-sm text-red-600">
-                                                    Discount: ${(item.price - item.discountPrice).toFixed(2)}
+                                                    Discount: {formatCurrency(item.price - item.discountPrice)}
                                                 </div>
                                             )}
                                         </div>
                                         <div className="font-medium">
-                                            ${(item.discountPrice || item.price * item.quantity).toFixed(2)}
+                                            {formatCurrency(item.discountPrice || item.price * item.quantity)}
                                         </div>
                                     </div>
                                 ))}
@@ -311,18 +310,22 @@ export default function OrderDetailPage() {
                 <div className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Customer</CardTitle>
+                            <CardTitle>Customer Information</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
-                                <div className="font-medium">
-                                    {order.customer.name}
+                                <div className="flex items-center">
+                                    <User className="h-4 w-4 mr-2 text-gray-500" />
+                                    <span className="font-medium text-gray-800">{order.customer.name}</span>
                                 </div>
-                                <div className="text-sm text-muted-foreground">
-                                    {order.customer.email}
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                    {order.customer.phone}
+                                <div className="flex items-center">
+                                    <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                                    <a
+                                        href={`mailto:${order.customer.email}`}
+                                        className="text-sm text-blue-600 hover:underline"
+                                    >
+                                        {order.customer.email}
+                                    </a>
                                 </div>
                             </div>
                         </CardContent>
@@ -333,13 +336,34 @@ export default function OrderDetailPage() {
                             <CardTitle>Shipping Address</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-2">
-                                <div>{order.shippingAddress.line1}</div>
-                                {order.shippingAddress.line2 && <div>{order.shippingAddress.line2}</div>}
-                                <div>
-                                    {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}
+                            <div className="space-y-2 bg-gray-50 p-4 rounded-lg border">
+                                <h3 className="font-medium text-sm text-gray-900">Shipping Address</h3>
+                                <div className="text-sm text-gray-700 space-y-1">
+                                    {order.shippingAddress?.kebele && (
+                                        <div className="flex">
+                                            <span className="w-24 text-gray-500">Kebele:</span>
+                                            <span>{order.shippingAddress.kebele}</span>
+                                        </div>
+                                    )}
+                                    {order.shippingAddress?.woreda && (
+                                        <div className="flex">
+                                            <span className="w-24 text-gray-500">Woreda:</span>
+                                            <span>{order.shippingAddress.woreda}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex">
+                                        <span className="w-24 text-gray-500">Town:</span>
+                                        <span>{order.shippingAddress?.town}</span>
+                                    </div>
+                                    <div className="flex">
+                                        <span className="w-24 text-gray-500">Region:</span>
+                                        <span>{order.shippingAddress?.region}</span>
+                                    </div>
+                                    <div className="flex">
+                                        <span className="w-24 text-gray-500">Country:</span>
+                                        <span>{order.shippingAddress?.country}</span>
+                                    </div>
                                 </div>
-                                <div>{order.shippingAddress.country}</div>
                             </div>
                         </CardContent>
                     </Card>
@@ -352,24 +376,20 @@ export default function OrderDetailPage() {
                             <div className="space-y-2">
                                 <div className="flex justify-between">
                                     <span>Subtotal</span>
-                                    <span>${order.subtotal.toFixed(2)}</span>
+                                    <span>{formatCurrency(order.subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Shipping</span>
-                                    <span>${order.shippingCost.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Tax</span>
-                                    <span>${order.tax.toFixed(2)}</span>
+                                    <span>{formatCurrency(order.shippingCost)}</span>
                                 </div>
                                 <Separator className="my-2" />
                                 <div className="flex justify-between font-bold">
                                     <span>Total</span>
-                                    <span>${order.total.toFixed(2)}</span>
+                                    <span>{formatCurrency(order.total)}</span>
                                 </div>
                             </div>
                         </CardContent>
-                        <CardFooter className="flex justify-between">
+                        {/* <CardFooter className="flex justify-between">
                             <Button variant="outline" size="sm">
                                 <Truck className="h-4 w-4 mr-2" />
                                 Track Order
@@ -378,7 +398,7 @@ export default function OrderDetailPage() {
                                 <ArrowUpRight className="h-4 w-4 mr-2" />
                                 View Invoice
                             </Button>
-                        </CardFooter>
+                        </CardFooter> */}
                     </Card>
                 </div>
             </div>

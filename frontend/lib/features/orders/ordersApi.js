@@ -3,6 +3,10 @@ import { appApi } from "@/lib/appApi";
 export const orderApi = appApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
+    getAllOrders: builder.query({
+      query: () => `/orders/get-all`,
+      // providesTags: ["Shop"],
+    }),
     // Create a new order
     createOrder: builder.mutation({
       query: (orderData) => ({
@@ -25,8 +29,8 @@ export const orderApi = appApi.injectEndpoints({
     // Update order status (e.g., pending -> completed)
     updateOrderStatus: builder.mutation({
       query: ({ id, status }) => ({
-        url: `/orders/${id}/status`,
-        method: "PATCH",
+        url: `/orders/update/${id}/status`,
+        method: "PUT",
         body: { status },
       }),
     }),
@@ -34,7 +38,7 @@ export const orderApi = appApi.injectEndpoints({
     // Delete an order by ID
     deleteOrder: builder.mutation({
       query: (orderId) => ({
-        url: `/orders/${orderId}`,
+        url: `/orders/delete/${orderId}`,
         method: "DELETE",
       }),
     }),
@@ -48,4 +52,5 @@ export const {
   useGetOrdersByUserIdQuery,
   useUpdateOrderStatusMutation,
   useDeleteOrderMutation,
+  useGetAllOrdersQuery,
 } = orderApi;

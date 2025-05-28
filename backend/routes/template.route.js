@@ -10,7 +10,7 @@ router.get('/get-all-merchant', getAllMerchantTemplate)
 router.get('/get/:templateId', getTemplateById)
 router.get('/get-merchant-by-account/:accountId', getMerchantTemplateByAccount)
 router.delete('/delete/:templateId', deleteById)
-router.post('/buy/:accountId', buyTemplate)
+router.post('/buy', buyTemplate)
 router.post('/get-merchant-template/:templateId', getCustomeTemplateById) 
 router.put('/update/:templateId', upload.single('previewUrls'), updateTempalate)
 // payment routes

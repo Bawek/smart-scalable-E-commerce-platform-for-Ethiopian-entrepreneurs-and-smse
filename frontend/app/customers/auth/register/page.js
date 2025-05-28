@@ -27,6 +27,7 @@ import { accountRegistrationSchema } from "@/util/validationSchemas";
 import { useRegisterAccountMutation } from "@/lib/features/auth/accountApi";
 import { useDispatch } from "react-redux";
 import { setCredential } from "@/lib/features/auth/accountSlice";
+import { Loader2 } from "lucide-react";
 
 export default function Register() {
   const { toast } = useToast();
@@ -35,6 +36,13 @@ export default function Register() {
 
   const form = useForm({
     resolver: zodResolver(accountRegistrationSchema),
+    defaultValues: {
+      firestName: "",
+      lastName: "",
+      email: "",
+      password: ""
+    },
+    mode: "onChange"
   });
 
   const [registerAccount, { isLoading }] = useRegisterAccountMutation();
@@ -42,37 +50,34 @@ export default function Register() {
   const handleRegister = async (data) => {
     try {
       const response = await registerAccount(data).unwrap();
-      console.log(response, 'regisration response')
+
       if (response?.status !== "success") {
-        return toast({
-          title: "Failed",
-          description: "Registration Failed. Please Try Again",
-          duration: 3000,
-        });
+        throw new Error(response?.message || "Registration failed");
       }
 
       dispatch(
         setCredential({
           accessToken: response.accessToken,
-          firestName: response.firestName,
+          firstName: response.firestName, 
           email: response.email,
-          role: response?.role,
-          id: response?.id,
+          role: response.role,
+          id: response.id,
         })
       );
 
       toast({
-        title: "Form Submitted Successfully!",
-        description: "Please login here to proceed with us.",
-        duration: 3000,
+        title: "Registration Successful!",
+        description: `Welcome ${response.firstName}! Your account has been created.`,
+        variant: "default",
       });
 
       router.push(`/merchant?merchant=${response.id}`);
     } catch (error) {
+      console.error("Registration error:", error);
       toast({
-        title: "Failed",
-        description: "Registration Failed. Please Try Again",
-        duration: 3000,
+        title: "Registration Failed",
+        description: error.data?.message || "Please check your information and try again",
+        variant: "destructive"
       });
     }
   };
@@ -83,15 +88,16 @@ export default function Register() {
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-gray-700 font-medium">
+          <FormLabel className="text-gray-700 dark:text-gray-300">
             {label} <span className="text-red-500">*</span>
           </FormLabel>
           <FormControl>
             <Input
               type={type}
               placeholder={placeholder}
+              className="h-12 text-base border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              autoComplete={type === "password" ? "new-password" : "off"}
               {...field}
-              className="h-12 text-base"
             />
           </FormControl>
           <FormMessage className="text-red-500 text-sm" />
@@ -101,48 +107,56 @@ export default function Register() {
   );
 
   return (
-    <div className="w-full flex justify-center items-center">
-      <Card className="w-full max-w-[450px] shadow-xl hover:shadow-2xl transition-shadow duration-300 rounded-2xl border-0">
-        <CardHeader className="text-center space-y-4">
-          <CardTitle className="text-3xl font-bold text-orange-600">
-            Join Our Marketplace
+    <div className="min-h-screen flex items-center justify-center p-4 dark:from-gray-900 dark:to-gray-800">
+      <Card className="w-full max-w-md shadow-2xl rounded-xl bg-white dark:bg-gray-800 dark:border-gray-700">
+        <CardHeader className="text-center space-y-2">
+          <CardTitle className="text-3xl font-bold text-orange-600 dark:text-orange-500">
+            Join Our Community
           </CardTitle>
-          <CardDescription className="text-gray-600">
-            Start your journey with us in just 2 minutes!
+          <CardDescription className="text-gray-600 dark:text-gray-300">
+            Create your account in just a few steps
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleRegister)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {renderInputField("firestName", "First Name", "text", "Alemu")}
-                {renderInputField("lastName", "Last Name", "text", "Mamaru")}
+                {renderInputField("firestName", "First Name", "text", "John")}
+                {renderInputField("lastName", "Last Name", "text", "Doe")}
               </div>
-              {renderInputField("email", "Email", "email", "john@example.com")}
+
+              {renderInputField("email", "Email", "email", "example@domain.com")}
               {renderInputField("password", "Password", "password", "••••••••")}
+
               <Button
-                className="w-full bg-gradient-to-r from-green-600 via-yellow-400 to-red-400 hover:from-green-700 hover:to-orange-700 text-white font-semibold py-4 rounded-xl transition-all hover:shadow-lg"
-                disabled={isLoading}
+                type="submit"
+                className="w-full h-12 text-lg font-semibold bg-orange-600 hover:bg-orange-700 focus-visible:ring-orange-500 transition-colors duration-200"
+                disabled={isLoading || !form.formState.isValid}
+                aria-label={isLoading ? "Creating account" : "Register"}
               >
                 {isLoading ? (
-                  <span className="animate-pulse">Creating Account...</span>
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <>🚀 Get Started Now</>
+                  "Create Account"
                 )}
               </Button>
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="block text-center pb-8">
-          <p className="text-gray-600">
+
+        <CardFooter className="flex flex-col items-center space-y-3 pt-0">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{" "}
             <Link
-              className="text-orange-600 cursor-pointer hover:text-indigo-700 font-semibold no-underline underline-offset-4 transition-colors"
               href="/customers/auth/login"
+              className="font-medium text-orange-600 hover:text-orange-700 hover:underline dark:text-orange-500"
             >
               Sign In
-            </Link>{" "}
-            Here.
+            </Link>
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            &copy; {new Date().getFullYear()} E-commerce Platform. All rights reserved.
           </p>
         </CardFooter>
       </Card>

@@ -65,13 +65,13 @@ const Searchbox = ({ shops, onSearch, onCategorySelect }) => {
                 transition={{ duration: 0.2 }}
                 className="absolute mt-2 w-full bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-20"
               >
-                {["All Categories", ...new Set(shops?.map(shop => shop.merchant?.businessType))].map((category) => (
+                {["All Categories", ...new Set(shops?.map(shop => shop?.category))].map((category) => (
                   <div
                     key={category}
                     onClick={() => handleCategorySelect(category)}
                     className={`px-4 py-2 cursor-pointer hover:bg-amber-50 dark:hover:bg-gray-700 transition-colors ${selectedCategory === category
-                        ? "bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-200"
-                        : "text-gray-800 dark:text-gray-200"
+                      ? "bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-200"
+                      : "text-gray-800 dark:text-gray-200"
                       }`}
                   >
                     {category}
@@ -85,8 +85,8 @@ const Searchbox = ({ shops, onSearch, onCategorySelect }) => {
         {/* Search Input */}
         <motion.div
           className={`relative flex-1 flex items-center border-2 rounded-full shadow-md overflow-hidden ${isFocused
-              ? "border-amber-500 dark:border-amber-600"
-              : "border-gray-300 dark:border-gray-600"
+            ? "border-amber-500 dark:border-amber-600"
+            : "border-gray-300 dark:border-gray-600"
             }`}
           whileHover={{ scale: 1.01 }}
         >

@@ -8,16 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { useGetAllTemplatesQuery } from "@/lib/features/templates/templateApi";
 import { Card } from "@/components/ui/card";
 import { imageViewer } from "../../system-admin/lib/imageViewer";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { ShoppingBag } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProcessPayment } from "@/service/payment.service";
 import { useToast } from "@/hooks/use-toast";
-import { setSelectedTemplate } from "@/lib/features/templates/templateSlice";
+import { useGetAccountAndLocationQuery } from "@/lib/features/auth/accountApi";
+import { formatCurrency } from "@/util/currency";
 const SelectTheme = () => {
   const { data, error, isLoading } = useGetAllTemplatesQuery();
   const account = useSelector((state) => state.account)
   const [searchQuery, setSearchQuery] = useState("");
+  const { data: accountData } = useGetAccountAndLocationQuery(account.id)
   const [selectedCategory, setSelectedCategory] = useState("all");
   useCheckUnauthorized(error);
   const { toast } = useToast()
@@ -33,27 +35,17 @@ const SelectTheme = () => {
       });
       return;
     }
-    localStorage.setItem("ccc_tem", theme?.id);
-    const data = {
-      amount: theme.basePrice,
-      email: account.email,
-      first_name: account.firestName,
-      last_name: 'matebie',
-      phone_number: "+251943597310",
-    };
     const paymentData = {
-      amount: 50,
-      email: account.email,
-      first_name: account.firestName,
-      last_name: 'matebie',
-      phone_number: "+251943597310",
-      orderId: orderResponse?.data?.order?.id,
-      FRONTEND_BASE_URL: `${window.location.origin}/customers/order-confirmation`,
-      callback_url: "http://localhost:8000/api/orders/payment/callback",
+      templateId: theme.id,
+      accountId: account.id,
+      FRONTEND_BASE_URL: `${window.location.origin}/customers/templates/pay/payment-info`,
+      callback_url: "http://localhost:8000/api/templates/payment/callback",
     };
     try {
-      const res = await processPayment(data);
+      const res = await processPayment(paymentData);
+      console.log(res, 'the chapa response')
     } catch (err) {
+      console.log(err,'erroror')
       console.error("Payment Error:", err);
       toast({
         title: "Payment Failed",
@@ -151,7 +143,7 @@ const SelectTheme = () => {
                         <p className="text-sm max-w-[80%] text-justify mx-auto font-semibold mb-2">{theme?.description}</p>
                         <div className="flex justify-between my-2 gap-2 items-center px-2">
                           <span className="text-muted-foreground">
-                            {`$ ${theme?.basePrice}`}
+                            {formatCurrency(theme?.basePrice)}
                           </span>
                           <Button
                             onClick={() => handlePayment(theme)}

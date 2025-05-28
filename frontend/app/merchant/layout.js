@@ -12,13 +12,11 @@ export const metadata = {
 export default function MerchantLayout({ children }) {
   return (
     <div className="flex min-h-screen bg-gray-50 text-gray-800">
-      {/* This will be rendered by the client component wrapper */}
       <MerchantLayoutClient>{children}</MerchantLayoutClient>
     </div>
   )
 }
 
-// Create a separate client component that contains the provider
 function MerchantLayoutClient({ children }) {
   return (
     <SidebarProvider className='overflow-x-hidden'>

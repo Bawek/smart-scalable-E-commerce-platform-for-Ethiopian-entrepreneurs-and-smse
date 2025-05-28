@@ -1,238 +1,386 @@
 const prisma = require("../config/db");
-const getMonthlySalesData = async (req, res, merchantId) => {
+const HttpError = require("../middlewares/httpError");
+const { subMonths, startOfMonth, endOfMonth, eachMonthOfInterval, format } = require('date-fns');
+
+const getDashboardMetrics = async (req, res, next) => {
+    const { accountId } = req.params;
     try {
-        const year = 2025
-
-        if (!merchantId) {
-            return res.status(401).json({ error: "Unauthorized" });
+        if (!accountId) {
+            return next(new HttpError('Account ID is required', 400));
         }
-
-        // Get merchant's shops
-        const merchant = await prisma.merchant.findUnique({
-            where: { id: merchantId },
-            include: { shops: true }
+        const merchant = await prisma.merchant.findFirst({
+            where: { accountId },
+            include: {
+                shops: {
+                    select: { id: true }
+                }
+            }
         });
 
         if (!merchant) {
-            return res.status(404).json({ error: "Merchant not found" });
+            return next(new HttpError('Merchant not found', 404));
         }
 
+        const merchantId = merchant.id;
         const shopIds = merchant.shops.map(shop => shop.id);
-
-        // Get current and previous year
-        const currentYear = new Date().getFullYear();
-        const previousYear = currentYear - 1;
-
-        // Fetch monthly sales data for both years
-        const [currentYearData, previousYearData] = await Promise.all([
-            getYearlySalesData(shopIds, currentYear),
-            getYearlySalesData(shopIds, previousYear)
-        ]);
-
-        // Format for Chart.js
-        const response = {
-            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-            datasets: [
-                {
-                    label: currentYear.toString(),
-                    backgroundColor: "#4c51bf",
-                    borderColor: "#4c51bf",
-                    data: currentYearData,
-                    fill: false
-                },
-                {
-                    label: previousYear.toString(),
-                    backgroundColor: "#fff",
-                    borderColor: "#fff",
-                    data: previousYearData,
-                    fill: false
-                }
-            ]
+        const currentDate = new Date();
+        console.log('merchant id', shopIds)
+        // Date ranges for calculations
+        const dateRanges = {
+            currentPeriod: {
+                start: startOfMonth(subMonths(currentDate, 1)),
+                end: endOfMonth(currentDate)
+            },
+            previousPeriod: {
+                start: startOfMonth(subMonths(currentDate, 2)),
+                end: endOfMonth(subMonths(currentDate, 1))
+            },
+            sixMonths: {
+                start: startOfMonth(subMonths(currentDate, 6)),
+                end: endOfMonth(currentDate)
+            },
+            twelveMonths: {
+                start: startOfMonth(subMonths(currentDate, 12)),
+                end: endOfMonth(currentDate)
+            }
         };
 
-        return response
-    } catch (error) {
-        console.error("Error fetching chart data:", error);
-        res.status(500).json({ error: "Internal server error" });
-    }
-};
+        // Prepare all database queries
+        const queries = {
+            // Revenue metrics
+            currentRevenue: getRevenueData(shopIds, dateRanges.currentPeriod),
+            previousRevenue: getRevenueData(shopIds, dateRanges.previousPeriod),
 
-// Helper: Get monthly sales for a specific year
-async function getYearlySalesData(shopIds, year) {
-    // Create array to hold monthly totals (Jan-Dec)
-    const monthlyTotals = new Array(12).fill(0);
+            // Order metrics
+            currentOrders: getOrderCount(shopIds, dateRanges.currentPeriod),
+            previousOrders: getOrderCount(shopIds, dateRanges.previousPeriod),
 
-    // Get all orders for the year
-    const orders = await prisma.order.findMany({
-        where: {
-            shopId: { in: shopIds },
-            status: { not: 'CANCELLED' },
-            createdAt: {
-                gte: new Date(`${year}-01-01`),
-                lt: new Date(`${year + 1}-01-01`)
-            }
-        },
-        include: {
-            shop: {
-                include: {
-                    products: true
-                }
-            }
-        }
-    });
+            // Customer metrics
+            activeCustomers: getActiveCustomerCount(shopIds, dateRanges.currentPeriod),
 
-    // Sum totals by month
-    orders.forEach(order => {
-        const month = order.createdAt.getMonth(); // 0-11
-        monthlyTotals[month] += order.shop.products?.price;
-    });
+            // Conversion metrics
+            visitorData: getVisitorData(shopIds, dateRanges.currentPeriod),
 
-    return monthlyTotals;
-}
-// Get total revenue from orders (excluding cancelled)
-async function getTotalRevenue(shopId) {
-    const orders = await prisma.order.findMany({
-        where: {
-            shopId,
-            status: { not: 'CANCELLED' },
-        },
-        include: {
-            shop: {
-                include: {
-                    products: true
-                }
-            }
-        }, // Include the linked product
-    });
+            // Time series data for charts
+            monthlyRevenue: getMonthlyRevenueData(shopIds, dateRanges.twelveMonths),
+            monthlyOrders: getMonthlyOrderData(shopIds, dateRanges.twelveMonths),
 
-    return orders.reduce((sum, order) => sum + order.shop.products.price, 0);
-}
+            // Recent orders for the table
+            recentOrders: getRecentOrders(shopIds, 10)
+        };
 
-// Get total orders count (excluding cancelled)
-async function getTotalOrders(shopId) {
-    return await prisma.order.count({
-        where: {
-            shopId,
-            status: {
-                not: 'CANCELLED',
-            },
-        },
-    });
-}
+        // Execute all queries in parallel
+        const results = await Promise.all(Object.values(queries));
 
-// Get total products
-async function getTotalProducts(shopId) {
-    return await prisma.product.count({
-        where: {
-            shopId,
-        },
-    });
-}
+        // Destructure results
+        const [
+            currentRevenue,
+            previousRevenue,
+            currentOrders,
+            previousOrders,
+            activeCustomers,
+            visitorData,
+            monthlyRevenue,
+            monthlyOrders,
+            recentOrders
+        ] = results;
 
-// Get total customers who ordered from this shop
-async function getTotalCustomers(shopId) {
-    const orders = await prisma.order.findMany({
-        where: {
-            shopId,
-            status: { not: 'CANCELLED' },
-        },
-        select: {
-            customerId: true, // Select the correct field
-        },
-    });
+        // Calculate all metrics
+        const metrics = {
+            totalRevenue: currentRevenue.totalAmount,
+            revenueChange: calculateChange(currentRevenue.totalAmount, previousRevenue.totalAmount),
 
-    // Manually filter unique customer IDs
-    const uniqueCustomerIds = [...new Set(orders.map(order => order.customerId))];
-    return uniqueCustomerIds.length;
-}
+            totalOrders: currentOrders.count,
+            ordersChange: calculateChange(currentOrders.count, previousOrders.count),
 
-// Main controller function for one shop
-exports.getMerchantDashboardStats = async (req, res) => {
-    try {
-        const { merchantId } = req.params;
-        const merchant = await prisma.merchant.findFirst({
-            where: {
-                accountId: merchantId
-            }
-        })
-        // Find the first shop for this merchant
-        const shop = await prisma.shop.findFirst({
-            where: {
-                merchantId: merchant.id,
-            },
-            select: {
-                id: true,
-            },
-        });
+            activeCustomers: activeCustomers.count,
 
-        if (!shop) {
-            return res.status(404).json({
-                success: false,
-                message: "Shop not found for this merchant.",
-            });
-        }
+            conversionRate: calculateConversionRate(currentOrders.count, visitorData.totalVisitors),
 
-        const shopId = shop.id;
+            averageOrderValue: currentOrders.count > 0
+                ? currentRevenue.totalAmount / currentOrders.count
+                : 0
+        };
 
-        const [totalRevenue, totalOrders, totalProducts, totalCustomers, response] = await Promise.all([
-            getTotalRevenue(shopId),
-            getTotalOrders(shopId),
-            getTotalProducts(shopId),
-            getTotalCustomers(shopId),
-            getMonthlySalesData(req, res, merchant.id)
-        ]);
+        // Prepare chart data
+        const performanceData = preparePerformanceData(monthlyRevenue, monthlyOrders);
+        const salesGraphData = prepareSalesGraphData(monthlyRevenue);
+
+        // Format recent orders for display
+        const formattedRecentOrders = recentOrders.map(order => ({
+            id: order.id,
+            customerName: `${order.customer.account.firstName} ${order.customer.account.lastName}`,
+            amount: order.totalAmount,
+            status: order.status,
+            date: order.createdAt,
+            items: order.items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+            }))
+        }));
 
         res.status(200).json({
             success: true,
             data: {
-                shopId,
-                totalRevenue,
-                totalOrders,
-                totalProducts,
-                totalCustomers,
-                chartData: response
-            },
+                stats: [
+                    {
+                        title: "Total Revenue",
+                        value: metrics.totalRevenue,
+                        change: metrics.revenueChange.percentage,
+                        trend: metrics.revenueChange.trend,
+                        isCurrency: true,
+                        footerTitle: "Revenue Growth",
+                        footerSubtitle: "vs previous period"
+                    },
+                    {
+                        title: "Total Orders",
+                        value: metrics.totalOrders,
+                        change: metrics.ordersChange.percentage,
+                        trend: metrics.ordersChange.trend,
+                        footerTitle: "Order Growth",
+                        footerSubtitle: "vs previous period"
+                    },
+                    {
+                        title: "Recent Orders",
+                        value: formattedRecentOrders.length,
+                        change: 0,
+                        trend: "up",
+                        isPercentage: false,
+                        footerTitle: "Recent Orders",
+                        footerSubtitle: "last 30 days"
+                    },
+                    {
+                        title: "Avg. Order Value",
+                        value: metrics.averageOrderValue,
+                        change: 0, // Would need previous period data to calculate
+                        trend: "up", // Would need comparison
+                        isCurrency: true,
+                        footerTitle: "AOV Trend",
+                        footerSubtitle: "vs previous period"
+                    }
+                ],
+                performance: performanceData,
+                salesGraph: salesGraphData,
+                recentOrders: formattedRecentOrders,
+
+            }
         });
+
     } catch (error) {
-        console.error("Error fetching dashboard stats:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch dashboard stats.",
-        });
+        console.error('Dashboard metrics error:', error);
+        next(new HttpError('Failed to load dashboard metrics', 500));
     }
 };
 
+// Helper functions for database queries
+function getRevenueData(shopIds, dateRange) {
+    return prisma.order.aggregate({
+        where: {
+            shopId: { in: shopIds },
+            // status: 'DELIVERED',
+            createdAt: {
+                gte: dateRange.start,
+                lte: dateRange.end
+            }
+        },
+        _sum: {
+            totalAmount: true
+        }
+    });
+}
 
-exports.getAnalytics = async (req, res) => {
-    try {
-        // Fetch all orders (excluding cancelled)
-        const orders = await prisma.order.findMany({
-            where: { status: { not: 'CANCELLED' } },
-            include: { customer: true },
-        });
+function getOrderCount(shopIds, dateRange) {
+    return prisma.order.aggregate({
+        where: {
+            shopId: { in: shopIds },
+            // status: 'DELIVERED',
+            createdAt: {
+                gte: dateRange.start,
+                lte: dateRange.end
+            }
+        },
+        _count: true
+    });
+}
 
-        // Get all customers
-        const customers = await prisma.customer.findMany({
-            include: { orders: true },
-        });
+function getActiveCustomerCount(shopIds, dateRange) {
+    return prisma.customer.count({
+        where: {
+            orders: {
+                some: {
+                    shopId: { in: shopIds },
+                    // status: 'DELIVERED',
+                    createdAt: {
+                        gte: dateRange.start,
+                        lte: dateRange.end
+                    }
+                }
+            }
+        }
+    });
+}
 
-        const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-        const orderCount = orders.length;
-        const avgOrderValue = orderCount === 0 ? 0 : totalRevenue / orderCount;
+function getVisitorData(shopIds, dateRange) {
+    return prisma.analytics.aggregate({
+        where: {
+            shopId: { in: shopIds },
+            date: {
+                gte: dateRange.start,
+                lte: dateRange.end
+            }
+        },
+        _sum: {
+            visitors: true
+        }
+    });
+}
 
-        // Calculate returning customers
-        const returningCustomers = customers.filter(c => c.orders.length > 1).length;
-        const returningPercentage = customers.length === 0 ? 0 : (returningCustomers / customers.length) * 100;
+function getMonthlyRevenueData(shopIds, dateRange) {
+    const months = eachMonthOfInterval({
+        start: dateRange.start,
+        end: dateRange.end
+    });
 
-        return res.json({
-            totalRevenue,
-            orderCount,
-            avgOrderValue,
-            returningCustomersPercentage: returningPercentage,
-        });
+    return Promise.all(months.map(monthStart => {
+        const monthEnd = endOfMonth(monthStart);
+        return prisma.order.aggregate({
+            where: {
+                shopId: { in: shopIds },
+                // status: 'DELIVERED',
+                createdAt: {
+                    gte: monthStart,
+                    lte: monthEnd
+                }
+            },
+            _sum: {
+                totalAmount: true
+            }
+        }).then(result => ({
+            month: format(monthStart, 'yyyy-MM'),
+            revenue: result._sum.totalAmount || 0
+        }));
+    }));
+}
 
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Internal server error' });
+function getMonthlyOrderData(shopIds, dateRange) {
+    const months = eachMonthOfInterval({
+        start: dateRange.start,
+        end: dateRange.end
+    });
+
+    return Promise.all(months.map(monthStart => {
+        const monthEnd = endOfMonth(monthStart);
+        return prisma.order.count({
+            where: {
+                shopId: { in: shopIds },
+                // status: 'DELIVERED',
+                createdAt: {
+                    gte: monthStart,
+                    lte: monthEnd
+                }
+            }
+        }).then(count => ({
+            month: format(monthStart, 'yyyy-MM'),
+            orders: count
+        }));
+    }));
+}
+
+function getRecentOrders(shopIds, limit) {
+    return prisma.order.findMany({
+        where: {
+            shopId: { in: shopIds },
+            // status: 'DELIVERED'
+        },
+        orderBy: {
+            createdAt: 'desc'
+        },
+        take: limit,
+        include: {
+            items: true,
+            customer: {
+                include: {
+                    account: true
+                }
+            }
+        }
+    });
+}
+
+// Calculation helpers
+function calculateChange(current, previous) {
+    if (previous === 0) {
+        return {
+            percentage: current > 0 ? 100 : 0,
+            trend: current > 0 ? 'up' : 'neutral'
+        };
     }
+
+    const percentage = ((current - previous) / previous * 100).toFixed(1);
+    return {
+        percentage: Math.abs(parseFloat(percentage)),
+        trend: percentage >= 0 ? 'up' : 'down'
+    };
+}
+
+function calculateConversionRate(orders, visitors) {
+    if (visitors === 0) return 0;
+    return ((orders / visitors) * 100).toFixed(2);
+}
+
+function preparePerformanceData(revenueData, ordersData) {
+    const currentYear = new Date().getFullYear();
+    const previousYear = currentYear - 1;
+
+    const performance = {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [
+            {
+                label: `Revenue ${currentYear}`,
+                data: Array(12).fill(0),
+                backgroundColor: 'rgba(79, 70, 229, 0.8)',
+                borderColor: 'rgba(79, 70, 229, 1)',
+                tension: 0.3
+            },
+            {
+                label: `Orders ${currentYear}`,
+                data: Array(12).fill(0),
+                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                borderColor: 'rgba(16, 185, 129, 1)',
+                tension: 0.3,
+                yAxisID: 'y1'
+            }
+        ]
+    };
+
+    // Fill in the data
+    revenueData.forEach(({ month, revenue }) => {
+        const [year, monthNum] = month.split('-');
+        if (year === currentYear.toString()) {
+            performance.datasets[0].data[parseInt(monthNum) - 1] = revenue;
+        }
+    });
+
+    ordersData.forEach(({ month, orders }) => {
+        const [year, monthNum] = month.split('-');
+        if (year === currentYear.toString()) {
+            performance.datasets[1].data[parseInt(monthNum) - 1] = orders;
+        }
+    });
+
+    return performance;
+}
+
+function prepareSalesGraphData(monthlyRevenue) {
+    return monthlyRevenue.map(({ month, revenue }) => ({
+        month: format(new Date(`${month}-01`), 'MMM yyyy'),
+        value: revenue
+    }));
+}
+
+
+
+module.exports = {
+    getDashboardMetrics,
 };

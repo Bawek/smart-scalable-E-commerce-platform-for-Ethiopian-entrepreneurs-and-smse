@@ -1,7 +1,9 @@
 const prisma = require("../config/db")
 const bcrypt = require('bcryptjs')
 const httpError = require("../middlewares/httpError");
+const jwt = require('jsonwebtoken');
 const { generateRefreshToken, generateAccessToken } = require("../utils/generateToken");
+const { sendEmail } = require("../services/emailService");
 
 const registerAccount = async (req, res, next) => {
     const {
@@ -280,6 +282,117 @@ const logout = async (req, res, next) => {
         next(new httpError(error.message, 500));
     }
 };
+const passwordReset = async (req, res, next) => {
+    const { email } = req.params;
+
+    try {
+        // Find the user by email
+        const user = await prisma.account.findFirst({ where: { email } });
+        console.log(user, 'mail')
+        if (!user) {
+            return next(new httpError('No one found with this email. Enter a correct one.', 404));
+        }
+
+        // Generate a JWT token with a 1-hour expiration
+        const token = jwt.sign(
+            { userId: user.id },
+            'reset',
+            { expiresIn: '4m' }
+        );
+
+        // Construct the reset link with the token
+        const resetLink = `http://localhost:3000/customers/auth/reset-password?token=${token}`;
+        // Email content
+        const emailHtml = `
+  <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 400px; margin: 0 auto;">
+    <h1 style="color: #2c3e50; text-align: center;">EthioCommerce</h1>
+    <h2 style="color: #34495e; text-align: center;">Empowering Ethiopian Entrepreneurs</h2>
+    <div style="border-top: 3px solid #2c3e50; margin: 20px 0;"></div>
+    <p style="font-size: 16px;">Dear Merchant,</p>
+    <p style="font-size: 16px;">
+      You requested a password reset for your account on the <strong>EthioCommerce Platform</strong>. 
+      For your security, we have provided a secure link to reset your password. Please click the button below to proceed:
+    </p>
+    <p style="text-align: center; margin: 20px 0;">
+      <a href="${resetLink}" style="
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #3498db;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 16px;
+      ">
+        Reset Password
+      </a>
+    </p>
+    <p style="font-size: 14px; color: #7f8c8d; text-align: center;">
+      This link will expire in 4 minutes for security purposes. If you didn't request this, please ignore this email or contact our support team immediately.
+    </p>
+    <div style="border-top: 3px solid #2c3e50; margin: 20px 0;"></div>
+    <p style="font-size: 14px; color: #7f8c8d;">
+      Thank you for being part of EthioCommerce - Ethiopia's premier e-commerce platform for SMEs and entrepreneurs.
+    </p>
+    <p style="font-size: 14px; color: #7f8c8d;">
+      For any assistance, please contact us at <a href="mailto:support@ethiocommerce.et" style="color: #3498db;">support@ethiocommerce.et</a>.
+    </p>
+    <p style="font-size: 14px; color: #7f8c8d;">
+      Regards,<br />
+      <strong>EthioCommerce Support Team</strong>
+    </p>
+    <p style="font-size: 12px; color: #95a5a6; text-align: center; margin-top: 20px;">
+      Supporting Ethiopian businesses to thrive in the digital economy
+    </p>
+  </div>
+`;
+
+        // Send the email
+        await sendEmail(user.email, 'Password Reset Request', emailHtml);
+
+        res.status(200).json({
+            message: 'Please check your email. We have sent a link to reset your password.',
+            status: 'success',
+        });
+    } catch (error) {
+        next(new httpError(error.message, 500));
+    }
+};
+
+const changePassword = async (req, res, next) => {
+    const { password } = req.body;
+    const userId = req.userId;
+
+    try {
+        if (!password) {
+            return next(new httpError('Password is required', 400));
+        }
+
+        const user = await prisma.account.findUnique({
+            where: { id: userId }
+        });
+
+        if (!user) {
+            return next(new httpError('User not found with the provided ID', 404));
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashNewPassword = await bcrypt.hash(password, salt);
+
+        await prisma.account.update({
+            where: { id: userId },
+            data: { password: hashNewPassword }
+        });
+
+        res.status(200).json({
+            message: 'Your password has been successfully reset',
+            status: 'success'
+        });
+
+    } catch (error) {
+        next(new httpError(error.message || 'Internal Server Error', 500));
+    }
+};
+
 
 module.exports = {
     registerAccount,
@@ -289,5 +402,7 @@ module.exports = {
     logout,
     updateById,
     updateAccount,
-    getAccountAndLocation
+    getAccountAndLocation,
+    changePassword,
+    passwordReset
 }

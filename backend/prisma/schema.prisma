@@ -44,21 +44,22 @@ enum PaymentStatus {
 }
 
 model Account {
-  id           String    @id @default(uuid())
+  id           String         @id @default(uuid())
   firstName    String
   lastName     String
-  role         Role      @default(CUSTOMER)
-  email        String    @unique
+  role         Role           @default(CUSTOMER)
+  email        String         @unique
   cart         Cart?
   orders       Order[]
   password     String
   profileUrl   String?
   refreshToken String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   merchant     Merchant?
   admin        Admin?
   customer     Customer?
+  Notification Notification[]
 
   @@map("accounts")
 }
@@ -129,6 +130,7 @@ model Shop {
   merchantTemplateId String?           @unique
   merchantTemplate   MerchantTemplate? @relation(fields: [merchantTemplateId], references: [id], onDelete: SetNull)
   Payment            Payment[]
+  Analytics          Analytics[]
 
   @@index([name])
   @@index([slug])
@@ -242,6 +244,7 @@ model Order {
   @@index([status])
   @@index([createdAt])
 }
+
 model OrderItem {
   id        String @id @default(uuid())
   order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -278,10 +281,14 @@ model Product {
 }
 
 model Notification {
-  id      String @id @default(uuid())
-  message String
-
-  @@map("notifications")
+  id        String   @id @default(uuid())
+  userId    String
+  user      Account  @relation(fields: [userId], references: [id])
+  type      String? // e.g. NEW_ORDER, ORDER_CANCELLED
+  message   String
+  metadata  String? // JSON data (e.g., orderId, productId)
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
 
 model Payment {
@@ -331,4 +338,21 @@ model CartItem {
   @@unique([cartId, productId])
   @@index([productId, cartId]) // Reverse lookup
   @@map("cart_items")
+}
+
+model Analytics {
+  id         String   @id @default(uuid())
+  shopId     String
+  shop       Shop     @relation(fields: [shopId], references: [id])
+  date       DateTime
+  visitors   Int      @default(0)
+  pageViews  Int      @default(0)
+  orders     Int      @default(0)
+  revenue    Float    @default(0)
+  bounceRate Float    @default(0)
+
+  @@unique([shopId, date])
+  @@index([date])
+  @@index([shopId])
+  @@map("analytics")
 }

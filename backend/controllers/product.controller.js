@@ -63,7 +63,7 @@ const createProduct = async (req, res, next) => {
         // Calculate final discount price
         const numericPrice = parseFloat(price);
         const finalDiscountPrice = discountPrice ?
-            numericPrice * (parseFloat(discountPrice) / 100) :
+            Math.round(numericPrice * (parseFloat(discountPrice) / 100)) :
             null;
 
         // Create the product with multiple images

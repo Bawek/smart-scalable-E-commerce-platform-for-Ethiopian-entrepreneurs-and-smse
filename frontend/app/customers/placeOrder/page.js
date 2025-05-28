@@ -23,7 +23,6 @@ export default function CheckoutPage() {
   const { processPayment, isLoading: paymentLoading } = useProcessPayment();
   const { data: accountData } = useGetAccountAndLocationQuery(account.id)
   const [isSubmitting, setIsSubmitting] = useState(false);
-  console.log(accountData, 'accountData')
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -115,7 +114,7 @@ export default function CheckoutPage() {
         accountId: account.id,
         shopId: localStorage.getItem('shopId'),
         items: items.map(item => ({
-          productId: item.id,
+          productId: item.productId,
           quantity: item.quantity,
           price: item.price
         })),
@@ -145,6 +144,7 @@ export default function CheckoutPage() {
         region: form.region,
         kebele: form.kebele,
         woreda: form.woreda,
+        accountId: account.id,
         orderId: orderResponse?.data?.order?.id,
         FRONTEND_BASE_URL: `${window.location.origin}/customers/order-confirmation`,
         callback_url: "http://localhost:8000/api/orders/payment/callback",

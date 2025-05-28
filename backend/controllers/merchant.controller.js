@@ -19,6 +19,19 @@ const testIo = async (req, res) => {
     }
 }
 const registerMerchant = async (req, res, next) => {
+    const requiredFields = [
+        'mode', 'accountId', 'locationId', 'businessName',
+        'ownerName', 'businessPhone', 'businessEmail',
+        'cbeAccountNo', 'businessType'
+    ];
+
+    // Validate required fields
+    for (const field of requiredFields) {
+        if (!req.body[field]) {
+            return next(new httpError(`Missing required field: ${field}`, 400));
+        }
+    }
+
     const {
         mode,
         accountId,
@@ -31,121 +44,170 @@ const registerMerchant = async (req, res, next) => {
         businessType,
     } = req.body;
 
-    const normalizedBusinessName = businessName?.trim();
-    const normalizedPhone = businessPhone?.trim();
-    const normalizedEmail = businessEmail?.trim().toLowerCase();
-    const normalizedCBE = cbeAccountNo?.trim();
+    // Normalize inputs
+    const normalized = {
+        businessName: businessName.trim(),
+        businessPhone: businessPhone.trim(),
+        businessEmail: businessEmail.trim().toLowerCase(),
+        cbeAccountNo: cbeAccountNo.trim()
+    };
 
-    if (!mode || !['register', 'update'].includes(mode)) {
-        return next(new httpError("Invalid or missing mode. Must be 'register' or 'update'.", 400));
+    // Validate mode
+    if (!['register', 'update'].includes(mode)) {
+        return next(new httpError("Invalid mode. Must be 'register' or 'update'", 400));
     }
-    if (mode === "register" && !req.file) {
-        return next(new httpError("Identity card is required for registration.", 400));
+
+    // Validate identity card for registration
+    if (mode === 'register' && !req.file) {
+        return next(new httpError("Identity card is required for registration", 400));
     }
 
     try {
         const io = getIO();
-
-        if (mode === 'register') {
-            // Check for duplicate merchant
-            const duplicateMerchant = await prisma.merchant.findFirst({
-                where: {
-                    OR: [
-                        { businessName: normalizedBusinessName },
-                        { businessPhone: normalizedPhone },
-                        { businessEmail: normalizedEmail },
-                        { cbeAccountNo: normalizedCBE }
-                    ]
+        const transaction = await prisma.$transaction(async (prisma) => {
+            if (mode === 'register') {
+                // Check for duplicate merchant
+                const duplicate = await prisma.merchant.findFirst({
+                    where: {
+                        OR: [
+                            { businessName: normalized.businessName },
+                            { businessPhone: normalized.businessPhone },
+                            { businessEmail: normalized.businessEmail },
+                            { cbeAccountNo: normalized.cbeAccountNo }
+                        ]
+                    },
+                    select: { id: true }
+                });
+                if (duplicate) {
+                    throw new Error('A merchant already exists with one of the provided details');
                 }
-            });
 
-            if (duplicateMerchant) {
-                return next(new httpError('A merchant already exists with one of the provided details.', 409));
-            }
+                // Create new merchant
+                const newMerchant = await prisma.merchant.create({
+                    data: {
+                        accountId,
+                        identityCard: req.file.filename,
+                        locationId,
+                        businessName: normalized.businessName,
+                        ownerName,
+                        businessPhone: normalized.businessPhone,
+                        businessEmail: normalized.businessEmail,
+                        cbeAccountNo: normalized.cbeAccountNo,
+                        businessType,
+                        status: 'PENDING' // Default status
+                    },
+                    include: { account: true }
+                });
 
-            const newMerchant = await prisma.merchant.create({
-                data: {
-                    accountId,
-                    identityCard: req.file.filename,
+                // Create admin notification 
+                await prisma.notification.create({
+                    data: {
+                        userId:accountId , // Or your admin account ID
+                        type: 'NEW_MERCHANT_REGISTRATION',
+                        message: `New merchant registration: ${newMerchant.businessName}`,
+                        metadata: JSON.stringify({
+                            merchantId: newMerchant.id,
+                            businessName: newMerchant.businessName,
+                            registrationDate: new Date()
+                        })
+                    }
+                });
+
+                // Emit real-time event
+                io.to('admin-room').emit('new-merchant', {
+                    message: 'New merchant registration pending approval',
+                    merchantId: newMerchant.id,
+                    businessName: newMerchant.businessName,
+                    timestamp: new Date(),
+                    actionRequired: true
+                });
+
+                return {
+                    status: 201,
+                    response: {
+                        message: 'Merchant registered successfully. Pending admin approval.',
+                        status: "success",
+                        merchant: newMerchant
+                    }
+                };
+
+            } else { // Update mode
+                const existingMerchant = await prisma.merchant.findUnique({
+                    where: { accountId },
+                    select: { id: true, status: true }
+                });
+
+                if (!existingMerchant) {
+                    throw new Error('Merchant not found');
+                }
+
+                const updateData = {
                     locationId,
-                    businessName: normalizedBusinessName,
+                    businessName: normalized.businessName,
                     ownerName,
-                    businessPhone: normalizedPhone,
-                    businessEmail: normalizedEmail,
-                    cbeAccountNo: normalizedCBE,
-                    businessType
+                    businessPhone: normalized.businessPhone,
+                    businessEmail: normalized.businessEmail,
+                    cbeAccountNo: normalized.cbeAccountNo,
+                    businessType,
+                    status: 'PENDING' // Reset status for re-approval
+                };
+
+                if (req.file) {
+                    updateData.identityCard = req.file.filename;
                 }
-            });
 
-            const fullMerchant = await prisma.merchant.findUnique({
-                where: { id: newMerchant.id },
-                include: { account: true }
-            });
+                const updatedMerchant = await prisma.merchant.update({
+                    where: { id: existingMerchant.id },
+                    data: updateData,
+                    include: { account: true }
+                });
 
-            // Emit new merchant to admin room
-            io.to('admin-room').emit('new-merchant', {
-                message: 'New merchant registration pending approval',
-                merchantId: fullMerchant.id,
-                businessName: fullMerchant.businessName,
-                timestamp: new Date()
-            });
+                // Create admin notification for update
+                await prisma.notification.create({
+                    data: {
+                        userId: 'admin',
+                        type: 'MERCHANT_UPDATE',
+                        message: `Merchant profile updated: ${updatedMerchant.businessName}`,
+                        metadata: JSON.stringify({
+                            merchantId: updatedMerchant.id,
+                            changes: Object.keys(updateData),
+                            timestamp: new Date()
+                        })
+                    }
+                });
 
-            return res.status(201).json({
-                message: 'Merchant registered successfully',
-                status: "success",
-                merchant: fullMerchant
-            });
+                // Emit real-time event
+                io.to('admin-room').emit('merchant-update', {
+                    message: 'Merchant account updated - requires re-approval',
+                    merchantId: updatedMerchant.id,
+                    businessName: updatedMerchant.businessName,
+                    timestamp: new Date(),
+                    actionRequired: true
+                });
 
-        } else if (mode === 'update') {
-            const existingMerchant = await prisma.merchant.findFirst({
-                where: { accountId }
-            });
-
-            if (!existingMerchant) {
-                return next(new httpError("Merchant not found for the provided account.", 404));
+                return {
+                    status: 200,
+                    response: {
+                        message: 'Merchant updated successfully. Pending admin re-approval.',
+                        status: "success",
+                        merchant: updatedMerchant
+                    }
+                };
             }
+        });
 
-            const updateData = {
-                locationId,
-                businessName: normalizedBusinessName,
-                ownerName,
-                businessPhone: normalizedPhone,
-                businessEmail: normalizedEmail,
-                cbeAccountNo: normalizedCBE,
-                businessType
-            };
-
-            if (req.file) {
-                updateData.identityCard = req.file.filename;
-            }
-
-            const updatedMerchant = await prisma.merchant.update({
-                where: { id: existingMerchant.id },
-                data: updateData
-            });
-
-            const fullMerchant = await prisma.merchant.findUnique({
-                where: { id: updatedMerchant.id },
-                include: { account: true }
-            });
-
-            io.to('admin-room').emit('new-merchant', {
-                message: 'Merchant account has been updated and is pending re-approval',
-                merchantId: fullMerchant.id,
-                businessName: fullMerchant.businessName,
-                timestamp: new Date()
-            });
-
-            return res.status(200).json({
-                message: 'Merchant updated successfully',
-                status: "success",
-                merchant: fullMerchant
-            });
-        }
+        return res.status(transaction.status).json(transaction.response);
 
     } catch (error) {
-        console.error('Register/Update Merchant Error:', error);
-        return next(new httpError("Server Error: " + error.message, 500));
+        console.error('Merchant Registration Error:', error);
+
+        // Handle known error cases
+        if (error.message.includes('already exists') ||
+            error.message.includes('not found')) {
+            return next(new httpError(error.message, 400));
+        }
+
+        return next(new httpError("An error occurred while processing your request", 500));
     }
 };
 
@@ -215,7 +277,7 @@ const deleteMerchantById = async (req, res, next) => {
         next(new httpError(error.message, 500));
     }
 };
-const allowedStatuses = ['ACTIVE', 'SUSPENDED', 'PENDING']; 
+const allowedStatuses = ['ACTIVE', 'SUSPENDED', 'PENDING'];
 
 const changeMerchantStatus = async (req, res, next) => {
     const { merchantId } = req.params;

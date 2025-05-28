@@ -11,12 +11,11 @@ import useShopProducts from '@/hooks/use-shop-products'
 
 const ShopLayout = ({ children }) => {
     const { shopId, productsData, isLoading, isError, error } = useShopProducts();
-
     const params = useParams()
     const categoryParam = params?.category || ''
 
     // State management
-    const [selectedTown, setSelectedTown] = useState('')
+    const [selectedBrand, setSelectedBrand] = useState('')
     const [sortOption, setSortOption] = useState('popularity')
     const [filters, setFilters] = useState({
         categories: categoryParam ? [categoryParam] : [],
@@ -24,6 +23,14 @@ const ShopLayout = ({ children }) => {
         sizes: [],
         priceRange: [0, 1000]
     })
+
+    // Handle errors with useEffect
+    useEffect(() => {
+        if (isError) {
+            console.error('Product download error:', error)
+            toast.error(error?.message || 'Sorry, we cannot load the products. Please refresh the page')
+        }
+    }, [isError, error])
 
     // Derived state
     const products = productsData?.products || []
@@ -35,13 +42,13 @@ const ShopLayout = ({ children }) => {
 
     // Filter options
     const { categories, colors, sizes } = useMemo(() => {
-        const initial = { categories: [], colors: [], sizes: [] }
-
-        if (products.length === 0) return initial
+        const initial = { categories: {}, colors: {}, sizes: {} }
 
         return products.reduce((acc, product) => {
             // Categories
-            acc.categories[product.category] = (acc.categories[product.category] || 0) + 1
+            if (product.category) {
+                acc.categories[product.category] = (acc.categories[product.category] || 0) + 1
+            }
 
             // Colors
             if (product.color) {
@@ -54,7 +61,7 @@ const ShopLayout = ({ children }) => {
             }
 
             return acc
-        }, { categories: {}, colors: {}, sizes: {} })
+        }, initial)
     }, [products])
 
     // Format filter options for display
@@ -84,39 +91,31 @@ const ShopLayout = ({ children }) => {
 
     // Filter and sort products
     const filteredProducts = useMemo(() => {
-        if (!products.length) return []
-
         return products.filter(product => {
-            // Town filter
-            if (selectedTown && product.town !== selectedTown) return false
+            // Brand filter
+            if (selectedBrand && product.brand !== selectedBrand) return false
 
             // Category filter
-            if (filters.categories.length > 0 &&
-                !filters.categories.includes(product.category)) return false
+            if (filters.categories.length > 0 && !filters.categories.includes(product.category)) return false
 
             // Color filter
-            if (filters.colors.length > 0 &&
-                (!product.color || !filters.colors.includes(product.color))) return false
+            if (filters.colors.length > 0 && (!product.color || !filters.colors.includes(product.color))) return false
 
             // Size filter
-            if (filters.sizes.length > 0 &&
-                (!product.size || !filters.sizes.includes(product.size))) return false
+            if (filters.sizes.length > 0 && (!product.size || !filters.sizes.includes(product.size))) return false
 
             // Price filter
-            if (product.price < filters.priceRange[0] ||
-                product.price > filters.priceRange[1]) return false
+            if (product.price < filters.priceRange[0] || product.price > filters.priceRange[1]) return false
 
             return true
         })
-    }, [products, selectedTown, filters])
+    }, [products, selectedBrand, filters])
 
     const sortedProducts = useMemo(() => {
-        if (!filteredProducts.length) return []
-
         return [...filteredProducts].sort((a, b) => {
             if (sortOption === 'price_asc') return a.price - b.price
             if (sortOption === 'price_desc') return b.price - a.price
-            return a.id - b.id // Default sorting
+            return (b.popularity || 0) - (a.popularity || 0) // Default sorting by popularity
         })
     }, [filteredProducts, sortOption])
 
@@ -144,11 +143,6 @@ const ShopLayout = ({ children }) => {
         return <Loader />
     }
 
-    if (isError) {
-        console.log(error, 'product download error')
-        return toast.error(error?.message || 'Sorry We can not load the products. please refresh the page')
-    }
-
     return (
         <main className="w-full px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row gap-8">
@@ -156,17 +150,25 @@ const ShopLayout = ({ children }) => {
                 <div className="hidden md:block md:w-52 space-y-8 h-full">
                     <h2 className="text-xl font-bold">Filters</h2>
 
-                    {/* Town Filter */}
-                    <div className="space-y-3">
-                        <h3 className="font-semibold">Filter by Town</h3>
+                    {/* Brand Filter */}
+                    <div className="space-y-2">
+                        <label htmlFor="brand-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Filter by Brand
+                        </label>
                         <select
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            onChange={(e) => setSelectedTown(e.target.value)}
-                            value={selectedTown}
+                            id="brand-filter"
+                            className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-2 px-3 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 text-sm transition-colors"
+                            onChange={(e) => setSelectedBrand(e.target.value)}
+                            value={selectedBrand}
                         >
-                            <option value="">All Towns</option>
-                            {[...new Set(products.map(p => p.town).filter(Boolean))].map(town => (
-                                <option key={town} value={town}>{town}</option>
+                            <option value="">All Brands</option>
+                            {[...new Set(products
+                                .map(p => p.brand)
+                                .filter(brand => brand && brand.trim() !== '')
+                            )].map(brand => (
+                                <option key={brand} value={brand} className="capitalize">
+                                    {brand}
+                                </option>
                             ))}
                         </select>
                     </div>

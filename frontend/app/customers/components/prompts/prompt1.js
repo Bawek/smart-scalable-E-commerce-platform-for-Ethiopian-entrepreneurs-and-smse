@@ -24,12 +24,12 @@ const REGIONS = [
 ];
 
 const BUSINESS_CATEGORIES = [
-  "Books",
-  "Clothing",
-  "Cosmetics",
-  "Electronics",
-  "Food & Beverage",
-  "Shoes"
+    "Books",
+    "Clothing",
+    "Cosmetics",
+    "Electronics",
+    "Food & Beverage",
+    "Shoes"
 ];
 const phoneSchema = z.string().regex(/\+2519\d{8}/, "Invalid Ethiopian phone number");
 const cbeAccountSchema = z.string().regex(/^1000\d{9}$/, "CBE account must start with 1000");
@@ -76,6 +76,7 @@ export default function MerchantFullRegistration({ existingData, onSuccess, mSta
 
     const handleSubmit = async values => {
         try {
+            setIsSubmitting(true)
             const formData = new FormData();
             let locationId = "";
 
@@ -109,7 +110,11 @@ export default function MerchantFullRegistration({ existingData, onSuccess, mSta
             onSuccess?.();
 
         } catch (err) {
+            console.log(err)
             toast({ title: "Error", description: err.message || "Failed", variant: "destructive" });
+        }
+        finally {
+            setIsSubmitting(false)
         }
     };
 

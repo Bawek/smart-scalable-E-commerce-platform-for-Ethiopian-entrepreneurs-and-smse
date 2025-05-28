@@ -1,81 +1,31 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-
-// components
 import { useParams, useRouter } from "next/navigation";
 import initTranslations from "../i18n.js";
 import Footer from "./components/Footers/Footer.js";
 import Navbar from "./components/Navbars/AuthNavbar.js";
 import { useSelector } from "react-redux";
 import { selectAll } from "@/lib/features/auth/accountSlice.js";
-// import { useAuth } from "@clerk/nextjs";
-const i18nNamespaces = ["home"]; // Define your namespaces
 export default function Index() {
-  const params = useParams(); // Get params properly
-  const [locale, setLocale] = useState(null);
   const router = useRouter();
-  const account = useSelector(selectAll)
-  const [merchantId, setMerchantId] = useState(null);
   const [navbarOpen, setNavbarOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false)
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-  useEffect(() => {
-    const checkUsers = () => {
-      setMerchantId('')
-    }
-    if (account.accessToken) {
-      checkUsers
-    }
-  }, [])
-  useEffect(() => {
-    if (params?.locale) {
-      setLocale(params.locale);
-    }
-  }, [params]);
+  const account = useSelector((state) => state.account)
 
-  useEffect(() => {
-    if (isMounted) {
-      if (typeof window !== "undefined") {
-        setMerchantId(localStorage.getItem("unique_id"));
-      }
-    }
-  }, []);
   const handleClick = () => {
-    if (merchantId) {
+    if (account.id) {
       router.push("/auth/register");
     } else {
       router.push(`/auth/register`);
     }
+    if(account.role === 'merchant'){
+      router.push('/merchant')
+    }
   };
-  const [translations, setTranslations] = useState({
-    t: () => { }, // Placeholder function until translations are loaded
-    resources: {},
-  });
-
-  useEffect(() => {
-    const loadTranslations = async () => {
-      try {
-        const { t, resources } = await initTranslations(locale, i18nNamespaces);
-        setTranslations({ t, resources });
-        console.log("Translations initialized successfully");
-      } catch (error) {
-        console.error("Error initializing translations:", error);
-        // Optionally, handle the error further here
-      }
-    };
-    loadTranslations();
-  }, [locale]); // Re-run the effect if the locale changes
-
-  if (!translations.t) {
-    return null; // Or a loading indicator
-  }
 
   return (
     <
-    >
+      >
       {/* ToDo*/}
       <Navbar
         transparent
@@ -199,24 +149,21 @@ export default function Index() {
             <div className="flex flex-wrap items-center mt-32">
               <div className="w-full md:w-5/12 px-4 mr-auto ml-auto">
                 <div className="text-blueGray-500 p-3 text-center inline-flex items-center justify-center w-16 h-16 mb-6 shadow-lg rounded-full bg-white">
-                  <i className="fas fa-user-friends text-xl"></i>
+                  <i className="fas fa-user-friends text-xl"> </i>
                 </div>
                 <h3 className="text-3xl mb-2 font-semibold leading-normal">
                   Shopping using our platform a pleasure
                 </h3>
                 <p className="text-lg font-light leading-relaxed mt-4 mb-4 text-blueGray-600">
-                  Suk-Bederete, Ethiopian e-commerce with an intuitive platform
+                  Scalable E-Commerce Platform for Ethiopian Entrepreneurs and SMEs, Ethiopian e-commerce with an intuitive platform
                   that streamlines online business operations
                 </p>
                 <p className="text-lg font-light leading-relaxed mt-0 mb-4 text-blueGray-600">
                   Empowering merchants with customizable templates and advanced
-                  order processing, Suk-Bederete ensures efficient operations
+                  order processing, Scalable E-Commerce Platform for Ethiopian Entrepreneurs and SMEs ensures efficient operations
                   and improved customer engagement, paving the way for a
                   thriving digital marketplace.
                 </p>
-                <Link href="/" className="font-bold text-blueGray-700 mt-8">
-                  Enjoy our platform!
-                </Link>
               </div>
 
               <div className="w-full md:w-4/12 px-4 mr-auto ml-auto">
@@ -350,7 +297,7 @@ export default function Index() {
                   Here are our testimonials
                 </h2>
                 <p className="text-lg leading-relaxed m-4 text-blueGray-500">
-                  Discover what our users are saying about Suk-Bederete! From
+                  Discover what our users are saying about Scalable E-Commerce Platform for Ethiopian Entrepreneurs and SMEs! From
                   streamlined operations to seamless shopping experiences, our
                   platform is transforming e-commerce in Ethiopia. Hear directly
                   from merchants and customers who have experienced the ease and
@@ -372,7 +319,7 @@ export default function Index() {
                       Merchant
                     </p>
                     <p className="mt-1 text-sm text-blueGray-400 uppercase font-semibold">
-                      Shopping on Suk-Bederete is a breeze! It easy to find and
+                      Shopping on Scalable E-Commerce Platform for Ethiopian Entrepreneurs and SMEs is a breeze! It easy to find and
                       purchase products quickly. I love the convenience!
                     </p>
                     <div className="mt-6">
@@ -483,7 +430,7 @@ export default function Index() {
                       Merchant
                     </p>
                     <p className="mt-1 text-sm text-blueGray-400 uppercase font-semibold">
-                      Suk-Bederete has streamlined my business operations,
+                      Scalable E-Commerce Platform for Ethiopian Entrepreneurs and SMEs has streamlined my business operations,
                       saving me time and effort.
                     </p>
                     <div className="mt-6">
@@ -547,7 +494,7 @@ export default function Index() {
                   Build something
                 </h2>
                 <p className="text-lg leading-relaxed mt-4 mb-4 text-blueGray-400">
-                  Experience the future of e-commerce with Suk-Bederete
+                  Experience the future of e-commerce with Scalable E-Commerce Platform for Ethiopian Entrepreneurs and SMEs
                 </p>
               </div>
             </div>

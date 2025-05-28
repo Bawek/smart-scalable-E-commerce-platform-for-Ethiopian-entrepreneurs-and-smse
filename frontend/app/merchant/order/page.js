@@ -1,153 +1,118 @@
 "use client";
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useGetAllOrdersQuery, useUpdateOrderMutation, useCancelOrderMutation, useUpdateOrderStatusMutation, useDeleteOrderMutation } from '@/lib/features/orders/ordersApi';
+// import { Checkbox, Badge, Button } from '@/components/ui';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { MoreHorizontal, Eye, RefreshCw, FileText, XCircle } from 'lucide-react';
+import CustomDataTable from "@/components/ui/my-components/my-table";
+import CardBarChart from "@/app/components/Cards/CardBarChart";
+import { imageViewer } from '@/app/system-admin/lib/imageViewer';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Eye, RefreshCw, FileText, Truck, XCircle } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
-import CardBarChart from "@/app/components/Cards/CardBarChart";
-import CustomDataTable from "@/components/ui/my-components/my-table";
-import { useRouter } from 'next/navigation';
-const sampleOrders = [
-  {
-    id: '1',
-    product: {
-      name: 'Wireless Headphones',
-      category: 'Electronics',
-      brand: 'SoundMax',
-      price: '49.99',
-      discountPrice: '39.99',
-      images: ['/images/headphones.jpg'],
-    },
-    quantity: 2,
-    status: 'PENDING',
-    createdAt: '2025-05-18T14:30:00Z',
-  },
-  {
-    id: '2',
-    product: {
-      name: 'Smartphone Case',
-      category: 'Accessories',
-      brand: 'TechStyle',
-      price: '14.99',
-      images: ['/images/case.jpg'],
-    },
-    quantity: 1,
-    status: 'PROCESSING',
-    createdAt: '2025-05-17T09:15:00Z',
-  },
-  {
-    id: '3',
-    product: {
-      name: 'Portable Charger',
-      category: 'Electronics',
-      brand: 'ChargePro',
-      price: '29.99',
-      discountPrice: '24.99',
-      images: ['/images/charger.jpg'],
-    },
-    quantity: 3,
-    status: 'SHIPPED',
-    createdAt: '2025-05-16T17:45:00Z',
-  },
-  {
-    id: '4',
-    product: {
-      name: 'Fitness Tracker',
-      category: 'Wearables',
-      brand: 'FitLife',
-      price: '59.99',
-      images: ['/images/fitness.jpg'],
-    },
-    quantity: 1,
-    status: 'DELIVERED',
-    createdAt: '2025-05-15T12:00:00Z',
-  },
-  {
-    id: '5',
-    product: {
-      name: 'Gaming Mouse',
-      category: 'Computers',
-      brand: 'ClickMaster',
-      price: '19.99',
-      discountPrice: '14.99',
-      images: ['/images/mouse.jpg'],
-    },
-    quantity: 4,
-    status: 'CANCELLED',
-    createdAt: '2025-05-14T08:30:00Z',
-  },
-  {
-    id: '6',
-    product: {
-      name: 'Bluetooth Speaker',
-      category: 'Audio',
-      brand: 'SoundWave',
-      price: '34.99',
-      images: ['/images/speaker.jpg'],
-    },
-    quantity: 2,
-    status: 'DELIVERED',
-    createdAt: '2025-05-13T10:00:00Z',
-  },
-  {
-    id: '7',
-    product: {
-      name: 'USB-C Hub',
-      category: 'Accessories',
-      brand: 'Portify',
-      price: '24.99',
-      images: ['/images/hub.jpg'],
-    },
-    quantity: 1,
-    status: 'SHIPPED',
-    createdAt: '2025-05-12T15:30:00Z',
-  },
-  {
-    id: '8',
-    product: {
-      name: 'Smart LED Bulb',
-      category: 'Home Automation',
-      brand: 'BrightLite',
-      price: '12.99',
-      discountPrice: '9.99',
-      images: ['/images/bulb.jpg'],
-    },
-    quantity: 5,
-    status: 'PENDING',
-    createdAt: '2025-05-11T18:20:00Z',
-  },
-];
+import { useToast } from '@/hooks/use-toast';
+const ORDER_STATUS_CONFIG = {
+  PENDING: { color: "bg-amber-100 text-amber-800", label: "Pending", actions: ['PROCESSING', 'CANCELLED'] },
+  PROCESSING: { color: "bg-blue-100 text-blue-800", label: "Processing", actions: ['SHIPPED', 'CANCELLED'] },
+  SHIPPED: { color: "bg-purple-100 text-purple-800", label: "Shipped", actions: ['DELIVERED'] },
+  DELIVERED: { color: "bg-green-100 text-green-800", label: "Delivered", actions: [] },
+  CANCELLED: { color: "bg-red-100 text-red-800", label: "Cancelled", actions: [] },
+};
+
 const OrdersPage = () => {
-  const [orders, setOrders] = useState(sampleOrders || []);
-  const router = useRouter()
+  const router = useRouter();
+  const { data: ordersData, isLoading, isError, refetch } = useGetAllOrdersQuery();
+  const [updateOrderStatus] = useUpdateOrderStatusMutation();
+  const [deleteOrder] = useDeleteOrderMutation();
+  const { toast } = useToast()
+  const [dialogState, setDialogState] = useState({
+    open: false,
+    orderId: null,
+    actionType: null,
+    newStatus: null
+  });
+
+  const handleDialogOpen = (orderId, actionType, newStatus = null) => {
+    setDialogState({
+      open: true,
+      orderId,
+      actionType,
+      newStatus
+    });
+  };
+
+  const handleDialogClose = () => {
+    setDialogState({
+      open: false,
+      orderId: null,
+      actionType: null,
+      newStatus: null
+    });
+  };
+
+  const handleStatusUpdate = async () => {
+    if (!dialogState.newStatus) return;
+
+    try {
+      await updateOrderStatus({
+        id: dialogState.orderId,
+        status: dialogState.newStatus
+      }).unwrap();
+
+      toast({
+        title: 'Success',
+        description: `Order status updated to ${dialogState.newStatus}`,
+      });
+      refetch();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update order status',
+        variant: 'destructive'
+      });
+    } finally {
+      handleDialogClose();
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    try {
+      await deleteOrder(dialogState.orderId).unwrap();
+
+      toast({
+        title: 'Success',
+        description: 'Order cancelled successfully',
+      });
+      refetch();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to cancel order',
+        variant: 'destructive'
+      });
+    } finally {
+      handleDialogClose();
+    }
+  };
+
+  const handleActionConfirm = () => {
+    if (!dialogState.orderId || !dialogState.actionType) return;
+
+    if (dialogState.actionType === 'status') {
+      handleStatusUpdate();
+    } else if (dialogState.actionType === 'cancel') {
+      handleCancelOrder();
+    }
+  };
+
   const orderColumns = [
     {
       id: "select",
       header: ({ table }) => (
         <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all orders"
           className="translate-y-[2px]"
@@ -165,87 +130,42 @@ const OrdersPage = () => {
       enableHiding: false,
     },
     {
-      accessorKey: "product",
-      header: "Product",
+      id: "items",
+      accessorKey: "items",
+      header: "Items",
       cell: ({ row }) => {
-        const product = row.original.product;
+        const items = row.original.items || [];
         return (
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-md overflow-hidden border">
-              <img
-                src={product.images[0] || '/placeholder-product.png'}
-                alt={product.name}
-                className="object-cover w-full h-full"
-                onError={(e) => {
-                  e.target.src = '/placeholder-product.png';
-                }}
-              />
-            </div>
-            <div>
-              <div className="font-medium">{product.name}</div>
-              <div className="text-xs text-muted-foreground">
-                {product.category} • {product.brand || 'No brand'}
+            {items.map((item, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <img
+                  src={item?.product?.images?.[0] ? imageViewer(item.product.images[0]) : '/placeholder.png'}
+                  alt={item?.product?.name || 'Product image'}
+                  className="w-8 h-8 rounded"
+                />
+                <span className="text-sm font-medium">{item?.product?.name || 'Unknown Product'}</span>
+                <span className="text-sm text-gray-500">x{item?.quantity || 0}</span>
               </div>
-            </div>
+            ))}
           </div>
         );
       },
-    },
-    {
-      accessorKey: "price",
-      header: () => <div className="text-right">Price</div>,
-      cell: ({ row }) => {
-        const price = parseFloat(row.original.product.price);
-        const discountPrice = parseFloat(row.original.product.discountPrice || "0");
-        return (
-          <div className="text-right">
-            {discountPrice > 0 ? (
-              <>
-                <span className="line-through text-muted-foreground mr-2">
-                  {price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                </span>
-                <span className="font-medium text-red-600">
-                  {discountPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                </span>
-              </>
-            ) : (
-              <span className="font-medium">
-                {price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-              </span>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "quantity",
-      header: () => <div className="text-right">Quantity</div>,
-      cell: ({ row }) => (
-        <div className="text-right font-medium">
-          {row.original.quantity}
-        </div>
-      ),
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
         const status = row.original.status;
-        const statusMap = {
-          PENDING: { color: "bg-amber-100 text-amber-800", label: "Pending" },
-          PROCESSING: { color: "bg-blue-100 text-blue-800", label: "Processing" },
-          SHIPPED: { color: "bg-purple-100 text-purple-800", label: "Shipped" },
-          DELIVERED: { color: "bg-green-100 text-green-800", label: "Delivered" },
-          CANCELLED: { color: "bg-red-100 text-red-800", label: "Cancelled" },
-        };
+        const statusInfo = ORDER_STATUS_CONFIG[status] || { color: 'bg-gray-100', label: status };
         return (
-          <Badge className={`${statusMap[status]?.color || 'bg-gray-100'} rounded-full hover:bg-amber-100 px-2.5 py-0.5 text-xs`}>
-            {statusMap[status]?.label || status}
+          <Badge className={`${statusInfo.color} rounded-full px-2.5 py-0.5 text-xs`}>
+            {statusInfo.label}
           </Badge>
         );
       },
-      filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id));
+      filterFn: (row, status, value) => {
+        return value.includes(row.getValue(status));
       },
     },
     {
@@ -271,122 +191,120 @@ const OrdersPage = () => {
       enableHiding: false,
       cell: ({ row }) => {
         const order = row.original;
-        const [dialogOpen, setDialogOpen] = useState(false);
-        const [actionType, setActionType] = useState(null);
-
-        const handleAction = (type) => {
-          setActionType(type);
-          setDialogOpen(true);
-        };
+        const statusInfo = ORDER_STATUS_CONFIG[order.status] || {};
 
         return (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel>Order Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => router.push(`/merchant/order/1`)}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  View Details
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleAction('status')}
-                  disabled={order.status === 'DELIVERED' || order.status === 'CANCELLED'}
-                >
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Update Status
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => handleAction('invoice')}
-                  className="text-purple-600"
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Generate Invoice
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleAction('tracking')}
-                  disabled={order.status === 'PENDING' || order.status === 'CANCELLED'}
-                >
-                  <Truck className="mr-2 h-4 w-4" />
-                  Tracking Info
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => handleAction('cancel')}
-                  disabled={order.status === 'DELIVERED' || order.status === 'CANCELLED'}
-                  className="text-red-600"
-                >
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Cancel Order
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    {actionType === 'view' && 'Order Details'}
-                    {actionType === 'status' && 'Update Order Status'}
-                    {actionType === 'invoice' && 'Generate Invoice'}
-                    {actionType === 'tracking' && 'Tracking Information'}
-                    {actionType === 'cancel' && 'Confirm Order Cancellation'}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {actionType === 'view' && (
-                      <OrderDetails order={order} />
-                    )}
-                    {actionType === 'status' && 'Select the new status for this order'}
-                    {actionType === 'invoice' && 'Generate and download the order invoice'}
-                    {actionType === 'tracking' && 'View or update shipping tracking information'}
-                    {actionType === 'cancel' && `Are you sure you want to cancel order #${order.id}? This action cannot be undone.`}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => {
-                      // Handle the action here
-                      if (actionType === 'cancel') {
-                        // handleCancelOrder(order.id);
-                      } else if (actionType === 'status') {
-                        // handleStatusUpdate(order.id, newStatus);
-                      }
-                      setDialogOpen(false);
-                    }}
-                    className={actionType === 'cancel' ? 'bg-red-600 hover:bg-red-700' : ''}
-                  >
-                    {actionType === 'cancel' ? 'Confirm Cancellation' : 'Confirm'}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Order Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => router.push(`/merchant/order/${order.id}`)}>
+                <Eye className="mr-2 h-4 w-4" />
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleDialogOpen(order.id, 'status')}
+                disabled={!statusInfo.actions || statusInfo.actions.length === 0}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Update Status
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => handleDialogOpen(order.id, 'cancel')}
+                disabled={!statusInfo.actions?.includes('CANCELLED')}
+                className="text-red-600"
+              >
+                <XCircle className="mr-2 h-4 w-4" />
+                Cancel Order
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
     }
   ];
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+
+  if (isError) {
+    return <div className="flex items-center justify-center h-screen">Error loading orders.</div>;
+  }
+
   return (
-    <div
-    >
-      <div className="flex flex-col flex-wrap">
-        <CustomDataTable
-          data={orders}
-          columns={orderColumns}
-          searchColumen={"status"}
-        />
-        <div className="w-full xl:w-4/12 px-4">
-          <CardBarChart />
-        </div>
+    <div className="flex flex-col flex-wrap">
+      <CustomDataTable
+        data={ordersData?.orders || []}
+        columns={orderColumns}
+        searchColumn="createdAt"
+      />
+
+      <div className="w-full xl:w-4/12 px-4">
+        <CardBarChart data={ordersData?.performance || {
+          labels: [],
+          datasets: []
+        }} />
       </div>
 
+      {/* Status Update Dialog */}
+      <AlertDialog open={dialogState.open && dialogState.actionType === 'status'} onOpenChange={handleDialogClose}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update Order Status</AlertDialogTitle>
+            <AlertDialogDescription>
+              <div className="grid grid-cols-2 gap-2 mt-4">
+                {['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map((status) => (
+                  <Button
+                    key={status}
+                    variant={dialogState.newStatus === status ? 'default' : 'outline'}
+                    onClick={() => setDialogState(prev => ({ ...prev, newStatus: status }))}
+                  >
+                    {ORDER_STATUS_CONFIG[status]?.label || status}
+                  </Button>
+                ))}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleActionConfirm}
+              disabled={!dialogState.newStatus}
+            >
+              Update Status
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel Order Dialog */}
+      <AlertDialog open={dialogState.open && dialogState.actionType === 'cancel'} onOpenChange={handleDialogClose}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Order Cancellation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel order #{dialogState.orderId}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleActionConfirm}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Confirm Cancellation
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
-}
+};
 
 export default OrdersPage;

@@ -8,6 +8,14 @@ import {
   CarouselNext,
   CarouselPrevious
 } from "@/components/ui/carousel";
+import {
+  Magnifier,
+  GlassMagnifier,
+  SideBySideMagnifier,
+  PictureInPictureMagnifier,
+  MOUSE_ACTIVATION,
+  TOUCH_ACTIVATION
+} from "react-image-magnifiers";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -86,23 +94,15 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = async () => {
-    // if (!selectedSize) {
-    //   toast.warning("Please select a size");
-    //   return;
-    // }
-
     try {
       await addItemToCart({
         productId: product.id,
         name: product.name,
-        price: product.discountPrice || product.price,
+        price: product.discountPrice > 0 ? product.price - (product.price * Math.round(product.discountPrice)) / 100 : product.price,
         quantity: 1,
         image: product.images?.[0],
-        color: selectedColor,
-        size: selectedSize,
         stock: product.quantity
       });
-      toast.success(`${product.name} added to cart`);
     } catch (error) {
       toast.error("Failed to add item to cart");
       console.error("Add to cart error:", error);
@@ -111,7 +111,7 @@ export default function ProductDetailPage() {
 
   const handleIncreaseQuantity = async () => {
     try {
-      await updateItemQuantity(product.id, cartQuantity + 1);
+      await updateItemQuantity(cartItem?.id, cartQuantity + 1);
     } catch (error) {
       toast.error("Failed to update quantity");
       console.error("Update quantity error:", error);
@@ -121,7 +121,7 @@ export default function ProductDetailPage() {
   const handleDecreaseQuantity = async () => {
     if (cartQuantity <= 1) {
       try {
-        await removeItemFromCart(product.id);
+        await removeItemFromCart(cartItem?.id);
         toast.info(`${product.name} removed from cart`);
       } catch (error) {
         toast.error("Failed to remove item");
@@ -131,7 +131,7 @@ export default function ProductDetailPage() {
     }
 
     try {
-      await updateItemQuantity(product.id, cartQuantity - 1);
+      await updateItemQuantity(cartItem?.id, cartQuantity - 1);
     } catch (error) {
       toast.error("Failed to update quantity");
       console.error("Update quantity error:", error);
@@ -235,14 +235,33 @@ export default function ProductDetailPage() {
               <CarouselContent>
                 {product.images?.map((img, index) => (
                   <CarouselItem key={index}>
-                    <div className="relative aspect-square">
-                      <Image
-                        src={imageViewer(img) || '/placeholder-product.jpg'}
-                        alt={`${product.name} view ${index + 1}`}
-                        fill
-                        className="object-contain"
-                        priority={index === 0}
-                        sizes="(max-width: 1024px) 100vw, 50vw"
+                    <div className="w-full h-[400px] md:h-[500px] relative">
+                      <GlassMagnifier
+                        imageSrc={imageViewer(img) || '/placeholder-product.jpg'}
+                        imageAlt={product.name}
+                        zoomImageSrc={imageViewer(img) || '/placeholder-product.jpg'}
+                        className="w-full h-full object-cover"
+                        style={{
+                          position: 'relative',
+                          zIndex: 1000 // High z-index to ensure it's on top
+                        }}
+                        magnifierStyle={{
+                          position: 'absolute',
+                          zIndex: 1001, // Even higher for the magnifier glass itself
+                          boxShadow: '0 0 10px rgba(0,0,0,0.3)'
+                        }}
+                        magnifierSize={isMobile ? 100 : 150}
+                        magnifierBorderSize={isMobile ? 2 : 3}
+                        magnifierBorderColor="rgba(255, 255, 255, 0.8)"
+                        magnifierOverlayColor="rgba(0, 0, 0, 0.5)"
+                        magnifierOverlayOpacity={0.5}
+                        mouseActivation={MOUSE_ACTIVATION.CLICK}
+                        touchActivation={TOUCH_ACTIVATION.DOUBLE_TAP}
+                        fillLightEnabled={true}
+                        fillLightColor="rgba(255, 255, 255, 0.8)"
+                        fillLightSize={isMobile ? 50 : 75}
+                        fillLightOpacity={0.5}
+                        square={true}
                       />
                     </div>
                   </CarouselItem>
@@ -290,7 +309,6 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Product Details Section */}
         {/* Product Details */}
         <div className="space-y-4 md:space-y-6">
           <div>
@@ -304,12 +322,18 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <p className="text-xl md:text-2xl font-bold">{formatCurrency(product.discountPrice || product.price)}</p>
+            <p className="text-xl md:text-2xl font-bold">
+              {formatCurrency(
+                Math.round(product.discountPrice) > 0
+                  ? product.price - (product.price * Math.round(product.discountPrice)) / 100
+                  : product.price
+              )}
+            </p>
             {product.discountPrice && (
               <>
                 <s className="text-sm text-gray-500">{formatCurrency(product.price)}</s>
                 <Badge className="bg-orange-600 text-white">
-                  {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                  {Math.round(product.discountPrice)}% OFF
                 </Badge>
               </>
             )}
@@ -402,11 +426,10 @@ export default function ProductDetailPage() {
                 <Badge className="bg-orange-700 text-xs md:text-sm">⏱️ Maximum 2-Day Delivery</Badge>
                 {product.discountPrice && (
                   <Badge className="bg-orange-700 text-xs md:text-sm">
-                    {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                    {Math.round(product.discountPrice)}% OFF
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-gray-600">Free returns and 100-day return policy</p>
             </div>
           </div>
         </div>
@@ -471,16 +494,18 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Related Products */}
-      {relatedProducts.length > 0 && (
-        <section className="mt-16">
-          <h2 className="text-2xl font-bold mb-6 text-center">You May Also Like</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {relatedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
+      {
+        relatedProducts.length > 0 && (
+          <section className="mt-16">
+            <h2 className="text-2xl font-bold mb-6 text-center">You May Also Like</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              {relatedProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        )
+      }
+    </div >
   );
 }

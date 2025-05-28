@@ -42,3 +42,24 @@ exports.sendContactEmail = async ({ name, email, phone, message }) => {
         throw error;
     }
 };
+exports.sendEmail = async ( to, subject, html ) => {
+    console.log('Sending email to:', to, 'with subject:', subject);
+    try {
+        // Validate admin email
+        if (!process.env.ADMIN_EMAIL.includes('@')) {
+            throw new Error('Invalid admin email configuration');
+        }
+ 
+        // Send to admin
+        await transporter.sendMail({
+            from: '"EEP E-commerce" <eepecomerce@gmail.com>',
+            to,
+            subject,
+            html
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Email send error:', error);
+        throw error;
+    }
+};

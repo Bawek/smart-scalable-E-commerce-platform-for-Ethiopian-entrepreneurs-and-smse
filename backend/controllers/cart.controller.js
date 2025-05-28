@@ -51,7 +51,7 @@ exports.getCart = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
- 
+
 // Add item to cart
 exports.addToCart = async (req, res) => {
   try {
@@ -120,11 +120,12 @@ exports.addToCart = async (req, res) => {
 
     const formattedItem = {
       id: updatedCart.id,
+      cartId: cart.id,
       productId: updatedCart.product.id,
       name: updatedCart.product.name,
       price: updatedCart.price,
       quantity: updatedCart.quantity,
-      image: updatedCart.product.image
+      image: updatedCart.product.images
     };
 
     const { totalItems, totalPrice } = calculateCartTotals(fullCart.items);
@@ -208,7 +209,7 @@ exports.updateCartItem = async (req, res) => {
 
     // Verify item exists in cart
     const itemToUpdate = cart.items.find(item => item.id === itemId);
-    console.log(itemToUpdate,'update')
+    console.log(itemToUpdate, 'update')
     if (!itemToUpdate) {
       return res.status(404).json({ message: 'Item not found in cart' });
     }

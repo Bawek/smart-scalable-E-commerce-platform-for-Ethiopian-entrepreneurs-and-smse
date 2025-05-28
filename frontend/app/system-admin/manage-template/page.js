@@ -27,6 +27,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { imageViewer } from "../lib/imageViewer";
+import { formatCurrency } from "@/util/currency";
 const Templates = () => {
     const router = useRouter()
     const [templates, setTemplates] = useState([])
@@ -90,10 +91,7 @@ const Templates = () => {
                 const price = parseFloat(row.getValue("basePrice"))
 
                 // Format the price as a dollar price
-                const formatted = new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                }).format(price)
+                const formatted = formatCurrency(price)
 
                 return <div className="text-right font-medium">{formatted}</div>
             },

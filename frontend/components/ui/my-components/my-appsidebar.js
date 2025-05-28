@@ -50,11 +50,11 @@ const data = {
       url: "/merchant/manage-your-templates",
       icon: FolderIcon,
     },
-    {
-      title: "Users",
-      url: "/merchant/manage-users",
-      icon: UsersIcon,
-    },
+    // {
+    //   title: "Users",
+    //   url: "/merchant/manage-users",
+    //   icon: UsersIcon,
+    // },
     {
       title: "Manage Orders",
       url: "/merchant/order",

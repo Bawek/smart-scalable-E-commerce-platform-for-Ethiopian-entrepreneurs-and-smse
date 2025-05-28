@@ -5,7 +5,7 @@ const generateTxRef = () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
 const createPayment = async (req, res) => {
   console.log('hi ihs ', 'payment data');
-  const { amount, email, first_name, last_name, phone_number, currency, FRONTEND_BASE_URL, callback_url, orderId } = req.body;
+  const { amount, email, first_name, last_name, phone_number, currency, FRONTEND_BASE_URL, callback_url, orderId, accountId } = req.body;
 
   // Generate tx_ref manually
   const tx_ref = generateTxRef();
@@ -26,7 +26,8 @@ const createPayment = async (req, res) => {
     },
     meta: {
       orderId,
-      tx_ref
+      tx_ref,
+      accountId
     }
   };
 
@@ -88,5 +89,6 @@ const verifyPaymentProcess = async (req, res) => {
 
 module.exports = {
   createPayment,
-  verifyPaymentProcess
+  verifyPaymentProcess,
+  generateTxRef
 };

@@ -132,7 +132,7 @@ const registerShop = async (req, res, next) => {
                 const shop = await prisma.shop.create({
                     data: {
                         name: merchant.businessName,
-                        slug:'shop-slug',
+                        slug: 'shop-slug',
                         description,
                         merchantId: merchant.id,
                         logoImageUrl: req.file.filename,
@@ -217,28 +217,81 @@ const registerShop = async (req, res, next) => {
     }
 };
 const getAllShop = async (req, res, next) => {
-
     try {
-        // await prisma.shop.deleteMany()
         const shops = await prisma.shop.findMany({
             include: {
-                merchant:true
+                merchant: {
+                    select: {
+                        id: true,
+                        ownerName: true,
+                        businessName: true,
+                        businessPhone: true,
+                        businessType: true,
+                    }
+                },
+                location: {
+                    select: {
+                        town: true,
+                        country: true,
+                        region: true
+                    }
+                },
+                _count: {
+                    select: {
+                        products: true
+                    }
+                }
+            },
+            where: {
+                status: {
+                    not: 'SUSPENDED' // Exclude suspended shops
+                }
+            },
+            orderBy: {
+                createdAt: 'desc' // Newest first
             }
-        })
-        if (shops.length === 0) {
-            return res.status(200).json({
-                status: 'success',
-                shops: []
-            })
-        }
+        });
+
+        // Transform data for frontend
+        const formattedShops = shops.map(shop => ({
+            id: shop.id,
+            name: shop.name,
+            description: shop.description,
+            category: shop.merchant.businessType,
+            status: shop.status,
+            verified: shop.approved,
+            bannerImageUrl: shop.bannerImageUrl,
+            logoImageUrl: shop.logoImageUrl,
+            productCount: shop._count.products,
+            openingHours: shop.businessHours?.openingHours || '9AM - 6PM',
+            website: shop.domain,
+            contactNumber: shop.merchant.businessPhone,
+            socialMedia: shop.socialMedia ? JSON.parse(shop.socialMedia) : null,
+            location: {
+                town: shop.location?.town,
+                region: shop.location?.region,
+                country: shop.location?.country
+            },
+            merchant: {
+                id: shop.merchant.id,
+                ownerName: shop.merchant.ownerName,
+                businessName: shop.merchant.businessName
+            },
+            createdAt: shop.createdAt,
+            updatedAt: shop.updatedAt
+        }));
+
         res.status(200).json({
             status: 'success',
-            shops
-        })
+            results: formattedShops.length,
+            shops: formattedShops
+        });
+
     } catch (error) {
-        next(new httpError(error.message, 500))
+        console.error('Error fetching shops:', error);
+        next(new httpError('Failed to retrieve shops', 500));
     }
-}
+};
 const getById = async (req, res, next) => {
     const { shopId } = req.params
     try {

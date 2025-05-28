@@ -11,8 +11,6 @@ export default function OrderTrackingPage() {
     const [selectedOrderId, setSelectedOrderId] = useState(null);
     const [sent, setSent] = useState(false);
     const [activeTab, setActiveTab] = useState('details');
-    console.log(ordersData, 'orders on the users view')
-    // Reset sent status after 3 seconds
     React.useEffect(() => {
         if (sent) {
             const timer = setTimeout(() => setSent(false), 3000);
@@ -20,7 +18,6 @@ export default function OrderTrackingPage() {
         }
     }, [sent]);
 
-    // Select the first order by default when data loads
     React.useEffect(() => {
         if (ordersData?.orders?.length > 0 && !selectedOrderId) {
             setSelectedOrderId(ordersData.orders[0].id);
@@ -101,7 +98,7 @@ export default function OrderTrackingPage() {
                         >
                             {ordersData.orders.map(order => (
                                 <option key={order.id} value={order.id}>
-                                    Order #{order.id.substring(0, 8)} - {formatDate(order.createdAt)}
+                                    Order #{order.id} - {formatDate(order.createdAt)}
                                 </option>
                             ))}
                         </select>
@@ -191,7 +188,7 @@ export default function OrderTrackingPage() {
                                             <p className="mt-1 text-sm text-gray-900">{formatDate(selectedOrder.createdAt)}</p>
                                         </div>
                                         <div>
-                                            <h3 className="text-sm font-medium text-gray-500">Payment Method</h3>
+                                            <h3 className="text-sm font-medium text-gray-500">Tranasaction Id</h3>
                                             <p className="mt-1 text-sm text-gray-900 capitalize">{selectedOrder.paymentMethod}</p>
                                         </div>
                                     </div>

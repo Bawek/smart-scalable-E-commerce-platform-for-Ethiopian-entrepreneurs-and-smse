@@ -14,7 +14,6 @@ const AdminNotificationList = () => {
   const [error, setError] = useState(null)
   const dispatch = useDispatch();
   const notifications = useSelector(selectNotifications) || [];
-  // Fetch notifications on component mount
   useEffect(() => {
     const loadNotifications = async () => {
       try {

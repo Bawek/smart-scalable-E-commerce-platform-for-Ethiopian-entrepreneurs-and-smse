@@ -16,6 +16,7 @@ import { toast } from 'react-toastify';
 import useCart from '@/hooks/use-cart';
 import Loader from '@/app/components/Prompt/Loader';
 import { imageViewer } from '@/app/system-admin/lib/imageViewer';
+import { formatCurrency } from '@/util/currency';
 
 const CartPage = () => {
   const router = useRouter();
@@ -182,7 +183,11 @@ const CartPage = () => {
 
                     <div className="md:w-1/5 text-center">
                       <p className="font-bold">
-                        ${item.price?.toFixed(2)}
+                        {formatCurrency(
+                          Math.round(item.discountPrice) > 0
+                            ? item.price - (item.price * Math.round(item.discountPrice)) / 100
+                            : item.price
+                        )}
                       </p>
                     </div>
 
@@ -207,7 +212,11 @@ const CartPage = () => {
                     </div>
 
                     <div className="md:w-1/5 text-center font-bold">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {formatCurrency(
+                        Math.round(item.discountPrice) > 0
+                          ? item.price - ((item.price * Math.round(item.discountPrice)) / 100) * item.quantity
+                          : item.price * item.quantity
+                      )}
                     </div>
 
                     <div className="md:w-1/5 text-center">

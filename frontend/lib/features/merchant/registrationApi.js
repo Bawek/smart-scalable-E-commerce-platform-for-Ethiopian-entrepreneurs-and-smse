@@ -11,6 +11,10 @@ export const MerchantRegistrationApi = appApi.injectEndpoints({
             query: (merchantId) => `/merchant-dashboard/${merchantId}`,
             // providesTags: ["MerchantRegistration"],
         }),
+        getMerchantAnalytics: builder.query({
+            query: (merchantId, startDate, endDate) => `/merchant-analytics/${merchantId}?startDate=${startDate}&endDate=${endDate}`,
+            // providesTags: ["MerchantRegistration"],
+        }),
         getMerchantById: builder.query({
             query: (merchantId) => `merchant/get/${merchantId}/`,
         }),
@@ -57,4 +61,5 @@ export const {
     useChangeMerchantStatusMutation,
     useGetMerchantDashboardInfoQuery,
     useGetMerchantByAccountQuery,
+    useGetMerchantAnalyticsQuery,
 } = MerchantRegistrationApi;

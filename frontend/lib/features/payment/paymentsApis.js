@@ -1,10 +1,11 @@
 import { appApi } from "@/lib/appApi";
+import { baseUrl } from "../cart/cartSlice";
 export const paymentApi = appApi.injectEndpoints({
-    overrideExisting: true, 
+    overrideExisting: true,
     endpoints: (builder) => ({
         verifyPayment: builder.mutation({
             query: (tx_ref) => ({
-                url: `/verify/${tx_ref}`,
+                url: `${baseUrl}/templates/payment/frontend-check?tx_ref=${tx_ref}`,
                 method: "GET",
             }),
         }),

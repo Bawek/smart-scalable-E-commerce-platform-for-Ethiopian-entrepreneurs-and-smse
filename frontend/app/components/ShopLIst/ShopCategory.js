@@ -12,33 +12,33 @@ const ShopList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
 
-useEffect(() => {
-  if (data?.shops) {
-    setFilteredShops(data.shops.map(shop => ({
-      ...shop, 
-      category: shop.merchant?.businessType
-    })));
-  }
-}, [data]);
+  useEffect(() => {
+    if (data?.shops) {
+      setFilteredShops(data.shops.map(shop => ({
+        ...shop,
+        category: shop?.category
+      })));
+    }
+  }, [data]);
   useEffect(() => {
     if (!data?.shops) return;
 
     let results = data.shops;
-    
+
     // Apply category filter
     if (selectedCategory !== "All Categories") {
-      results = results.filter(shop => 
-        shop?.merchant?.businessType?.toLowerCase() === selectedCategory.toLowerCase()
+      results = results.filter(shop =>
+        shop?.category?.toLowerCase() === selectedCategory.toLowerCase()
       );
     }
-    
+
     // Apply search term filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       results = results.filter(shop =>
         shop.name?.toLowerCase().includes(term) ||
         shop.description?.toLowerCase().includes(term) ||
-        shop.merchant?.category?.toLowerCase().includes(term) ||
+        shop?.category?.toLowerCase().includes(term) ||
         shop.merchant?.ownerName?.toLowerCase().includes(term)
       );
     }
@@ -62,8 +62,8 @@ useEffect(() => {
         {/* Search Section */}
         <div className="max-w-[90vw] mx-auto">
           <div className="w-full">
-            <Searchbox 
-              shops={data?.shops} 
+            <Searchbox
+              shops={data?.shops}
               onSearch={handleSearch}
               onCategorySelect={handleCategorySelect}
             />
@@ -110,7 +110,7 @@ useEffect(() => {
                 No shops found
               </h3>
               <p className="text-gray-500 dark:text-gray-400 mt-2">
-                {searchTerm 
+                {searchTerm
                   ? `No results for "${searchTerm}" in ${selectedCategory}`
                   : `No shops available in ${selectedCategory}`}
               </p>

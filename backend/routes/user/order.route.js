@@ -12,12 +12,12 @@ router.get('/get-all', orderController.getAllOrders);
 router.get('/get-by-account/:accountId', orderController.getOrdersByCustomerId);
 
 // // Get a single order by ID
-// router.get('/:id', orderController.getOrderById);
+router.get('/get/:id', orderController.getOrderById);
 
 // // Update order status
-// router.put('/:id/status', orderController.updateOrderStatus);
+router.put('/update/:id/status', orderController.updateOrderStatus);
 
 // // Delete an order
-// router.delete('/:id', orderController.deleteOrder);
+router.delete('/delete/:id', orderController.deleteOrder);
 
 module.exports = router;

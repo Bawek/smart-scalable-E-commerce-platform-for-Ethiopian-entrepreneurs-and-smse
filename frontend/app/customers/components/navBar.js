@@ -75,7 +75,7 @@ export function CustomerNavigationMenu() {
   }, [isMobile, isOpen]);
 
   return (
-    <nav className={`sticky w-full top-0 z-50  dark:bg-black backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow duration-300 ${hasScrolled ? "shadow-md bg-white" : "bg-transparent"}`}>
+    <nav className={`sticky w-full top-0 z-50  dark:bg-black backdrop-blur bg-transparent transition-shadow duration-300 ${hasScrolled ? "shadow-md bg-white" : "bg-transparent"}`}>
       <div className="max-w-[98%] mx-auto flex h-16 items-center justify-between">
         <Logo />
         {/* mobile navbar */}
@@ -101,23 +101,6 @@ function DesktopMenu({ account, cartItems, shops }) {
   return (
     <div className="container flex items-center h-16 gap-6">
       <div className="container flex items-center h-16 gap-6">
-        {/* Navigation Menu */}
-        <NavigationMenu className="">
-          <NavigationMenuList className="my-auto">
-            <NavigationMenuItem className="bg-transparent">
-              <NavigationMenuTrigger className="text-sm">Company</NavigationMenuTrigger>
-              <NavigationMenuContent className="absolute left-0 w-[400px] md:w-[500px] lg:w-[500px] p-4">
-                <ul className="grid gap-3 md:grid-cols-2">
-                  {companyLinks.map((link) => (
-                    <ListItem key={link.title} title={link.title} href={link.href}>
-                      {link.description}
-                    </ListItem>
-                  ))}
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
         <NavigationMenu className="mr-1">
           <NavigationMenuList className="my-auto">
             <NavigationMenuItem>
@@ -138,11 +121,30 @@ function DesktopMenu({ account, cartItems, shops }) {
 
         {/* Main Navigation Links */}
         {[
-          { href: "/customers/products", label: "Market Place" },
+          {
+            title: "Support",
+            href: "/customers/company/support",
+            description: "Get technical support and assistance",
+          },
+          {
+            title: "About",
+            href: "/customers/company/about",
+            description: "Learn more about our company and mission",
+          },
+          {
+            title: "Contact Us",
+            href: "/customers/company/contact",
+            description: "Contact us By using this address list here.",
+          },
         ].map((navItem) => (
-          <Link key={navItem.label} href={navItem.href} className="text-sm no-underline text-black dark:text-white">
-            {navItem.label}
+          <Link
+            key={navItem.title}
+            href={navItem.href}
+            className="text-sm font-medium px-4 py-2 rounded-md transition-colors duration-200 text-black dark:text-white hover:text-primary hover:bg-orange-200 dark:hover:bg-gray-800"
+          >
+            {navItem.title}
           </Link>
+
         ))}
         <div className="flex-1"></div>
         {/* Cart Button */}

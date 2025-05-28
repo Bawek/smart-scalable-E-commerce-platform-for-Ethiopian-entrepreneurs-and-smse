@@ -17,34 +17,6 @@ const ShopDetailPage = () => {
     const router = useRouter()
     const { data, isLoading, isError } = useGetShopQuery(params.shopId)
     console.log(data, params, isError)
-    // Sample shop data (replace with real data)
-    const shop = {
-        id: 'SHOP-789',
-        name: 'City Center Boutique',
-        owner: 'John Smith',
-        status: 'active',
-        address: '456 Downtown Street, New York, NY 10001',
-        registered: '2023-03-10',
-        lastActivity: '2023-10-25 09:45:00',
-        contact: {
-            phone: '+1 (555) 987-6543',
-            email: 'citycenter@example.com'
-        },
-        operatingHours: {
-            mon_fri: '9:00 AM - 8:00 PM',
-            sat: '10:00 AM - 9:00 PM',
-            sun: 'Closed'
-        },
-        staff: [
-            { name: 'Alice Johnson', role: 'Manager' },
-            { name: 'Bob Wilson', role: 'Sales Associate' }
-        ],
-        inventoryStatus: {
-            totalItems: 245,
-            lowStock: 12
-        },
-        monthlySales: '$45,320'
-    };
 
     if (isLoading) {
         return (
@@ -110,11 +82,29 @@ const ShopDetailPage = () => {
                                 </div>
                                 <div>
                                     <label className="text-sm ">Registration Date</label>
-                                    <p className="font-medium">{data?.shop?.updatedAt}</p>
+                                    <p className="font-medium">{
+                                        new Date(data?.shop?.updatedAt).toLocaleString('en-US', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: true, // optional: for AM/PM
+                                        })
+                                    }</p>
                                 </div>
                                 <div>
                                     <label className="text-sm ">Last Activity</label>
-                                    <p className="font-medium">{data?.shop?.updatedAt}</p>
+                                    <p className="font-medium">{
+                                        new Date(data?.shop?.updatedAt).toLocaleString('en-US', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: true, // optional: for AM/PM
+                                        })
+                                    }</p>
                                 </div>
                             </div>
                         </div>

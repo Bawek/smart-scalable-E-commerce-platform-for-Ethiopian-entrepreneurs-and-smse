@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import Chart from "chart.js/auto";
 
-export default function CardLineChart() {
+export default function CardLineChart({ data }) {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
@@ -21,14 +21,14 @@ export default function CardLineChart() {
             label: new Date().getFullYear(),
             backgroundColor: "#4c51bf",
             borderColor: "#4c51bf",
-            data: [65, 78, 66, 44, 56, 67, 75],
+            data: data,
             fill: false,
           },
           {
             label: new Date().getFullYear() - 1,
             backgroundColor: "#fff",
             borderColor: "#fff",
-            data: [40, 68, 86, 74, 56, 60, 87],
+            data: data,
             fill: false,
           },
         ],
@@ -40,7 +40,7 @@ export default function CardLineChart() {
           legend: {
             labels: {
               color: "white",
-            },
+            }, 
             position: "bottom",
           },
         },
@@ -68,7 +68,7 @@ export default function CardLineChart() {
         <div className="flex flex-wrap items-center">
           <div className="relative w-full max-w-full flex-grow flex-1">
             <h6 className="uppercase text-blueGray-100 mb-1 text-xs font-semibold">Overview</h6>
-            <h2 className="text-white text-xl font-semibold">Sales Value</h2>
+            <h2 className="text-white text-xl font-semibold">Performance</h2>
           </div>
         </div>
       </div>

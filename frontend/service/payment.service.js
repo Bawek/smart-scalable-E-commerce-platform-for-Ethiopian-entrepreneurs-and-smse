@@ -10,7 +10,7 @@ export const useProcessPayment = () => {
         async (paymentData) => {
             try {
                 const response = await initiatePayment(paymentData).unwrap();
-
+                console.log(response,'last reponse')
                 if (response?.checkout_url) {
                     toast({
                         title: "Redirecting to Payment",
@@ -20,7 +20,7 @@ export const useProcessPayment = () => {
                     // Redirect to payment page
                     window.location.href = response.checkout_url;
                 } else {
-                     toast({
+                    toast({
                         title: "Payment Failed",
                         description: "Could not retrieve payment link.",
                         variant: "destructive",
@@ -33,7 +33,7 @@ export const useProcessPayment = () => {
                         error?.data?.message || error?.message || "Something went wrong during payment.",
                     variant: "destructive",
                 });
-                console.error("Payment error:", error);
+                console.log("Paymenhht error:", error);
             }
         },
         [initiatePayment, toast]

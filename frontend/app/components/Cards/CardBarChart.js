@@ -4,11 +4,13 @@ import { Chart, registerables } from "chart.js";
 
 Chart.register(...registerables);
 
-export default function CardBarChart() {
+export default function CardBarChart({ data }) {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
   useEffect(() => {
+    if (!data || !chartRef.current) return;
+
     if (chartInstance.current) {
       chartInstance.current.destroy();
     }
@@ -18,25 +20,12 @@ export default function CardBarChart() {
     chartInstance.current = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: ["January", "February", "March", "April", "May", "June", "July"],
-        datasets: [
-          {
-            label: new Date().getFullYear(),
-            backgroundColor: "#ed64a6",
-            borderColor: "#ed64a6",
-            data: [30, 78, 56, 34, 100, 45, 13],
-            fill: false,
-            barThickness: 8,
-          },
-          {
-            label: new Date().getFullYear() - 1,
-            backgroundColor: "#4c51bf",
-            borderColor: "#4c51bf",
-            data: [27, 68, 86, 74, 10, 4, 87],
-            fill: false,
-            barThickness: 8,
-          },
-        ],
+        labels: data.labels,
+        datasets: data.datasets.map(dataset => ({
+          ...dataset,
+          barPercentage: 0.6,
+          categoryPercentage: 0.5
+        }))
       },
       options: {
         responsive: true,
@@ -61,6 +50,7 @@ export default function CardBarChart() {
             grid: {
               color: "rgba(33, 37, 41, 0.2)",
             },
+            beginAtZero: true
           },
         },
       },
@@ -71,7 +61,7 @@ export default function CardBarChart() {
         chartInstance.current.destroy();
       }
     };
-  }, []);
+  }, [data]); // Add data as dependency
 
   return (
     <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">

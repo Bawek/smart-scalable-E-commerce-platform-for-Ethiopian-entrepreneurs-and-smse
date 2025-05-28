@@ -19,7 +19,7 @@ export default function Login() {
   const { toast } = useToast();
   const dispatch = useDispatch();
   const searchParams = useSearchParams();
-  const ic = searchParams.get('ic'); // “order” or null
+  const ic = searchParams.get('ic');
   const router = useRouter();
   const [login, { isLoading }] = useLoginMutation();
 
@@ -43,15 +43,24 @@ export default function Login() {
 
       dispatch(setCredential({
         accessToken: response.accessToken,
-        firestName: response.firestName, // Fixed typo from firestName
+        firstName: response.firstName, // Fixed typo from firestName
         email: response.email,
         role: response.role,
         id: response.id
       }));
-      if (ic && ic === 'order') {
-     return  router.push('/customers/placeOrder')
-      }
-      router.push(response.role === 'ADMIN' ? "/system-admin" : "/merchant");
+
+      const redirectPath = ic === 'order'
+        ? '/customers/placeOrder'
+        : response.role === 'ADMIN'
+          ? "/system-admin"
+          : "/merchant";
+
+      router.push(redirectPath);
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${response.firstName || 'User'}!`,
+        variant: "default",
+      });
 
     } catch (error) {
       console.error("Login error:", error);
@@ -64,14 +73,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl rounded-xl bg-white dark:bg-gray-800">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-orange-700">
+    <div className="min-h-screen flex items-center justify-center p-4  dark:from-gray-900 dark:to-gray-800">
+      <Card className="w-full max-w-md shadow-2xl rounded-xl bg-white dark:bg-gray-800  dark:border-gray-700">
+        <CardHeader className="text-center space-y-2">
+          <CardTitle className="text-3xl font-bold text-orange-600 dark:text-orange-500">
             Welcome Back!
           </CardTitle>
-          <CardDescription className="text-gray-500 dark:text-gray-300">
-            Please enter your credentials to login to your account
+          <CardDescription className="text-gray-600 dark:text-gray-300">
+            Sign in to access your account
           </CardDescription>
         </CardHeader>
 
@@ -84,17 +93,17 @@ export default function Login() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-gray-700 dark:text-gray-300">Email</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="E.g example@gmail.com"
-                        className="h-12 text-base"
+                        placeholder="example@domain.com"
+                        className="h-12 text-base border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         autoComplete="email"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
               />
@@ -105,72 +114,59 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="text-gray-700 dark:text-gray-300">Password</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Enter your password"
-                        className="h-12 text-base"
+                        placeholder="••••••••"
+                        className="h-12 text-base border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         autoComplete="current-password"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-red-500" />
                   </FormItem>
                 )}
               />
 
-              {/* Remember Me Checkbox */}
-              <FormField
-                control={form.control}
-                name="rememberMe"
-                render={({ field }) => (
-                  <FormItem className="flex items-center space-x-2">
-                    <FormControl>
-                      <input
-                        type="checkbox"
-                        className="accent-blue-500 h-4 w-4"
-                        checked={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="!mt-0 cursor-pointer">
-                      Remember Me
-                    </FormLabel>
-                  </FormItem>
-                )}
-              />
+              <div className="flex items-center mx-auto justify-end">
 
-              <div className="flex justify-end">
-                <Link href="#" className="text-orange-500 hover:underline text-sm">
-                  Forgot Password?
+                <Link
+                  href="/customers/auth/forgot-password"
+                  className="text-sm font-medium text-orange-600 hover:text-orange-700 hover:underline dark:text-orange-500"
+                >
+                  Forgot password?
                 </Link>
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-orange-700 hover:bg-orange-800"
+                className="w-full h-12 text-lg font-semibold bg-orange-600 hover:bg-orange-700 focus-visible:ring-orange-500 transition-colors duration-200"
                 disabled={isLoading || !form.formState.isValid}
                 aria-label={isLoading ? "Logging in" : "Login"}
               >
-                {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : "Login"}
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
           </Form>
         </CardContent>
 
-        <CardFooter className="flex flex-col items-center space-y-2">
-          <p className="text-sm">
-            Don’t have an account?{" "}
+        <CardFooter className="flex flex-col items-center space-y-3 pt-0">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            New to our platform?{" "}
             <Link
               href="/customers/auth/register"
-              className="text-orange-500 hover:underline hover:text-blue-600"
+              className="font-medium text-orange-600 hover:text-orange-700 hover:underline dark:text-orange-500"
             >
-              Sign Up
+              Create an account
             </Link>
           </p>
-          <p className="text-xs text-gray-400">
-            &copy; {new Date().getFullYear()} E-commerce Platform
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            &copy; {new Date().getFullYear()} E-commerce Platform. All rights reserved.
           </p>
         </CardFooter>
       </Card>

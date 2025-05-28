@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button"
-import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+import { ArrowUpDown, MoreHorizontal, Copy, Eye, Trash2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
     DropdownMenu,
@@ -12,18 +12,27 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import CustomDataTable from "@/components/ui/my-components/my-table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { useGetAllMerchantsQuery } from "@/lib/features/merchant/registrationApi";
+import { useDeleteMerchantMutation, useGetAllMerchantsQuery } from "@/lib/features/merchant/registrationApi";
 import { imageViewer } from "../lib/imageViewer";
 import { toast } from "react-toastify";
 const ManageShops = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [merchants, setMerchants] = useState([
-        { id: "1", name: "Shop 1", owner: "Owner 1", status: "Active" },]);
+    const [ deleteMerchant] = useDeleteMerchantMutation()
     const [selectedShop, setSelectedShop] = useState(null);
     const { data: allMerchants, isLoading, isError, refetch } = useGetAllMerchantsQuery();
     const data = allMerchants?.merchant?.map(merchant => ({
@@ -35,8 +44,23 @@ const ManageShops = () => {
 
     const [isEditing, setIsEditing] = useState(false);
     const router = useRouter()
-    const handleDeleteMerchant = (id) => {
-    }
+    const handleDeleteMerchant = async (merchantId) => {
+        try {
+
+            const res = await deleteMerchant(merchantId).unwrap()
+            console.log(res)
+            if (res.status !== 'success') {
+                toast.error('Something went wrong plese try again.')
+            }
+            toast.success('Merchant deleted successfully')
+
+            refetch()
+
+        } catch (error) {
+            console.log(error)
+            toast.error('Something went wrong plese try again.')
+        }
+    };
     // columns
     const columns = [
         {
@@ -67,7 +91,7 @@ const ManageShops = () => {
             cell: ({ row }) => (
                 <div className="flex items-center justify-center w-12 h-12 rounded-md overflow-hidden">
                     <img
-                        src={imageViewer(row.getValue("identityCard"))}  // Access the first item in the array
+                        src={imageViewer(row.getValue("identityCard"))}
                         alt="Preview"
                         className="object-cover w-full h-full"
                     />
@@ -84,11 +108,11 @@ const ManageShops = () => {
                         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                     >
                         Merchant Name
-                        <ArrowUpDown />
+                        <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                 )
             },
-            cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
+            cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
         },
         {
             accessorKey: "email",
@@ -99,13 +123,21 @@ const ManageShops = () => {
         },
         {
             accessorKey: "status",
-            header: () => <div className="text-right">status</div>,
+            header: () => <div className="text-right">Status</div>,
             cell: ({ row }) => {
-                return <div className="text-right font-medium">
-                    <Badge variant={row.getValue("status") === "Active" ? "default" : row.getValue("status") === "Inactive" ? "destructive" : "warning"}>
-                        {row.getValue("status")}
-                    </Badge>
-                </div>
+                return (
+                    <div className="text-right font-medium">
+                        <Badge
+                            variant={
+                                row.getValue("status") === "Active" ? "default" :
+                                    row.getValue("status") === "Inactive" ? "destructive" :
+                                        "secondary"
+                            }
+                        >
+                            {row.getValue("status")}
+                        </Badge>
+                    </div>
+                )
             },
         },
         {
@@ -114,56 +146,77 @@ const ManageShops = () => {
             cell: ({ row }) => {
                 const merchant = row.original;
                 const currentMerchant = allMerchants?.merchant?.find(m => m?.account?.email === merchant.email)
+                const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+
                 return (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                <MoreHorizontal />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>merchant Actions</DropdownMenuLabel>
+                    <>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuLabel>Merchant Actions</DropdownMenuLabel>
+                                <DropdownMenuItem
+                                    className="cursor-pointer hover:bg-amber-100"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(currentMerchant?.id);
+                                        toast({
+                                            title: "Copied",
+                                            description: "Merchant ID copied to clipboard",
+                                            variant: "default",
+                                            duration: 2000
+                                        });
+                                    }}
+                                >
+                                    <Copy className="mr-2 h-4 w-4" />
+                                    Copy merchant ID
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    className="cursor-pointer text-red-600 hover:bg-red-50 focus:text-red-600"
+                                    onClick={() => setShowDeleteDialog(true)}
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete merchant
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={() => router.push(`/system-admin/manage-merchants/${currentMerchant?.id}`)}
+                                >
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    View Details
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
 
-                            <DropdownMenuItem
-                                className="cursor-pointer hover:bg-amber-100"
-                                onClick={() => {
-                                    navigator.clipboard.writeText(currentMerchant?.id);
-                                    toast({
-                                        title: "Copied",
-                                        description: <p className="text-black">{currentMerchant?.id}</p>,
-                                        variant: "default",
-                                        duration: 2000
-                                    });
-                                }}
-                            >
-                                Copy merchant ID
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                className="cursor-pointer hover:bg-amber-100"
-                                onClick={() => handleDeleteMerchant(currentMerchant.id)}
-                            >
-                                Delete merchant
-                            </DropdownMenuItem>
-
-                            <DropdownMenuSeparator />
-
-                            <DropdownMenuItem
-                                className="cursor-pointer"
-                                onClick={() => openEditModal(merchant)}
-                            >
-                                Edit Status
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem
-                                className="cursor-pointer"
-                                onClick={() => router.push(`/system-admin/manage-merchants/${currentMerchant?.id}`)}
-                            >
-                                View Details
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
+                        {/* Delete Confirmation Dialog */}
+                        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete the merchant account
+                                        and remove all associated data from our servers.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        className="bg-red-600 hover:bg-red-700"
+                                        onClick={() => {
+                                            handleDeleteMerchant(currentMerchant.id);
+                                            setShowDeleteDialog(false);
+                                        }}
+                                    >
+                                        Delete
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </>
                 );
             },
         }

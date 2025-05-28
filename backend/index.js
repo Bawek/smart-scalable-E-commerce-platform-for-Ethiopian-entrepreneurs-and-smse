@@ -16,21 +16,21 @@ const { initialize } = require('./utils/socket')
 const { testIo } = require('./controllers/merchant.controller')
 const merchantTemplatesRouter = require('./routes/merchantTemplates.route')
 const customizedPageRouter = require('./routes/customizedPage.route')
-const { getMerchantDashboardStats } = require('./controllers/dashboard.controller.js')
 const productRouter = require('./routes/product.route')
 const cartRouter = require('./routes/user/cart.route.js')
 const orderRouter = require('./routes/user/order.route.js')
-const analyticsRoutes = require('./routes/dashboardRoutes');
 const contactRoute = require('./routes/contact.route');
-
+const notificationRouter = require('./routes/notifications.route.js')
+const { getDashboardMetrics } = require('./controllers/dashboard.controller.js')
+const { getMerchantAnalytics } = require('./controllers/analytics.controller.js')
 // constants  
 const PORT = process.env.PORT || 8000
 //start the server 
 const app = express()
-const server = http.createServer(app)
-initialize(server); // Initialize Socket.IO
+const server = http.createServer(app) 
+initialize(server);
 
-// Enable CORS for specific domains
+// Enable CORS 
 app.use(cors({
     origin: ['http://localhost:3000', 'https://checkout.chapa.co'],
     credentials: true,
@@ -45,17 +45,14 @@ app.use(express.json())
 app.use('/api', paymentRouter);
 app.use('/api/merchant', merchantRouter)
 
-app.use('/api/cart', cartRouter);// Accounts route
-app.use('/api/orders', orderRouter);// Accounts route
-
-
-
+app.use('/api/cart', cartRouter);
+app.use('/api/orders', orderRouter);
 app.get('/api/refresh-token', handleRefreshToken)
-
 app.use('/api/accounts', accountRouter)
 app.use('/api/location', locationRouter)
 app.use('/api/shops', shopRouter)
 app.use('/api/image', imageRouter)
+app.use('/api/notifications', notificationRouter)
 app.use('/api/pages', pagesRouter)
 app.use('/api/products', productRouter)
 app.use('/api/templates', templateRouter)
@@ -63,9 +60,8 @@ app.use('/api/merchantTemplates', merchantTemplatesRouter)
 app.use('/api/customized-pages', customizedPageRouter)
 app.post('/iopost', testIo)
 // dashbaord analytics
-app.get('/api/merchant-dashboard/:merchantId', getMerchantDashboardStats)
-app.use('/api/dashboard', analyticsRoutes);
-
+app.get('/api/merchant-analytics/:accountId', getMerchantAnalytics)
+app.get('/api/merchant-dashboard/:accountId', getDashboardMetrics)
 // Routes
 app.use('/api', contactRoute);
 // handling errors

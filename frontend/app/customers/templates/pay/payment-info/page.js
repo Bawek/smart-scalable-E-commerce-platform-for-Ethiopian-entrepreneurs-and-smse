@@ -181,8 +181,6 @@ export default function SuccessInfoPage() {
   };
   useEffect(() => {
     const verify = async () => {
-      const selectedTemplate = localStorage.getItem('ccc_tem')
-      console.log(paymentData, selectedTemplate, 'on added verivied')
       if (!tx_ref) {
         setError('Transaction reference not found');
         setLoading(false);
@@ -190,14 +188,10 @@ export default function SuccessInfoPage() {
       }
       try {
         const res = await verifyPayment(tx_ref).unwrap();
+        setPaymentData(res?.data)
         if (res.status !== 'success') {
           return setError('sorry! The transactions if Failed. please Try again.')
         }
-        const buyResult = await buyTemplate({ accountId: accountId, templateId: selectedTemplate }).unwrap()
-        if (buyResult.status !== 'success') {
-          return setError('sorry! The transactions if Failed. please Try again.')
-        }
-        setPaymentData(res);
       } catch (err) {
         console.error('Verification failed:', err);
         setError(err.data?.message || 'Payment verification failed');
@@ -207,7 +201,7 @@ export default function SuccessInfoPage() {
     };
     verify();
   }, [tx_ref]);
-
+console.log(paymentData,'payment data')
   if (loading) {
     return (
       <div className="text-center p-8">

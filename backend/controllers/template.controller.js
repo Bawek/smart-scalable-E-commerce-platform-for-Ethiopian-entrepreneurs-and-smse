@@ -1,54 +1,8 @@
-const prisma = require("../config/db")
-const httpError = require("../middlewares/httpError")
+const prisma = require("../config/db");
+const httpError = require("../middlewares/httpError");
 const fs = require('fs');
 const path = require('path');
-const registerTemplate = async (req, res, next) => {
-    const {
-        name,
-        basePrice,
-        description,
-    } = req.body
-    if (!req.file) return res.status(400).json({ message: 'File is required', success: false })
-
-    try {
-        const template = await prisma.baseTemplate.findFirst({
-            where: {
-                name: name
-            }
-        })
-        if (template) return res.status(409).json({ message: 'The is Registered please change the name', success: false })
-
-        const newTemplate = await prisma.baseTemplate.create({
-            data: {
-                name,
-                basePrice: parseFloat(basePrice),
-                description,
-                previewUrls: [req.file.filename]
-            }
-        })
-        res.status(201).json({
-            message: 'The Template is successfully created',
-            status: 'success',
-            template: newTemplate
-        })
-    } catch (error) {
-        console.log('template register error', error)
-        next(new httpError(error.message, 500))
-    }
-
-}
-const getAllTemplate = async (req, res, next) => {
-    try {
-        const templates = await prisma.baseTemplate.findMany()
-        res.status(201).json({
-            status: 'success',
-            templates
-        })
-    } catch (error) {
-        console.log('template register error', error)
-        next(new httpError(error.message, 500))
-    }
-}
+const { initializePayment, verifyPayment } = require("../services/chapaService");
 const getAllMerchantTemplate = async (req, res, next) => {
     try {
         const templates = await prisma.merchantTemplate.findMany({
@@ -75,6 +29,9 @@ const getMerchantTemplateByAccount = async (req, res, next) => {
                 accountId: accountId
             }
         })
+        if(!merchant){
+            return next(new httpError('Sorry you are not registared.'))
+        }
         const merchantTemplate = await prisma.merchantTemplate.findFirst({
             where: {
                 merchantId: merchant.id
@@ -112,36 +69,9 @@ const deleteById = async (req, res, next) => {
     }
 
 }
-const getTemplateById = async (req, res, next) => {
-    const { templateId } = req.params
-    try {
-        const template = await prisma.baseTemplate.findFirst({
-            where: {
-                id: templateId
-            }
-        })
-        const pages = await prisma.basePage.findMany({
-            where: {
-                templateId: templateId
-            }
-        })
-        res.status(201).json({
-            status: 'success',
-            template: {
-                ...template,
-                pages
-            }
-        })
-    } catch (error) {
-        console.log('template register error', error)
-        next(new httpError(error.message, 500))
-    }
-
-}
 const updateTempalate = async (req, res, next) => {
     const { templateId } = req.params;
     try {
-        //  Check if the file is required, if provided, handle the file logic
         if (req.file) {
             const currentTemplate = await prisma.baseTemplate.findUnique({
                 where: { id: templateId },
@@ -150,9 +80,8 @@ const updateTempalate = async (req, res, next) => {
 
 
             if (currentTemplate && currentTemplate.previewUrls.length > 0) {
-                // If a file already exists, delete it from the server (assuming the file is stored locally)
-                const oldFileName = currentTemplate.previewUrls[0]; // Assuming previewUrls is an array of file paths
-                const oldFilePath = path.join(__dirname, '..', 'uploads', "images", oldFileName); // Adjust the path as necessary
+                const oldFileName = currentTemplate.previewUrls[0];
+                const oldFilePath = path.join(__dirname, '..', 'uploads', "images", oldFileName);
                 if (fs.existsSync(oldFilePath)) {
                     fs.unlinkSync(oldFilePath);
                 }
@@ -160,11 +89,11 @@ const updateTempalate = async (req, res, next) => {
 
             // Save the new file path from the uploaded file
         }
-        console.log(req.file,req?.files)
+        console.log(req.file, req?.files)
         const previewUrls = [req?.file?.filename];
 
         //Prepare the data to update
-        const updateData = {  
+        const updateData = {
             ...req.body,
             ...(req.body.basePrice && { basePrice: parseFloat(req.body.basePrice) }),
             ...(previewUrls && { previewUrls })
@@ -196,66 +125,6 @@ const updateTempalate = async (req, res, next) => {
         next(new httpError(error.message || 'Failed to update the template.', 500));
     }
 };
-const buyTemplate = async (req, res, next) => {
-    const { accountId } = req.params;
-    const { templateId } = req.body;
-    try {
-        // Start a transaction to ensure data consistency
-        const [merchant, template] = await prisma.$transaction([
-            prisma.merchant.findFirst({
-                where: { accountId: accountId }
-            }),
-            prisma.baseTemplate.findFirst({
-                where: { id: templateId },
-                include: {
-                    pages: true
-                }
-            })
-        ]);
-
-        if (!merchant) {
-            return next(new httpError('Merchant not found', 404));
-        }
-        if (!template) {
-            return next(new httpError('There is no template with this Id', 404));
-        }
-        // Create the custom template
-        const customTemplate = await prisma.merchantTemplate.create({
-            data: {
-                merchantId: merchant.id,
-                baseTemplateId: template.id,
-                name: template.name,
-                description: template.description,
-                paymentStatus: 'ACTIVE',
-            }
-        });
-        // Check if there are pages to copy
-        if (template?.pages && template.pages.length > 0) {
-            // Prepare all custom pages data in one go
-            const customPagesData = template.pages.map(basePage => ({
-                js: basePage.js,
-                html: basePage.html,
-                css: basePage.css,
-                name: basePage.name,
-                merchantTemplateId: customTemplate.id
-            }));
-
-            // Create all custom pages in a single operation
-            await prisma.customPage.createMany({
-                data: customPagesData
-            });
-        }
-        // Respond with success
-        res.status(200).json({
-            status: 'success',
-            customTemplateId: customTemplate.id,
-            pagesCreated: template.pages?.length || 0
-        });
-    } catch (error) {
-        console.error('Template purchase error:', error);
-        next(new httpError(error.message || 'Failed to purchase the template.', 500));
-    }
-};
 const getCustomeTemplateById = async (req, res, next) => {
     const { templateId } = req.params
     try {
@@ -277,56 +146,252 @@ const getCustomeTemplateById = async (req, res, next) => {
     }
 
 }
- const verifyTemplatePayment = async (req, res) => {
-  const { tx_ref } = req.query;
-  try {
-    const chapaRes = await verifyPayment(tx_ref);
-    console.log(chapaRes, ' on backend is excusted')
-    const isSuccess =
-      chapaRes.status === "success" &&
-      chapaRes.data.status === "success";
+const generateTxRef = () => `tx-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
-    const custom_order_id = chapaRes.data?.meta?.orderId;
-    const paymentReference = chapaRes.data?.meta?.tx_ref;
+const registerTemplate = async (req, res, next) => {
+    const { name, basePrice, description } = req.body;
 
-    if (isSuccess) {
-      console.log(chapaRes, ' on backend is true')
-
-      // 1. Update the order
-      await prisma.order.update({
-        where: { id: custom_order_id },
-        data: {
-          status: "SHIPPED",
-          paymentMethod: paymentReference
-        },
-      });
-      return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=true&tx_ref=${tx_ref}`);
+    if (!req.file) {
+        return next(new httpError('Template preview image is required', 400));
     }
-    await prisma.order.update({
-      where: { id: custom_order_id },
-      data: { status: "CANCELLED" },
-    });
-    console.log(chapaRes, ' on backend is false')
-    return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=false`);
-  } catch (error) {
-    console.error("Error verifying payment:", error.message);
-    return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=false`);
-  }
+
+    try {
+        // Check for existing template with same name
+        const existingTemplate = await prisma.baseTemplate.findFirst({
+            where: { name }
+        });
+
+        if (existingTemplate) {
+            return next(new httpError('Template with this name already exists', 409));
+        }
+
+        const newTemplate = await prisma.baseTemplate.create({
+            data: {
+                name,
+                basePrice: parseFloat(basePrice),
+                description,
+                previewUrls: [req.file.filename],
+                status: 'ACTIVE'
+            }
+        });
+
+        res.status(201).json({
+            status: 'success',
+            message: 'Template created successfully',
+            template: newTemplate
+        });
+    } catch (error) {
+        next(new httpError(error.message, 500));
+    }
 };
-// payment for frontend back
-const verifyTemplaterPaymentForFrontend = async (req, res) => {
-  const { tx_ref } = req.query;
-  try {
-    const chapaRes = await verifyPayment(tx_ref);
-    console.log(chapaRes, ' on backend is excusted')
-    const isSuccess =
-      chapaRes.status === "success" &&
-      chapaRes.data.status === "success";
-    res.status(200).json(chapaRes)
-  } catch (error) {
-    console.error("Error verifying payment:", error.message);
-    return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/order-confirmation?success=false`);
-  }
+
+const getAllTemplate = async (req, res, next) => {
+    try {
+        const templates = await prisma.baseTemplate.findMany({
+            where: { status: 'ACTIVE' }
+        });
+        res.status(200).json({ status: 'success', templates });
+    } catch (error) {
+        next(new httpError(error.message, 500));
+    }
+};
+
+const getTemplateById = async (req, res, next) => {
+    const { templateId } = req.params;
+
+    try {
+        const template = await prisma.baseTemplate.findUnique({
+            where: { id: templateId },
+            include: { pages: true }
+        });
+
+        if (!template) {
+            return next(new httpError('Template not found', 404));
+        }
+
+        res.status(200).json({ status: 'success', template });
+    } catch (error) {
+        next(new httpError(error.message, 500));
+    }
+};
+
+const buyTemplate = async (req, res, next) => {
+    const { accountId, templateId, FRONTEND_BASE_URL, callback_url } = req.body;
+    console.log('up th sjjsj')
+    if (!templateId || !accountId) {
+        return next(new httpError('Template ID and Account ID are required', 400));
+    }
+
+    try {
+        // Verify template exists and is active
+        const template = await prisma.baseTemplate.findUnique({
+            where: { id: templateId, status: 'ACTIVE' }
+        });
+
+        if (!template) {
+            return next(new httpError('Template not found or not available for purchase', 404));
+        }
+
+        // Verify merchant exists and is active
+        const merchant = await prisma.merchant.findFirst({
+            where: { accountId, status: 'ACTIVE' }
+        });
+
+        if (!merchant) {
+            return next(new httpError('Merchant account not found or inactive', 404));
+        }
+
+        // Check for existing purchase
+        const existingPurchase = await prisma.merchantTemplate.findFirst({
+            where: {
+                merchantId: merchant.id,
+                baseTemplateId: templateId,
+                paymentStatus: 'ACTIVE'
+            }
+        });
+
+        if (existingPurchase) {
+            return next(new httpError('You already own this template', 409));
+        }
+
+        // Generate payment data
+        const tx_ref = generateTxRef();
+        const paymentData = {
+            amount: template.basePrice.toString(),
+            currency: 'ETB',
+            email: merchant.businessEmail,
+            first_name: merchant.ownerName.split(' ')[0],
+            last_name: merchant.ownerName.split(' ')[1] || '',
+            tx_ref,
+            callback_url: `${callback_url}?tx_ref=${tx_ref}`,
+            return_url: `${FRONTEND_BASE_URL}?tx_ref=${tx_ref}`,
+            customization: {
+                title: "Template Purchase",
+                description: "Template Payment"
+            },
+            meta: {
+                accountId,
+                templateId,
+                merchantId: merchant.id
+            }
+        };
+
+        // Initialize payment
+        const paymentResponse = await initializePayment(paymentData);
+
+        if (paymentResponse.status !== 'success') {
+            return next(new httpError('Failed to initialize payment', 400));
+        }
+        // Create pending payment record
+        await prisma.payment.create({
+            data: {
+                merchantId: merchant.id,
+                amount: template.basePrice,
+                status: 'PENDING',
+                paymentMethod: 'CHAPA',
+                transactionRef: tx_ref,
+                metadata: {
+                    templateId,
+                    templateName: template.name
+                }
+            }
+        });
+
+        res.status(200).json({
+            status: 'success',
+            checkoutUrl: paymentResponse.data.checkout_url
+        });
+
+    } catch (error) {
+        next(new httpError(error.message, 500));
+    }
+};
+
+const verifyTemplatePayment = async (req, res, next) => {
+    const { tx_ref } = req.query;
+
+    try {
+        const verification = await verifyPayment(tx_ref);
+
+        if (verification.status !== 'success' || verification.data.status !== 'success') {
+            return res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/templates?success=false`);
+        }
+        const { accountId, templateId, merchantId } = verification.data.meta;
+        console.log(verification, 'verify')
+        // Complete the purchase in a transaction
+        await prisma.$transaction(async (prisma) => {
+            await prisma.payment.updateMany({
+                where: { transactionRef: tx_ref },
+                data: {
+                    status: 'ACTIVE',
+                    paidAt: new Date()
+                }
+            });
+
+            // Get template details
+            const template = await prisma.baseTemplate.findUnique({
+                where: { id: templateId },
+                include: { pages: true }
+            });
+
+            // Create merchant template
+            const merchantTemplate = await prisma.merchantTemplate.create({
+                data: {
+                    merchantId,
+                    baseTemplateId: templateId,
+                    name: template.name,
+                    description: template.description,
+                    paymentStatus: 'ACTIVE',
+                    isActive: true,
+                    activatedAt: new Date(),
+                    expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+                }
+            });
+
+            // Copy pages if they exist
+            if (template.pages?.length > 0) {
+                await prisma.customPage.createMany({
+                    data: template.pages.map(page => ({
+                        merchantTemplateId: merchantTemplate.id,
+                        name: page.name,
+                        html: page.html,
+                        css: page.css,
+                        js: page.js
+                    }))
+                });
+            }
+            // Create notification
+            await prisma.notification.create({
+                data: {
+                    userId: accountId,
+                    type: 'TEMPLATE_PURCHASE',
+                    message: `You've successfully purchased the "${template.name}" template`,
+                    metadata: JSON.stringify({
+                        templateId,
+                        templateName: template.name,
+                        amount: template.basePrice
+                    })
+                }
+            });
+        });
+
+        res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/templates?success=true&tx_ref=${tx_ref}`);
+
+    } catch (error) {
+        console.error('Payment verification failed:', error);
+        res.redirect(`${process.env.FRONTEND_BASE_URL}/customers/templates?success=false`);
+    }
+};
+
+const verifyTemplaterPaymentForFrontend = async (req, res, next) => {
+    const { tx_ref } = req.query;
+
+    try {
+        const verification = await verifyPayment(tx_ref);
+        res.status(200).json(verification);
+    } catch (error) {
+        next(new httpError(error.message, 500));
+    }
 };
 module.exports = {
     registerTemplate,

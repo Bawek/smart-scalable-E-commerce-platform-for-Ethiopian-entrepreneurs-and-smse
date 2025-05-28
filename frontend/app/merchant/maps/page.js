@@ -3,9 +3,6 @@ import React from "react";
 // components
 
 import MapExample from "@/app/[locale]/components/Maps/MapExample.js";
-
-// layout for page
-
 import { Admin } from "@/app/[locale]/layouts/Admin";
 export default function Maps() {
   return (
