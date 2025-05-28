@@ -161,16 +161,6 @@ export default function MerchantAnalyticsPage() {
 
             <TabsContent value="customers" className="space-y-4">
               <CustomerSegmentation data={data?.data} />
-              <Card>
-                <CardHeader>
-                  <CardTitle>Customer Acquisition</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80 flex items-center justify-center text-muted-foreground">
-                    Customer acquisition chart
-                  </div>
-                </CardContent>
-              </Card>
             </TabsContent>
 
             <TabsContent value="products">

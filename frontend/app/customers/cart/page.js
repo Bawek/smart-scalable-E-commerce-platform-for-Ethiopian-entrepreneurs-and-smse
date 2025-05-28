@@ -30,7 +30,7 @@ const CartPage = () => {
     removeItemFromCart,
     updateItemQuantity } = useCart();
 
-gitg  const account = useSelector((state) => state.account);
+  const account = useSelector((state) => state.account);
   const [isProcessing, setIsProcessing] = useState(false);
   // Shipping cost (could be dynamic based on location)
   const shippingCost = 19.0;

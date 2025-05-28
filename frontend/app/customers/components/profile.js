@@ -33,7 +33,7 @@ const ProfileMenu = () => {
                 >
                   <h1 className="text-xl font-bold bg-gradient-to-r from-green-500 via-red-500 to-yellow-500 bg-clip-text text-transparent">
                     {
-                      account?.firestName.slice(0, 2)
+                      account?.firestName?.slice(0, 2)
                     }</h1>
                 </div>
               )

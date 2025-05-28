@@ -67,7 +67,7 @@ const MerchantDashboard = () => {
         {/* Charts Section */}
         <div className="bg-card rounded-lg border p-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Revenue & Orders</h2>
-          <CardLineChart data={dashboardData?.data?.performance} />
+          <CardLineChart data={dashboardData?.data} />
         </div>
       </div>
     </div>

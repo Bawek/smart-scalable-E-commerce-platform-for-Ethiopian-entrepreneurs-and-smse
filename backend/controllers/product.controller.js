@@ -199,25 +199,31 @@ const getProductByShopId = async (req, res, next) => {
 };
 
 const deleteProductById = async (req, res, next) => {
-    const { id } = req.params
+    const { id } = req.params;
     try {
+        // First delete all cart items that reference this product
+        await prisma.cartItem.deleteMany({
+            where: {
+                productId: id
+            }
+        });
+
+        // Then delete the product
         await prisma.product.delete({
             where: {
                 id
             }
-        })
+        });
 
-        // Success: Return the newly created account
         return res.status(204).json({
             status: "success",
             message: 'Product Successfully Deleted',
         });
     } catch (error) {
-        console.log('Register Merchant Error', error)
-        next(new httpError(error.message, 500))
+        console.log('Delete Product Error', error);
+        next(new httpError(error.message, 500));
     }
-
-}
+};
 const updateProductById = async (req, res, next) => {
     const {
         name,
