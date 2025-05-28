@@ -116,10 +116,10 @@ export default function AboutPage() {
                                                 <FaStore className="w-6 h-6 text-blue-500" />
                                             </div>
                                             <h6 className="text-xl mb-1 font-semibold">
-                                                Custom Storefronts
+                                                Custom Shops
                                             </h6>
                                             <p className="mb-4 text-blueGray-500">
-                                                Create unique digital storefronts with drag-and-drop builder and customizable templates.
+                                                Create unique digital shops with drag-and-drop builder and customizable templates.
                                             </p>
                                         </div>
                                     </div>
@@ -183,9 +183,7 @@ export default function AboutPage() {
                                 All builder components are designed for seamless integration and brand customization.
                             </p>
                             <div className="block pb-6">
-                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
-                                    Template Gallery
-                                </span>
+                              
                                 <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
                                     Drag-and-Drop Editor
                                 </span>
@@ -198,15 +196,11 @@ export default function AboutPage() {
                                 <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
                                     Product Widgets
                                 </span>
-                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
-                                    SEO Tools
-                                </span>
+                                
                                 <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
                                     Analytics Integration
                                 </span>
-                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blueGray-500 bg-white uppercase last:mr-0 mr-2 mt-2">
-                                    Multi-language Support
-                                </span>
+                              
                             </div>
                             <Link
                                 href="/builder-documentation"
