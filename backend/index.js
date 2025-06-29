@@ -32,10 +32,15 @@ initialize(server);
 
 // Enable CORS 
 app.use(cors({
-    origin: ['http://localhost:3000', 'https://checkout.chapa.co'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
+  origin: [
+    'http://localhost:3000',
+    'https://checkout.chapa.co',
+    'https://smart-scalable-e-commerce-platform-for-ethiopian-entrepreneurs-and-smse.vercel.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
+
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static('uploads'))
 app.use(cookieParser())
