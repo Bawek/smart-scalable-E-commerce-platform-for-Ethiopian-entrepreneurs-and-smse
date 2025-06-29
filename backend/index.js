@@ -70,23 +70,23 @@ app.get('/api/merchant-dashboard/:accountId', getDashboardMetrics)
 // Routes
 app.use('/api', contactRoute);
 // handling errors
-app.use((err, req, res) => {
-    if (err.isOperational) {
-        err.statusCode = err.statusCode || 500
-        err.status = err.status || 'error'
-        console.log(err, 'http Error')
-        res.status(err.statusCode).json({
-            status: err.status,
-            message: err.message
-        })
-    }
-    else {
-        // res.status(500).json({
-        //     status: 'error',
-        //     message: err.message || 'Something went seriously wrong'
-        // })
-    }
+app.use((err, req, res, next) => {
+  if (err.isOperational) {
+    err.statusCode = err.statusCode || 500
+    err.status = err.status || 'error'
+    console.log(err, 'http Error')
+    res.status(err.statusCode).json({
+      status: err.status,
+      message: err.message
+    })
+  } else {
+    res.status(500).json({
+      status: 'error',
+      message: err.message || 'Something went seriously wrong'
+    })
+  }
 })
+
 //start the server
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`)
